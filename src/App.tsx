@@ -8,7 +8,12 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Products from "./pages/Products";
 import VehicleDetails from "./pages/VehicleDetails";
-import SimplePage from "./pages/_SimplePage";
+import About from "./pages/About";
+import ServicesPage from "./pages/ServicesPage";
+import FinancePage from "./pages/FinancePage";
+import OffersPage from "./pages/OffersPage";
+import VideosPage from "./pages/VideosPage";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -23,12 +28,12 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:slug" element={<VehicleDetails />} />
-            <Route path="/about" element={<SimplePage title="About Us" description="Know more about Vikramshila Automobiles, our team and values." />} />
-            <Route path="/services" element={<SimplePage title="Services" description="Genuine parts, service, assistance and fleet telematics." />} />
-            <Route path="/finance" element={<SimplePage title="Finance" description="Flexible finance options tailored to your business." />} />
-            <Route path="/offers" element={<SimplePage title="Offers" description="Explore our current schemes and seasonal offers." />} />
-            <Route path="/videos" element={<SimplePage title="Videos" description="Watch product walkthroughs, testimonials and more." />} />
-            <Route path="/contact" element={<SimplePage title="Contact" description="Reach us via phone, email or WhatsApp. We're here to help." />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/finance" element={<FinancePage />} />
+            <Route path="/offers" element={<OffersPage />} />
+            <Route path="/videos" element={<VideosPage />} />
+            <Route path="/contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
