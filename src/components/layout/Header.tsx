@@ -17,6 +17,29 @@ const nav = [
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      {/* Tata Motors brand bar */}
+      <div className="w-full border-b bg-background/90">
+        <div className="container mx-auto flex items-center justify-between py-2">
+          <div className="flex items-center gap-3">
+            <img
+              src="/images/tata-motors-logo.svg"
+              alt="Tata Motors Commercial Vehicles - Better Always"
+              className="h-6 w-auto"
+              loading="lazy"
+              width="120"
+              height="24"
+            />
+          </div>
+          <img
+            src="/images/tata-logo.svg"
+            alt="Tata logo"
+            className="h-6 w-auto"
+            loading="lazy"
+            width="32"
+            height="24"
+          />
+        </div>
+      </div>
       <div className="container mx-auto flex items-center justify-between py-3">
         <div className="flex items-center gap-4">
           <Link to="/" className="flex flex-col">
