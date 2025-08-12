@@ -3,6 +3,7 @@ import { Menu, Phone, MessageCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import EnquiryDialog, { openEnquiryDialog } from "@/components/common/EnquiryDialog";
+import Chatbot from "@/components/common/Chatbot";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -96,6 +97,7 @@ export default function Header() {
         </div>
       </div>
       <EnquiryDialog />
+      <Chatbot />
     </header>
   );
 }
