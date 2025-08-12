@@ -1,19 +1,11 @@
 import { Link, NavLink } from "react-router-dom";
-import {
-  Menu,
-  Phone,
-  MessageCircle,
-  ChevronDown,
-  Search,
-  Globe,
-} from "lucide-react";
+import { Menu, Phone, MessageCircle, ChevronDown, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import EnquiryDialog, {
   openEnquiryDialog,
 } from "@/components/common/EnquiryDialog";
 import { useState } from "react";
-
 import Chatbot from "@/components/common/Chatbot";
 
 const nav = [
@@ -21,6 +13,7 @@ const nav = [
   { to: "/about", label: "About", hasDropdown: true },
   { to: "/products", label: "Products", hasDropdown: true },
   { to: "/services", label: "Services" },
+  { to: "/new-launches", label: "New Launches" },
   { to: "/contact", label: "Contact" },
 ];
 
@@ -34,26 +27,26 @@ export default function Header() {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         {/* Tata Motors brand bar */}
         <div className="w-full border-b bg-background/90">
-          <div className="container mx-auto flex justify-end py-2">
-            
-            <div className="flex flex-col items-end gap-1">
-              <img
-                src="/images/tata-motors-logo.svg"
-                alt="Tata Motors Commercial Vehicles - Better Always"
-                className="h-6 w-auto"
-                loading="lazy"
-                width="120"
-                height="24"
-              />
-              <Link to="/" className="flex flex-col items-end">
-                <span className="text-xl font-bold tracking-tight">
-                  Vikramshila Automobiles
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Driven by Trust. Delivered with Pride
-                </span>
-              </Link>
-            </div>
+          <div className="container mx-auto flex justify-between items-center py-2">
+            {/* Left: Dealership name & tagline */}
+            <Link to="/" className="flex flex-col items-start">
+              <span className="text-xl font-bold tracking-tight">
+                Vikramshila Automobiles
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Driven by Trust. Delivered with Pride
+              </span>
+            </Link>
+
+            {/* Right: Tata Motors logo */}
+            <img
+              src="/images/tata-motors-logo.svg"
+              alt="Tata Motors Commercial Vehicles - Better Always"
+              className="h-6 w-auto"
+              loading="lazy"
+              width="120"
+              height="24"
+            />
           </div>
         </div>
 
@@ -103,13 +96,6 @@ export default function Header() {
                   <MessageCircle className="h-4 w-4" />
                   WhatsApp
                 </a>
-
-                {/* <Button
-                  onClick={() => openEnquiryDialog()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                >
-                  Enquire Now
-                </Button> */}
               </div>
 
               {/* Mobile menu button */}
@@ -198,7 +184,6 @@ export default function Header() {
       </header>
 
       <EnquiryDialog />
-      
     </>
   );
 }
