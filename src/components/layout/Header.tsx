@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import { Menu, Phone, MessageCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import EnquiryDialog, { openEnquiryDialog } from "@/components/common/EnquiryDialog";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -63,7 +64,7 @@ export default function Header() {
           <a href="https://wa.me/919999999999" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm hover-scale">
             <MessageCircle className="h-4 w-4" /> WhatsApp
           </a>
-          <Button variant="hero" className="ml-2">Book Test Drive</Button>
+          <Button variant="hero" className="ml-2" onClick={() => openEnquiryDialog()}>Enquire Now</Button>
         </div>
 
         <div className="md:hidden">
@@ -87,13 +88,14 @@ export default function Header() {
                   <a href="https://wa.me/919999999999" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm">
                     <MessageCircle className="h-4 w-4" /> WhatsApp
                   </a>
-                  <Button variant="accent">Book Test Drive</Button>
+                  <Button variant="accent" onClick={() => openEnquiryDialog()}>Enquire Now</Button>
                 </div>
               </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
+      <EnquiryDialog />
     </header>
   );
 }

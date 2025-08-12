@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
-
+import { openEnquiryDialog } from "@/components/common/EnquiryDialog";
 export default function Products() {
   return (
     <div>
@@ -29,8 +29,8 @@ export default function Products() {
                 <p className="text-sm text-muted-foreground">{v.description}</p>
                 <div className="text-sm mt-2">Starting at <span className="font-medium">₹ {v.price.toLocaleString("en-IN")}</span></div>
                 <div className="mt-3 flex gap-2 flex-wrap">
+                  <Button variant="accent" onClick={() => openEnquiryDialog(v.name)}>Enquire Now</Button>
                   <Link to={`/products/${v.slug}`}><Button variant="outline">View Details</Button></Link>
-                  <Button variant="accent">Book This Vehicle</Button>
                 </div>
               </CardContent>
             </Card>

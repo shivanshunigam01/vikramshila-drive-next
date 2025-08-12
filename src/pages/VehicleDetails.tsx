@@ -6,7 +6,7 @@ import FinanceCalculator from "@/components/home/FinanceCalculator";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
-
+import { openEnquiryDialog } from "@/components/common/EnquiryDialog";
 export default function VehicleDetails() {
   const { slug } = useParams();
   const v = vehicles.find((x) => x.slug === slug);
@@ -79,8 +79,7 @@ export default function VehicleDetails() {
         </section>
 
         <div className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t p-3 flex gap-3 justify-center md:hidden">
-          <Button variant="accent">Book Test Drive</Button>
-          <Button variant="hero">Book Now</Button>
+          <Button variant="hero" onClick={() => openEnquiryDialog(v.name)}>Enquire Now</Button>
         </div>
       </main>
       <Footer />
