@@ -141,7 +141,7 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
         <div className="fixed right-4 top-24 z-50">
           <Button
             variant="accent"
-            className="shadow-md"
+            className="bg-sky-400 text-black hover:bg-yellow-400 shadow-md transition-colors"
             aria-label="Open 24/7 chat support"
             onClick={() => setOpen(true)}
           >
@@ -154,6 +154,7 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
       {inline && (
         <Button
           variant="outline"
+          className="bg-sky-400 text-black hover:bg-yellow-400 shadow-md transition-colors"
           onClick={() => setOpen(true)}
           aria-label="Open chat"
         >

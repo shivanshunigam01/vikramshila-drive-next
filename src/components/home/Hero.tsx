@@ -13,19 +13,27 @@ export default function Hero() {
 
   useEffect(() => {
     if (!api) return;
+
     const interval = setInterval(() => {
-      api.scrollNext();
+      // Go next, and if it's the last slide, jump back to first
+      if (api.canScrollNext()) {
+        api.scrollNext();
+      } else {
+        api.scrollTo(0); // loop back to first slide
+      }
     }, 5000);
+
     return () => clearInterval(interval);
   }, [api]);
 
   return (
-    <section className="relative">
+    <section className="relative bg-black text-white">
       <Carousel setApi={setApi} className="w-full">
         <CarouselContent>
           {heroImages.map((img, idx) => (
             <CarouselItem key={idx}>
               <div className="relative h-[60vh] md:h-[70vh] lg:h-[80vh] overflow-hidden rounded-lg">
+                {/* Image without forced dark background */}
                 <img
                   src={img}
                   alt={`Hero banner ${idx + 1} — Vikramshila Automobiles`}
@@ -35,24 +43,34 @@ export default function Hero() {
                 <div className="absolute top-4 right-4 z-50">
                   <Chatbot inline />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
+
+                {/* Gradient Overlay */}
+                {/* <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" /> */}
+
+                {/* Hero Content */}
                 <div className="absolute inset-0 flex items-end md:items-center">
                   <div className="container mx-auto pb-8 md:pb-0 md:pl-8 max-w-4xl text-white animate-fade-in">
-                    <h1 className="text-3xl md:text-5xl font-semibold leading-tight">
+                    {/* <h1 className="text-3xl md:text-5xl font-bold leading-tight text-white">
                       Tata Commercial Vehicles for Every Business
-                    </h1>
-                    <p className="mt-3 text-sm md:text-base text-white/90">
+                    </h1> */}
+                    {/* <p className="mt-3 text-sm md:text-base text-gray-200">
                       Explore SCV, Pickup, LCV, ICV, MCV, Winger & Buses — Book
                       a test drive, view offers, and get instant finance
                       options.
-                    </p>
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <Button variant="hero">Book Test Drive</Button>
-                      <Button variant="accent">View Current Offers</Button>
-                      <Button className="bg-sky-400 text-black hover:bg-yellow-400 transition-colors">
+                    </p> */}
+
+                    {/* Buttons */}
+                    {/* <div className="mt-5 flex flex-wrap gap-3">
+                      <Button className="bg-white text-black hover:bg-gray-300">
+                        Book Test Drive
+                      </Button>
+                      <Button className="bg-primary text-white hover:bg-primary/80">
+                        View Current Offers
+                      </Button>
+                      <Button className="bg-sky-500 text-black hover:bg-yellow-400 transition-colors">
                         Download Brochure
                       </Button>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
