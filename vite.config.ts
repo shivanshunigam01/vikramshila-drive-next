@@ -9,8 +9,7 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0", // listen on all interfaces (IPv4/IPv6)
     port: 8080,
     allowedHosts: [
-      "vikramshilaautomobiles.com",
-      "www.vikramshilaautomobiles.com",
+      "www.vikramshilaautomobiles.com"
     ],
   },
   plugins: [
