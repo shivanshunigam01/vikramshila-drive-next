@@ -2,29 +2,52 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { vehicles } from "@/data/products";
 import { toast } from "sonner";
 
 export function openEnquiryDialog(product?: string) {
-  window.dispatchEvent(new CustomEvent("open-enquiry", { detail: { product } }));
+  window.dispatchEvent(
+    new CustomEvent("open-enquiry", { detail: { product } })
+  );
 }
 
 const schema = z.object({
   name: z.string().min(2, "Enter your full name"),
-  mobile: z
-    .string()
-    .regex(/^\d{10}$/g, "Enter a valid 10-digit mobile number"),
+  mobile: z.string().regex(/^\d{10}$/g, "Enter a valid 10-digit mobile number"),
   state: z.string().min(2, "Select your state"),
   pincode: z.string().regex(/^\d{6}$/g, "Enter a valid 6-digit pincode"),
   product: z.string().min(1, "Select a product"),
-  consentCall: z.literal(true, { errorMap: () => ({ message: "Consent is required" }) }),
-  consentWhatsApp: z.literal(true, { errorMap: () => ({ message: "Consent is required" }) }),
+  consentCall: z.literal(true, {
+    errorMap: () => ({ message: "Consent is required" }),
+  }),
+  consentWhatsApp: z.literal(true, {
+    errorMap: () => ({ message: "Consent is required" }),
+  }),
 });
 
 const INDIAN_STATES = [
@@ -71,7 +94,8 @@ export default function EnquiryDialog() {
       setOpen(true);
     };
     window.addEventListener("open-enquiry", handler as EventListener);
-    return () => window.removeEventListener("open-enquiry", handler as EventListener);
+    return () =>
+      window.removeEventListener("open-enquiry", handler as EventListener);
   }, []);
 
   const productOptions = useMemo(() => vehicles.map((v) => v.name), []);
@@ -130,7 +154,11 @@ export default function EnquiryDialog() {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input placeholder="Mobile Number" inputMode="numeric" {...field} />
+                      <Input
+                        placeholder="Mobile Number"
+                        inputMode="numeric"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,7 +177,9 @@ export default function EnquiryDialog() {
                       </FormControl>
                       <SelectContent className="max-h-64">
                         {INDIAN_STATES.map((s) => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -163,7 +193,11 @@ export default function EnquiryDialog() {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input placeholder="Enter Pincode" inputMode="numeric" {...field} />
+                      <Input
+                        placeholder="Enter Pincode"
+                        inputMode="numeric"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -182,7 +216,9 @@ export default function EnquiryDialog() {
                       </FormControl>
                       <SelectContent className="max-h-64">
                         {productOptions.map((p) => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                          <SelectItem key={p} value={p}>
+                            {p}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -199,11 +235,17 @@ export default function EnquiryDialog() {
                 render={({ field }) => (
                   <FormItem className="flex items-start gap-2">
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
                     <div className="space-y-0.5">
                       <FormLabel className="font-normal">
-                        I agree that by clicking on 'Submit', I am explicitly soliciting a call from Vikramshila Automobiles or its associates on my mobile number to assist me in purchasing Tata Vehicles.
+                        I agree that by clicking on 'Submit', I am explicitly
+                        soliciting a call from Vikramshila Automobiles or its
+                        associates on my mobile number to assist me in
+                        purchasing Tata Vehicles.
                       </FormLabel>
                       <FormMessage />
                     </div>
@@ -216,10 +258,16 @@ export default function EnquiryDialog() {
                 render={({ field }) => (
                   <FormItem className="flex items-start gap-2">
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
                     <div className="space-y-0.5">
-                      <FormLabel className="font-normal">Allow Tata Motors to send you information about Tata Products on WhatsApp.</FormLabel>
+                      <FormLabel className="font-normal">
+                        Allow Tata Motors to send you information about Tata
+                        Products on WhatsApp.
+                      </FormLabel>
                       <FormMessage />
                     </div>
                   </FormItem>
@@ -228,7 +276,9 @@ export default function EnquiryDialog() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" variant="hero">Submit</Button>
+              <Button type="submit" variant="hero">
+                Submit
+              </Button>
             </div>
           </form>
         </Form>

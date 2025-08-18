@@ -14,6 +14,7 @@ import ace2 from "@/assets/acepro-2.jpg";
 import ace3 from "@/assets/acepro-3.jpg";
 import ace4 from "@/assets/acepro-4.jpg";
 
+// ---------------- Types ----------------
 export type Vehicle = {
   slug: string;
   name: string;
@@ -21,14 +22,20 @@ export type Vehicle = {
   description: string;
   price: number;
   images: string[];
+  heroImage?: string;
+  tagline?: string;
   brochureUrl?: string;
   priceListUrl?: string;
   specs: { key: string; value: string }[];
   variants: string[];
+  highlights?: { icon: string; title: string; desc: string }[];
+  applications?: { image: string; title: string; capacity: string }[];
 };
 
+// ---------------- Hero Images ----------------
 export const heroImages = [hero1, hero2, hero3, hero4];
 
+// ---------------- Categories ----------------
 export const categories = [
   {
     key: "scv-cargo",
@@ -133,14 +140,16 @@ export const categories = [
   },
 ];
 
+// ---------------- Vehicles ----------------
 export const vehicles: Vehicle[] = [
-  // SCV Cargo – Ace Series
   {
     slug: "ace-gold-petrol",
     name: "Ace Gold Petrol",
     category: "SCV Cargo",
     description: "Tata Ace Gold with refined petrol engine for city logistics.",
     price: 599000,
+    heroImage: ace1,
+    tagline: "Efficient petrol mini truck for urban cargo.",
     images: [ace1, ace2, ace3, ace4],
     brochureUrl: "#",
     priceListUrl: "#",
@@ -151,21 +160,10 @@ export const vehicles: Vehicle[] = [
       { key: "Mileage", value: "Up to 22 km/l" },
     ],
     variants: ["Standard"],
-  },
-  {
-    slug: "ace-gold-diesel",
-    name: "Ace Gold Diesel",
-    category: "SCV Cargo",
-    description: "Trusted diesel workhorse with great mileage.",
-    price: 619000,
-    images: [ace2, ace3, ace4, ace1],
-    specs: [
-      { key: "Engine", value: "Diesel" },
-      { key: "Payload", value: "750 kg" },
-      { key: "Fuel", value: "Diesel" },
-      { key: "Mileage", value: "Up to 23 km/l" },
+    highlights: [
+      { icon: hero1, title: "High Mileage", desc: "Up to 22 km/l efficiency." },
+      { icon: hero2, title: "Strong Build", desc: "Durable chassis & body." },
     ],
-    variants: ["Standard"],
   },
   {
     slug: "ace-gold-cng",
@@ -209,18 +207,8 @@ export const vehicles: Vehicle[] = [
     specs: [{ key: "Fuel", value: "Diesel" }],
     variants: ["V10"],
   },
+
   {
-    slug: "intra-v20-bi-fuel",
-    name: "Intra V20 Bi-Fuel",
-    category: "SCV Cargo",
-    description: "Dual-fuel flexibility for savings.",
-    price: 739000,
-    images: [ace2, ace3, ace4],
-    specs: [{ key: "Fuel", value: "Bi-Fuel" }],
-    variants: ["V20"],
-  },
-  {
-    slug: "intra-v30",
     name: "Intra V30",
     category: "SCV Cargo",
     description: "Payload and power balanced.",
@@ -228,6 +216,7 @@ export const vehicles: Vehicle[] = [
     images: [ace3, ace4, ace1],
     specs: [{ key: "Fuel", value: "Diesel" }],
     variants: ["V30"],
+    slug: "",
   },
   {
     slug: "intra-v50",
@@ -585,6 +574,7 @@ export const offers = [
   },
 ];
 
+// ---------------- Videos ----------------
 export const videos: { id: string; title: string }[] = [
   { id: "Gx8eYwL5jCU", title: "Dealer Introduction" },
   { id: "5qap5aO4i9A", title: "Customer Testimonial" },

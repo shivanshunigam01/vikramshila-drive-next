@@ -23,11 +23,12 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full">
-        {/* ===== Top Bar (Unchanged) ===== */}
+        {/* ===== Top Bar ===== */}
         <div className="w-full bg-black border-b border-gray-800">
-          <div className="container mx-auto flex justify-between items-center py-2 px-4">
-            <Link to="/" className="flex flex-col leading-tight">
-              <span className="text-lg font-semibold text-white tracking-wide">
+          <div className="container mx-auto flex justify-between items-center px-6 py-3">
+            {/* Left Side: Title */}
+            <Link to="/" className="flex flex-col leading-tight pt-12">
+              <span className="text-xl font-semibold text-white tracking-wide">
                 Vikramshila Automobiles
               </span>
               <span className="text-[11px] text-gray-400 uppercase tracking-widest">
@@ -35,13 +36,50 @@ export default function Header() {
               </span>
             </Link>
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-3">
-                {/* Logo */}
+            {/* Right Side: Column with Top Links + Tata Logo */}
+            <div className="flex flex-col items-end">
+              {/* Top Links */}
+              <div className="hidden md:flex items-center gap-10 mb-2 text-sm">
+                <a
+                  href="#"
+                  className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
+                >
+                  <span role="img" aria-label="ev">
+                    📝
+                  </span>
+                  <span className="whitespace-nowrap">EV Charging Station</span>
+                </a>
+                <a
+                  href="#"
+                  className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
+                >
+                  <span role="img" aria-label="service">
+                    📝
+                  </span>
+                  <span className="whitespace-nowrap">
+                    Locate Service Network
+                  </span>
+                </a>
+                <a
+                  href="tel:18002097979"
+                  className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
+                >
+                  <Phone className="h-4 w-4" />
+                  <span>1800 209 7979</span>
+                </a>
+                <Link to={"https://fleetverse.tatamotors.com/"}>
+                  <Button className="bg-white text-black hover:bg-gray-200 text-xs px-5 py-2 rounded-lg shadow">
+                    Book Now
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Tata Logo aligned with Vikramshila */}
+              <div className="flex items-center">
                 <img
                   src={tataLogo}
                   alt="Tata Motors Logo"
-                  className="h-8 object-contain"
+                  className="h-10 object-contain"
                 />
               </div>
             </div>
@@ -82,17 +120,6 @@ export default function Header() {
                 <Search className="h-4 w-4 text-gray-400" />
               </div>
 
-              {/* Buttons */}
-              {/* <Button className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
-                Better Always
-              </Button> */}
-              {/* <Button
-                variant="outline"
-                className="text-blue-500 border-blue-500 text-xs hover:bg-blue-50"
-              >
-                Ace Pro Launch →
-              </Button>
- */}
               {/* Contact Info */}
               <a
                 href="tel:+919999999999"

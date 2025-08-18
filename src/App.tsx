@@ -15,6 +15,8 @@ import OffersPage from "./pages/OffersPage";
 import VideosPage from "./pages/VideosPage";
 import Contact from "./pages/Contact";
 import NewLaunches from "./pages/NewLaunches";
+import ContactPage from "./components/home/ContactPage";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/products" element={<Products />} />
@@ -35,7 +38,7 @@ const App = () => (
             <Route path="/offers" element={<OffersPage />} />
             <Route path="/videos" element={<VideosPage />} />
             <Route path="/new-launches" element={<NewLaunches />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route path="/contact" element={<ContactPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

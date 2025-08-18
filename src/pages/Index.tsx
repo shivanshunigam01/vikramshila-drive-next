@@ -10,6 +10,11 @@ import FloatingCTAs from "@/components/common/FloatingCTAs";
 import ScrollRevealer from "@/components/common/ScrollRevealer";
 import { Helmet } from "react-helmet-async";
 import BusinessServices from "@/components/home/BusinessServices";
+import TruckFinder from "@/components/home/TruckFinder";
+import NewLaunches from "./NewLaunches";
+import ProductDisplay from "@/components/home/ProductDisplay";
+import LaunchSection from "@/components/home/LaunchSection";
+import EnquireNow from "@/components/home/EnquireNow";
 
 export default function Index() {
   return (
@@ -26,22 +31,35 @@ export default function Index() {
       <main>
         <Hero />
         <div className="sr-fade">
-          <ProductGrid />
+          <ProductDisplay />
         </div>
+
+        <div className="sr-fade">
+          <LaunchSection />
+        </div>
+
         <div className="sr-fade">
           <FinanceCalculator />
         </div>
         <div className="sr-slide">
           <VideoCarousel />
         </div>
+
         <div className="sr-fade">
           <OffersSlider />
+        </div>
+
+        <div className="sr-fade">
+          <TruckFinder />
         </div>
         {/* <div className="sr-fade">
           <Services />
         </div> */}
         <div className="sr-fade">
           <BusinessServices />
+        </div>
+        <div className="sr-fade">
+          <EnquireNow />
         </div>
       </main>
       <Footer />

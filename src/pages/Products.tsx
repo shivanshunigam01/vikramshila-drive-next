@@ -1,7 +1,6 @@
 import { vehicles } from "@/data/products";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-// import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
@@ -37,7 +36,7 @@ export default function Products() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-black min-h-screen text-white">
       <Helmet>
         <title>Products | Vikramshila Automobiles</title>
         <meta
@@ -50,26 +49,26 @@ export default function Products() {
       <Header />
 
       {/* Breadcrumb */}
-      <div className="bg-white border-b">
+      <div className="bg-black border-b border-gray-700">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center text-sm text-gray-600">
-            <a href="/" className="hover:text-gray-900">
+          <div className="flex items-center text-sm text-gray-300">
+            <a href="/" className="hover:text-white font-medium">
               Home
             </a>
             <span className="mx-2">›</span>
-            <span className="text-gray-900 font-medium">All Vehicles</span>
+            <span className="text-white font-semibold">All Vehicles</span>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-10">
         <div className="flex gap-6">
           {/* Sidebar Filters */}
-          <div className="w-80 bg-white rounded-lg shadow-sm p-6 h-fit">
+          <div className="w-80 bg-gray-900 rounded-lg shadow-lg p-6 h-fit">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Filters</h3>
-              <button className="text-blue-600 text-sm hover:underline">
-                Reset All Filters
+              <h3 className="text-lg font-semibold text-white">Filters</h3>
+              <button className="text-blue-500 text-sm hover:underline">
+                Reset All
               </button>
             </div>
 
@@ -81,7 +80,7 @@ export default function Products() {
                 placeholder="Search vehicles"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg bg-black text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -90,32 +89,27 @@ export default function Products() {
               {filterOptions.map((filter) => (
                 <div
                   key={filter.label}
-                  className="border-b border-gray-100 pb-4"
+                  className="border-b border-gray-700 pb-4"
                 >
                   <button
                     onClick={() => toggleFilter(filter.label)}
-                    className="flex items-center justify-between w-full text-left"
+                    className="flex items-center justify-between w-full text-left text-white"
                   >
-                    <span className="font-medium text-gray-900">
-                      {filter.label}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full border-2 border-blue-600 flex items-center justify-center">
-                        <Plus className="w-3 h-3 text-blue-600" />
-                      </div>
-                    </div>
+                    <span className="font-medium">{filter.label}</span>
+                    <Plus className="w-4 h-4 text-blue-400" />
                   </button>
                   {expandedFilters[filter.label] && (
                     <div className="mt-2 space-y-2">
                       {filter.options.map((option) => (
-                        <label key={option} className="flex items-center">
+                        <label
+                          key={option}
+                          className="flex items-center text-gray-300"
+                        >
                           <input
                             type="checkbox"
-                            className="rounded border-gray-300 mr-2"
+                            className="rounded border-gray-600 bg-black mr-2"
                           />
-                          <span className="text-sm text-gray-600">
-                            {option}
-                          </span>
+                          <span className="text-sm">{option}</span>
                         </label>
                       ))}
                     </div>
@@ -129,69 +123,63 @@ export default function Products() {
           <div className="flex-1">
             {/* Header */}
             <div className="mb-6">
-              <h1 className="text-3xl font-semibold mb-2 text-gray-900">
-                All Vehicles
-              </h1>
-              <p className="text-gray-600">
+              <h1 className="text-3xl font-bold mb-2">All Vehicles</h1>
+              <p className="text-gray-400">
                 Choose from our best-selling lineup
               </p>
             </div>
 
             {/* Products Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {vehicles.map((v) => (
                 <Card
                   key={v.slug}
-                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border-0 overflow-hidden group"
+                  className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden group"
                 >
-                  {/* Compare Button */}
-                  <div className="relative">
-                    <button className="absolute top-3 right-3 bg-white/90 hover:bg-white px-3 py-1 rounded text-sm text-gray-700 z-10 shadow-sm">
-                      Compare
-                    </button>
-                  </div>
-
                   <CardHeader className="p-0">
-                    <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                    <div className="aspect-[4/3] bg-black overflow-hidden">
                       <img
                         src={v.images[0]}
                         alt={`${v.name} image`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   </CardHeader>
 
                   <CardContent className="p-6">
-                    <CardTitle className="text-lg font-semibold text-gray-900 mb-2">
+                    <CardTitle className="text-xl font-semibold text-white mb-3">
                       {v.name}
                     </CardTitle>
 
-                    <p className="text-sm text-gray-600 mb-3">
-                      {v.description}
-                    </p>
-
-                    <div className="text-sm mb-4 text-gray-900">
-                      Starting at{" "}
-                      <span className="font-semibold text-lg">
-                        ₹ {v.price.toLocaleString("en-IN")}
-                      </span>
+                    {/* Specs */}
+                    <div className="flex justify-between text-sm text-gray-300 mb-4 border-t border-gray-700 pt-4">
+                      <div>
+                        <p className="font-semibold">{v.gvw}</p>
+                        <p className="text-xs">GVW</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">{v.fuel}</p>
+                        <p className="text-xs">Fuel</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">{v.engine}</p>
+                        <p className="text-xs">Engine</p>
+                      </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="space-y-2">
+                    {/* Buttons */}
+                    <div className="flex gap-3">
                       <Button
                         onClick={() => openEnquiryDialog(v.name)}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-md"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-md"
                       >
-                        Enquire Now
+                        Know More
                       </Button>
-                      <a href={`/products/${v.slug}`} className="block w-full">
-                        <Button
-                          variant="outline"
-                          className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-2.5 rounded-md"
-                        >
-                          View Details
-                        </Button>
+                      <a
+                        href={`/products/${v.slug}`}
+                        className="flex items-center justify-center w-12 h-12 rounded-full border border-blue-500 hover:bg-blue-600 hover:text-white text-blue-500"
+                      >
+                        PDF
                       </a>
                     </div>
                   </CardContent>

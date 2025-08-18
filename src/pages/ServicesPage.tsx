@@ -1,48 +1,180 @@
+import React from "react";
+import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
+
+import serviceBanner from "@/assets/service-page-banner.png";
+import fleetEdge from "@/assets/image.png";
+import amc from "@/assets/image(1).png";
+import sampoorna from "@/assets/image(2).png";
+import tataOk from "@/assets/image(3).png";
+import guru from "@/assets/image(4).png";
+import fleetCareBanner from "../assets/fleet-care_new_banner.jpg";
 import Footer from "@/components/layout/Footer";
-import { Helmet } from "react-helmet-async";
-import Services from "@/components/home/Services";
 
 export default function ServicesPage() {
   return (
-    <div>
-      <Helmet>
-        <title>Services | Genuine Parts, Assistance, Fleetedge</title>
-        <meta name="description" content="Tata Genuine Parts, Tata OK, Tata Alert, Suraksha AMC, and Fleetedge telematics at Vikramshila Automobiles." />
-        <link rel="canonical" href="/services" />
-      </Helmet>
+    <div className="bg-black text-white font-sans">
+      {/* Header/Navbar */}
       <Header />
-      <main className="container mx-auto py-10">
-        <h1 className="text-3xl font-semibold">Services</h1>
-        <p className="text-muted-foreground mt-2 max-w-3xl">Everything you need to keep your vehicle productive: parts availability, 24x7 assistance, extended warranties, and intelligent fleet solutions.</p>
 
-        <section className="mt-6">
-          <Services />
-        </section>
+      {/* Breadcrumb */}
+      <nav className="max-w-7xl mx-auto px-6 py-4 text-sm">
+        <ol className="flex items-center space-x-2 text-gray-300">
+          <li>
+            <Link to="/" className="hover:underline hover:text-white">
+              Home
+            </Link>
+          </li>
+          <li>{">"}</li>
+          <li className="text-white">Services</li>
+        </ol>
+      </nav>
 
-        <section className="grid md:grid-cols-2 gap-6 mt-10">
-          <article className="p-6 rounded border">
-            <h2 className="font-semibold mb-2">Tata Genuine Parts</h2>
-            <p className="text-muted-foreground">OEM certified, warranty-backed parts ensuring long life and safety. Counter pickup and doorstep delivery available.</p>
-          </article>
-          <article className="p-6 rounded border">
-            <h2 className="font-semibold mb-2">Tata OK (Value Trucks)</h2>
-            <p className="text-muted-foreground">Verified pre-owned commercial vehicles with transparent inspections and documentation.</p>
-          </article>
-          <article className="p-6 rounded border">
-            <h2 className="font-semibold mb-2">Tata Alert & On-Road Assistance</h2>
-            <p className="text-muted-foreground">24x7 breakdown support and emergency services to minimize downtime.</p>
-          </article>
-          <article className="p-6 rounded border">
-            <h2 className="font-semibold mb-2">Suraksha AMC</h2>
-            <p className="text-muted-foreground">Predictable maintenance costs and assured service intervals for worry-free operations.</p>
-          </article>
-          <article className="p-6 rounded border md:col-span-2">
-            <h2 className="font-semibold mb-2">Fleetedge Telematics</h2>
-            <p className="text-muted-foreground">Track vehicles, monitor driving behavior, plan maintenance, and improve TCO with real-time analytics.</p>
-          </article>
-        </section>
-      </main>
+      {/* Hero Section */}
+      <div
+        className="relative h-[500px] bg-cover bg-center flex items-center justify-center"
+        style={{ backgroundImage: `url(${serviceBanner})` }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 max-w-4xl text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Unparalleled After Sales Services by Tata Motors
+          </h1>
+          <p className="text-lg md:text-xl text-gray-300">
+            At Tata Motors, we go beyond just delivering vehicles. Our robust
+            after-sales services ensure that your business runs seamlessly,
+            supported by the expertise and reliability of our dedicated service
+            teams.
+          </p>
+        </div>
+      </div>
+
+      {/* Services Section */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-2xl font-semibold mb-10 text-center">
+          Add-On Services for Your Trucks Purchase
+        </h2>
+
+        {/* Fleet Edge */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <img src={fleetEdge} alt="Fleet Edge" className="rounded-lg" />
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Fleet Edge</h3>
+            <p className="text-gray-300 mb-4">
+              Gain live updates on vehicle movement & monitoring with Fleet
+              Edge. A telematics-based digital solution that provides you
+              real-time insights into your fleet, helping optimize productivity
+              and reduce costs.
+            </p>
+            <ul className="flex gap-8 text-blue-400 mb-6">
+              <li>1.59L+ Trucks</li>
+              <li>3.74L+ Truck Vehicles</li>
+              <li>456M+ KM Tracked</li>
+            </ul>
+            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+              Know More →
+            </button>
+          </div>
+        </div>
+
+        {/* AMC */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div>
+            <h3 className="text-xl font-semibold mb-4">
+              About Suraksha Annual Maintenance Contract (AMC)
+            </h3>
+            <p className="text-gray-300 mb-6">
+              Tata Motors Suraksha Annual Maintenance Contract is a service plan
+              that ensures your trucks remain in top condition. Covering both
+              preventive and corrective maintenance, it allows you to focus on
+              your business while we take care of your fleet.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+              Know More →
+            </button>
+          </div>
+          <img src={amc} alt="AMC" className="rounded-lg" />
+        </div>
+
+        {/* Sampoorna Seva */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <img src={sampoorna} alt="Sampoorna Seva" className="rounded-lg" />
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Sampoorna Seva 2.0</h3>
+            <p className="text-gray-300 mb-6">
+              Tata Motors’ Sampoorna Seva 2.0 is an all-inclusive package
+              designed to provide peace of mind. It covers breakdown support,
+              extended warranty, and more.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+              Know More →
+            </button>
+          </div>
+        </div>
+
+        {/* Tata OK */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div>
+            <h3 className="text-xl font-semibold mb-4">TATA OK</h3>
+            <p className="text-gray-300 mb-6">
+              100% risk-free pre-owned commercial vehicles by Tata Motors.
+              Ensuring customers get the best deal with quality checks and
+              reliable certification.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+              Know More →
+            </button>
+          </div>
+          <img src={tataOk} alt="Tata OK" className="rounded-lg" />
+        </div>
+
+        {/* Tata Guru */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <img src={guru} alt="Tata Guru" className="rounded-lg" />
+          <div>
+            <h3 className="text-xl font-semibold mb-4">TATA Guru</h3>
+            <p className="text-gray-300 mb-6">
+              TATA Guru is a unique initiative to train mechanics and service
+              providers with the latest know-how to deliver better service for
+              Tata Motors’ customers.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+              Know More →
+            </button>
+          </div>
+        </div>
+
+        {/* Fleet Care */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Tata Fleetcare</h3>
+            <p className="text-gray-300 mb-6">
+              A holistic solution ensuring uptime, predictable costs, and expert
+              care for your entire fleet. Tata FleetCare combines maintenance,
+              repair, and fleet management for maximum productivity.
+            </p>
+            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+              Know More →
+            </button>
+          </div>
+          <img src={fleetCareBanner} alt="Fleet Care" className="rounded-lg" />
+        </div>
+      </div>
+
+      {/* Assistance Banner */}
+      <div className="bg-blue-600 py-10 text-center">
+        <h3 className="text-xl font-semibold mb-3">
+          For any assistance, call now
+        </h3>
+        <p className="text-2xl font-bold">18002097979</p>
+      </div>
+
+      {/* Footer */}
+      {/* <div className="bg-black border-t border-gray-700 py-10 text-center">
+        <p className="text-gray-400">
+          © 2025 Tata Motors Limited. All rights reserved.
+        </p>
+      </div> */}
       <Footer />
     </div>
   );
