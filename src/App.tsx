@@ -17,6 +17,8 @@ import Contact from "./pages/Contact";
 import NewLaunches from "./pages/NewLaunches";
 import ContactPage from "./components/home/ContactPage";
 import ScrollToTop from "./components/common/ScrollToTop";
+import BookService from "./pages/BookService";
+import FinanceDocuments from "./pages/FinanceDocuments";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,9 @@ const App = () => (
             <Route path="/videos" element={<VideosPage />} />
             <Route path="/new-launches" element={<NewLaunches />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/book-service" element={<BookService />} />
+            <Route path="/finance-documents" element={<FinanceDocuments />} />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

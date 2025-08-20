@@ -2,6 +2,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function formatINR(n: number) {
   return n.toLocaleString("en-IN", {
@@ -20,6 +21,7 @@ export default function FinanceCalculator({
   const [downPct, setDownPct] = useState(10);
   const [tenure, setTenure] = useState(36);
   const [roi, setRoi] = useState(9.5);
+  const navigate = useNavigate();
 
   const downPayment = useMemo(
     () => Math.round((downPct / 100) * price),
@@ -146,7 +148,10 @@ export default function FinanceCalculator({
                   Send to WhatsApp
                 </Button>
               </a>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
+              <Button
+                onClick={() => navigate("/finance-documents")}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
+              >
                 Apply for Finance
               </Button>
             </div>

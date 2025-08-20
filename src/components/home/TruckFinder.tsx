@@ -1,6 +1,13 @@
 import findTruck from "@/assets/find-truck.jpg";
+import { useState } from "react";
 
 export default function TruckFinder() {
+  const [priceRange, setPriceRange] = useState("All");
+
+  const handleFindNow = () => {
+    alert(`Searching with Price Range: ${priceRange}`);
+    // 👉 replace this with API call or filter logic later
+  };
   return (
     <div
       className="relative w-full h-screen bg-cover bg-center flex items-center justify-center"
@@ -19,7 +26,7 @@ export default function TruckFinder() {
         </h1>
 
         {/* Dropdowns in grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Application Dropdown */}
           <div className="relative">
             <select className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10">
@@ -235,10 +242,40 @@ export default function TruckFinder() {
               ▼
             </span>
           </div>
+
+          {/* /* Price Range Dropdown */}
+          <div className="relative">
+            <select
+              value={priceRange}
+              onChange={(e) => setPriceRange(e.target.value)}
+              className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10"
+            >
+              <option value="All" className="bg-white text-black border-b">
+                Vehicle Price Range
+              </option>
+              <option value="0-10L" className="bg-white text-black border-b">
+                0 - 10 Lakhs
+              </option>
+              <option value="10-20L" className="bg-white text-black border-b">
+                10 - 20 Lakhs
+              </option>
+              <option value="20-30L" className="bg-white text-black border-b">
+                20 - 30 Lakhs
+              </option>
+              <option value="30L+" className="bg-white text-black border-b">
+                30 Lakhs +
+              </option>
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white">
+              ▼
+            </span>
+          </div>
         </div>
 
-        {/* Button */}
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded font-medium shadow-lg">
+        <button
+          onClick={handleFindNow}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded font-medium shadow-lg"
+        >
           Find Now →
         </button>
       </div>

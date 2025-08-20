@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
 import serviceBanner from "@/assets/service-page-banner.png";
 import fleetEdge from "@/assets/image.png";
@@ -9,7 +10,6 @@ import sampoorna from "@/assets/image(2).png";
 import tataOk from "@/assets/image(3).png";
 import guru from "@/assets/image(4).png";
 import fleetCareBanner from "../assets/fleet-care_new_banner.jpg";
-import Footer from "@/components/layout/Footer";
 
 export default function ServicesPage() {
   return (
@@ -40,7 +40,7 @@ export default function ServicesPage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Unparalleled After Sales Services by Tata Motors
           </h1>
-          <p className="text-lg md:text-xl text-gray-300">
+          <p className="text-lg md:text-xl text-gray-300 mb-6">
             At Tata Motors, we go beyond just delivering vehicles. Our robust
             after-sales services ensure that your business runs seamlessly,
             supported by the expertise and reliability of our dedicated service
@@ -56,7 +56,7 @@ export default function ServicesPage() {
         </h2>
 
         {/* Fleet Edge */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <img src={fleetEdge} alt="Fleet Edge" className="rounded-lg" />
           <div>
             <h3 className="text-xl font-semibold mb-4">Fleet Edge</h3>
@@ -71,14 +71,22 @@ export default function ServicesPage() {
               <li>3.74L+ Truck Vehicles</li>
               <li>456M+ KM Tracked</li>
             </ul>
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
-              Know More →
-            </button>
+            <div className="flex gap-4">
+              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+                Know More →
+              </button>
+              <Link
+                to={`/book-service?service=${encodeURIComponent("Fleet Edge")}`}
+                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg shadow"
+              >
+                Book Service →
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* AMC */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <h3 className="text-xl font-semibold mb-4">
               About Suraksha Annual Maintenance Contract (AMC)
@@ -89,9 +97,19 @@ export default function ServicesPage() {
               preventive and corrective maintenance, it allows you to focus on
               your business while we take care of your fleet.
             </p>
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
-              Know More →
-            </button>
+            <div className="flex gap-4">
+              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+                Know More →
+              </button>
+              <Link
+                to={`/book-service?service=${encodeURIComponent(
+                  "Suraksha Annual Maintenance Contract (AMC)"
+                )}`}
+                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg shadow"
+              >
+                Book Service →
+              </Link>
+            </div>
           </div>
           <img src={amc} alt="AMC" className="rounded-lg" />
         </div>
@@ -106,9 +124,19 @@ export default function ServicesPage() {
               designed to provide peace of mind. It covers breakdown support,
               extended warranty, and more.
             </p>
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
-              Know More →
-            </button>
+            <div className="flex gap-4">
+              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+                Know More →
+              </button>
+              <Link
+                to={`/book-service?service=${encodeURIComponent(
+                  "Sampoorna Seva 2.0"
+                )}`}
+                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg shadow"
+              >
+                Book Service →
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -121,9 +149,17 @@ export default function ServicesPage() {
               Ensuring customers get the best deal with quality checks and
               reliable certification.
             </p>
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
-              Know More →
-            </button>
+            <div className="flex gap-4">
+              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+                Know More →
+              </button>
+              <Link
+                to={`/book-service?service=${encodeURIComponent("TATA OK")}`}
+                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg shadow"
+              >
+                Book Service →
+              </Link>
+            </div>
           </div>
           <img src={tataOk} alt="Tata OK" className="rounded-lg" />
         </div>
@@ -138,9 +174,17 @@ export default function ServicesPage() {
               providers with the latest know-how to deliver better service for
               Tata Motors’ customers.
             </p>
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
-              Know More →
-            </button>
+            <div className="flex gap-4">
+              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+                Know More →
+              </button>
+              <Link
+                to={`/book-service?service=${encodeURIComponent("TATA Guru")}`}
+                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg shadow"
+              >
+                Book Service →
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -153,9 +197,19 @@ export default function ServicesPage() {
               care for your entire fleet. Tata FleetCare combines maintenance,
               repair, and fleet management for maximum productivity.
             </p>
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
-              Know More →
-            </button>
+            <div className="flex gap-4">
+              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow">
+                Know More →
+              </button>
+              <Link
+                to={`/book-service?service=${encodeURIComponent(
+                  "Tata Fleetcare"
+                )}`}
+                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg shadow"
+              >
+                Book Service →
+              </Link>
+            </div>
           </div>
           <img src={fleetCareBanner} alt="Fleet Care" className="rounded-lg" />
         </div>
@@ -170,11 +224,6 @@ export default function ServicesPage() {
       </div>
 
       {/* Footer */}
-      {/* <div className="bg-black border-t border-gray-700 py-10 text-center">
-        <p className="text-gray-400">
-          © 2025 Tata Motors Limited. All rights reserved.
-        </p>
-      </div> */}
       <Footer />
     </div>
   );
