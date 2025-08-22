@@ -126,10 +126,10 @@ export default function Header() {
                 className="hidden md:flex items-center gap-2 text-sm text-gray-300 hover:text-blue-400 transition-colors"
               >
                 <Phone className="h-4 w-4" />
-                +91 99999 99999
+                +91 8406991610
               </a>
               <a
-                href="https://wa.me/919999999999"
+                href="https://wa.me/8406991610"
                 target="_blank"
                 rel="noreferrer"
                 className="hidden md:flex items-center gap-2 text-sm text-green-400 hover:text-green-500 transition-colors"
@@ -172,14 +172,14 @@ export default function Header() {
                     </NavLink>
                   ))}
                   <a
-                    href="tel:+919999999999"
+                    href="tel:+918406991610"
                     className="flex items-center gap-2 text-sm text-gray-300"
                   >
                     <Phone className="h-4 w-4" />
-                    +91 99999 99999
+                    +91 8406991610
                   </a>
                   <a
-                    href="https://wa.me/919999999999"
+                    href="https://wa.me/8406991610"
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center gap-2 text-sm text-green-400"

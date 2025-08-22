@@ -67,7 +67,7 @@ export default function ContactPage() {
           <ul className="space-y-3 text-lg">
             <li>📞 +91 99999 99999</li>
             <li>✉️ sales@vikramshilaauto.com</li>
-            <li>💬 WhatsApp: +91 99999 99999</li>
+            <li>💬 WhatsApp: +91 8406991610</li>
           </ul>
         </div>
       </div>

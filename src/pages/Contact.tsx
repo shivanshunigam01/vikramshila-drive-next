@@ -21,11 +21,16 @@ export default function Contact() {
     const message = String(data.get("message") || "");
     setLoading(true);
 
-    const text = encodeURIComponent(`New enquiry from ${name}\nPhone: ${phone}\nEmail: ${email}\nMessage: ${message}`);
+    const text = encodeURIComponent(
+      `New enquiry from ${name}\nPhone: ${phone}\nEmail: ${email}\nMessage: ${message}`
+    );
     const wa = `https://wa.me/919999999999?text=${text}`;
     window.open(wa, "_blank");
 
-    toast({ title: "Enquiry sent to WhatsApp", description: "Our team will get back to you shortly." });
+    toast({
+      title: "Enquiry sent to WhatsApp",
+      description: "Our team will get back to you shortly.",
+    });
     setLoading(false);
     e.currentTarget.reset();
   };
@@ -34,21 +39,33 @@ export default function Contact() {
     <div>
       <Helmet>
         <title>Contact Us | Vikramshila Automobiles</title>
-        <meta name="description" content="Reach Vikramshila Automobiles for sales, test drives, finance and service support. Call, WhatsApp or submit the enquiry form." />
+        <meta
+          name="description"
+          content="Reach Vikramshila Automobiles for sales, test drives, finance and service support. Call, WhatsApp or submit the enquiry form."
+        />
         <link rel="canonical" href="/contact" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "Vikramshila Automobiles Pvt. Ltd.",
-            contactPoint: [{ "@type": "ContactPoint", telephone: "+91-9999999999", contactType: "customer service" }],
+            contactPoint: [
+              {
+                "@type": "ContactPoint",
+                telephone: "+91-9999999999",
+                contactType: "customer service",
+              },
+            ],
           })}
         </script>
       </Helmet>
       <Header />
       <main className="container mx-auto py-10">
         <h1 className="text-3xl font-semibold">Contact</h1>
-        <p className="text-muted-foreground mt-2 max-w-3xl">We're here to help with product selection, finance, and service. Fill the form or reach us via phone/WhatsApp.</p>
+        <p className="text-muted-foreground mt-2 max-w-3xl">
+          We're here to help with product selection, finance, and service. Fill
+          the form or reach us via phone/WhatsApp.
+        </p>
 
         <section className="grid md:grid-cols-2 gap-8 mt-6">
           <form onSubmit={onSubmit} className="space-y-4 p-6 rounded border">
@@ -59,20 +76,43 @@ export default function Contact() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" name="phone" required placeholder="98xxxxxxxx" />
+                <Input
+                  id="phone"
+                  name="phone"
+                  required
+                  placeholder="98xxxxxxxx"
+                />
               </div>
               <div>
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="you@example.com" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="you@example.com"
+                />
               </div>
             </div>
             <div>
               <Label htmlFor="message">Message</Label>
-              <Textarea id="message" name="message" required placeholder="Tell us about your requirement" rows={5} />
+              <Textarea
+                id="message"
+                name="message"
+                required
+                placeholder="Tell us about your requirement"
+                rows={5}
+              />
             </div>
             <div className="flex gap-3">
-              <Button type="submit" disabled={loading}>Send to WhatsApp</Button>
-              <a href="mailto:sales@vikramshilaauto.com" className="inline-flex items-center justify-center rounded-md px-4 py-2 bg-secondary text-secondary-foreground">Email Us</a>
+              <Button type="submit" disabled={loading}>
+                Send to WhatsApp
+              </Button>
+              <a
+                href="mailto:sales@vikramshilaauto.com"
+                className="inline-flex items-center justify-center rounded-md px-4 py-2 bg-secondary text-secondary-foreground"
+              >
+                Email Us
+              </a>
             </div>
           </form>
 
@@ -92,7 +132,7 @@ export default function Contact() {
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>Phone: +91 99999 99999</li>
                 <li>Email: sales@vikramshilaauto.com</li>
-                <li>WhatsApp: 99999 99999</li>
+                <li>WhatsApp: 8406991610</li>
               </ul>
             </div>
           </aside>
