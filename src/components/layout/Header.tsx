@@ -67,9 +67,18 @@ export default function Header() {
                   <Phone className="h-4 w-4" />
                   <span>1800 209 7979</span>
                 </a>
-                <Link to={"https://fleetverse.tatamotors.com/"}>
+
+                {/* Book Now Button */}
+                <Link to="https://fleetverse.tatamotors.com/">
                   <Button className="bg-white text-black hover:bg-gray-200 text-xs px-5 py-2 rounded-lg shadow">
                     Book Now
+                  </Button>
+                </Link>
+
+                {/* Admin Login Button */}
+                <Link to="http://34.68.6.114:8081/">
+                  <Button className="bg-blue-600 text-white hover:bg-blue-700 text-xs px-5 py-2 rounded-lg shadow">
+                    Admin Login
                   </Button>
                 </Link>
               </div>
@@ -111,14 +120,14 @@ export default function Header() {
             {/* Right Side */}
             <div className="flex items-center gap-4">
               {/* Search */}
-              <div className="hidden md:flex items-center bg-gray-800 rounded px-2">
+              {/* <div className="hidden md:flex items-center bg-gray-800 rounded px-2">
                 <input
                   type="text"
                   placeholder="Search"
                   className="bg-transparent text-sm px-2 py-1 outline-none text-gray-300 placeholder-gray-500"
                 />
                 <Search className="h-4 w-4 text-gray-400" />
-              </div>
+              </div> */}
 
               {/* Contact Info */}
               <a
