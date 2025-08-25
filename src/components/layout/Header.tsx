@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import { Menu, Phone, MessageCircle, Search } from "lucide-react";
+import { Menu, Phone, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import EnquiryDialog, {
@@ -25,37 +25,33 @@ export default function Header() {
       <header className="sticky top-0 z-40 w-full">
         {/* ===== Top Bar ===== */}
         <div className="w-full bg-black border-b border-gray-800">
-          <div className="container mx-auto flex justify-between items-center px-6 py-3">
+          <div className="container mx-auto flex justify-between items-center px-4 md:px-6 py-3">
             {/* Left Side: Title */}
-            <Link to="/" className="flex flex-col leading-tight pt-12">
-              <span className="text-xl font-semibold text-white tracking-wide">
+            <Link to="/" className="flex flex-col leading-tight pt-10 md:pt-12">
+              <span className="text-lg md:text-xl font-semibold text-white tracking-wide">
                 Vikramshila Automobiles
               </span>
-              <span className="text-[11px] text-gray-400 uppercase tracking-widest">
+              <span className="text-[10px] md:text-[11px] text-gray-400 uppercase tracking-widest">
                 Driven by Trust. Delivered with Pride
               </span>
             </Link>
 
             {/* Right Side: Column with Top Links + Tata Logo */}
             <div className="flex flex-col items-end">
-              {/* Top Links */}
-              <div className="hidden md:flex items-center gap-10 mb-2 text-sm">
+              {/* Top Links - visible only on desktop */}
+              <div className="hidden md:flex items-center gap-6 mb-2 text-sm">
                 <a
                   href="#"
                   className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
                 >
-                  <span role="img" aria-label="ev">
-                    📝
-                  </span>
+                  📝{" "}
                   <span className="whitespace-nowrap">EV Charging Station</span>
                 </a>
                 <a
                   href="#"
                   className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
                 >
-                  <span role="img" aria-label="service">
-                    📝
-                  </span>
+                  📝{" "}
                   <span className="whitespace-nowrap">
                     Locate Service Network
                   </span>
@@ -64,20 +60,17 @@ export default function Header() {
                   href="tel:18002097979"
                   className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
                 >
-                  <Phone className="h-4 w-4" />
-                  <span>1800 209 7979</span>
+                  <Phone className="h-4 w-4" /> <span>1800 209 7979</span>
                 </a>
 
                 {/* Book Now Button */}
-                <Link to="https://fleetverse.tatamotors.com/">
-                  <Button className="bg-white text-black hover:bg-gray-200 text-xs px-5 py-2 rounded-lg shadow">
-                    Book Now
-                  </Button>
-                </Link>
+                <Button className="bg-white text-black hover:bg-gray-200 text-xs px-4 py-2 rounded-lg shadow">
+                  Book Now
+                </Button>
 
                 {/* Admin Login Button */}
                 <Link to="http://34.68.6.114:8081/">
-                  <Button className="bg-blue-600 text-white hover:bg-blue-700 text-xs px-5 py-2 rounded-lg shadow">
+                  <Button className="bg-blue-600 text-white hover:bg-blue-700 text-xs px-4 py-2 rounded-lg shadow">
                     Admin Login
                   </Button>
                 </Link>
@@ -88,7 +81,7 @@ export default function Header() {
                 <img
                   src={tataLogo}
                   alt="Tata Motors Logo"
-                  className="h-10 object-contain"
+                  className="h-8 md:h-10 object-contain"
                 />
               </div>
             </div>
@@ -119,23 +112,12 @@ export default function Header() {
 
             {/* Right Side */}
             <div className="flex items-center gap-4">
-              {/* Search */}
-              {/* <div className="hidden md:flex items-center bg-gray-800 rounded px-2">
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="bg-transparent text-sm px-2 py-1 outline-none text-gray-300 placeholder-gray-500"
-                />
-                <Search className="h-4 w-4 text-gray-400" />
-              </div> */}
-
-              {/* Contact Info */}
+              {/* Contact Info (Desktop only) */}
               <a
                 href="tel:+919999999999"
                 className="hidden md:flex items-center gap-2 text-sm text-gray-300 hover:text-blue-400 transition-colors"
               >
-                <Phone className="h-4 w-4" />
-                +91 8406991610
+                <Phone className="h-4 w-4" /> +91 8406991610
               </a>
               <a
                 href="https://wa.me/8406991610"
@@ -143,8 +125,7 @@ export default function Header() {
                 rel="noreferrer"
                 className="hidden md:flex items-center gap-2 text-sm text-green-400 hover:text-green-500 transition-colors"
               >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
+                <MessageCircle className="h-4 w-4" /> WhatsApp
               </a>
             </div>
 
@@ -164,6 +145,7 @@ export default function Header() {
                 className="w-[280px] bg-black text-white"
               >
                 <div className="flex flex-col mt-6 space-y-4">
+                  {/* Navigation Links */}
                   {nav.map((item) => (
                     <NavLink
                       key={item.to}
@@ -180,12 +162,33 @@ export default function Header() {
                       {item.label}
                     </NavLink>
                   ))}
+
+                  {/* Extra Links for mobile */}
+                  <a
+                    href="#"
+                    className="flex items-center gap-2 text-sm text-gray-300"
+                  >
+                    📝 EV Charging Station
+                  </a>
+                  <a
+                    href="#"
+                    className="flex items-center gap-2 text-sm text-gray-300"
+                  >
+                    📝 Locate Service Network
+                  </a>
+                  <a
+                    href="tel:18002097979"
+                    className="flex items-center gap-2 text-sm text-gray-300"
+                  >
+                    <Phone className="h-4 w-4" /> 1800 209 7979
+                  </a>
+
+                  {/* Contact + WhatsApp */}
                   <a
                     href="tel:+918406991610"
                     className="flex items-center gap-2 text-sm text-gray-300"
                   >
-                    <Phone className="h-4 w-4" />
-                    +91 8406991610
+                    <Phone className="h-4 w-4" /> +91 8406991610
                   </a>
                   <a
                     href="https://wa.me/8406991610"
@@ -193,15 +196,28 @@ export default function Header() {
                     rel="noreferrer"
                     className="flex items-center gap-2 text-sm text-green-400"
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
+                    <MessageCircle className="h-4 w-4" /> WhatsApp
                   </a>
+
+                  {/* Book Now */}
+                  <Button className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2 rounded-lg shadow">
+                    Book Now
+                  </Button>
+
+                  {/* Admin Login */}
+                  <Link to="http://34.68.6.114:8081/">
+                    <Button className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-4 py-2 rounded-lg shadow w-full">
+                      Admin Login
+                    </Button>
+                  </Link>
+
+                  {/* Enquire Now */}
                   <Button
                     onClick={() => {
                       openEnquiryDialog();
                       setMobileMenuOpen(false);
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white mt-4"
+                    className="bg-blue-600 hover:bg-blue-700 text-white mt-2"
                   >
                     Enquire Now
                   </Button>

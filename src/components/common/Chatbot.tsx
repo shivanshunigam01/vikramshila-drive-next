@@ -138,7 +138,7 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
     <>
       {/* Floating button only if not inline */}
       {!inline && !open && (
-        <div className="fixed right-4 top-24 z-50">
+        <div className="fixed bottom-4 right-4 z-50 md:top-24 md:bottom-auto">
           <Button
             variant="accent"
             className="bg-sky-400 text-black hover:bg-yellow-400 shadow-md transition-colors"
@@ -164,8 +164,12 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
 
       {/* Chat Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="top" className="h-[70vh] p-0">
-          <div className="h-full w-full bg-background">
+        <SheetContent
+          side="top"
+          className="h-[100vh] md:h-[70vh] p-0" // Fullscreen on mobile
+        >
+          <div className="h-full w-full bg-background flex flex-col">
+            {/* Header */}
             <div className="border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
               <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
                 <div>
@@ -197,7 +201,8 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
               </div>
             </div>
 
-            <div className="mx-auto grid h-[calc(70vh-65px)] max-w-5xl grid-cols-1 gap-4 px-4 py-4 md:grid-cols-3">
+            {/* Main Content */}
+            <div className="mx-auto grid flex-1 w-full max-w-5xl grid-cols-1 gap-4 px-4 py-4 md:grid-cols-3 overflow-hidden">
               {/* Chat window */}
               <div className="md:col-span-2 flex h-full flex-col rounded-md border bg-card">
                 <div
@@ -252,7 +257,7 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
                 </div>
               </div>
 
-              {/* Quick help / FAQs */}
+              {/* Quick help / FAQs (desktop only) */}
               <aside className="hidden h-full flex-col rounded-md border bg-card p-4 md:flex">
                 <h4 className="mb-2 text-sm font-medium">Quick questions</h4>
                 <div className="flex flex-wrap gap-2">

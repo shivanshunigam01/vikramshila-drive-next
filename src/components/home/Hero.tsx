@@ -25,23 +25,28 @@ export default function Hero() {
   }, [api]);
 
   return (
-    <section className="relative bg-black mt-8 py-8">
-      {/* Black background with bigger top margin and bottom padding */}
+    <section className="relative bg-black mt-6 md:mt-8 py-6 md:py-8">
       <Carousel setApi={setApi} className="w-full">
         <CarouselContent>
           {heroImages.map((img, idx) => (
             <CarouselItem key={idx}>
-              <div className="relative h-[65vh] md:h-[75vh] lg:h-[85vh]">
-                {/* Full width image inside black background */}
+              <div
+                className="
+                  relative 
+                  h-[40vh] sm:h-[55vh] md:h-[70vh] lg:h-[85vh] 
+                  w-full
+                "
+              >
+                {/* Responsive Image */}
                 <img
                   src={img}
                   alt={`Hero banner ${idx + 1} — Vikramshila Automobiles`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-md md:rounded-none"
                   loading="eager"
                 />
 
-                {/* Chatbot top-right */}
-                <div className="absolute top-4 right-4 z-50">
+                {/* Chatbot — bottom on mobile, top on desktop */}
+                <div className="absolute bottom-4 right-4 md:top-4 md:bottom-auto z-50">
                   <Chatbot inline />
                 </div>
               </div>

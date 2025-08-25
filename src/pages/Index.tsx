@@ -39,14 +39,14 @@ export default function Index() {
         </div>
 
         <div className="sr-fade">
+          <OffersSlider />
+        </div>
+
+        <div className="sr-fade">
           <FinanceCalculator />
         </div>
         <div className="sr-slide">
           <VideoCarousel />
-        </div>
-
-        <div className="sr-fade">
-          <OffersSlider />
         </div>
 
         <div className="sr-fade">
