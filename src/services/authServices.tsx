@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = import.meta.env.API_URL || "http://localhost:5000/api";
+const API = "https://api.vikramshilaautomobiles.com/api"
 
 export const loginUser = (data: { email: string; password: string }) =>
   axios.post(`${API}/auth/login`, data);

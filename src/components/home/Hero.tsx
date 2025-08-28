@@ -4,11 +4,32 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { heroImages } from "@/data/products";
 import Chatbot from "../common/Chatbot";
 
 export default function Hero() {
   const [api, setApi] = useState<any>(null);
+  const [banners, setBanners] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await fetch(
+          "https://api.vikramshilaautomobiles.com/api/banners/"
+        );
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setBanners(data.data.map((b: any) => b.imageUrl));
+        }
+      } catch (err) {
+        console.error("Failed to fetch banners:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBanners();
+  }, []);
 
   useEffect(() => {
     if (!api) return;
@@ -24,11 +45,27 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, [api]);
 
+  if (loading) {
+    return (
+      <section className="relative bg-black mt-6 md:mt-8 py-6 md:py-8 flex items-center justify-center text-white">
+        Loading banners...
+      </section>
+    );
+  }
+
+  if (!banners.length) {
+    return (
+      <section className="relative bg-black mt-6 md:mt-8 py-6 md:py-8 flex items-center justify-center text-white">
+        No banners available
+      </section>
+    );
+  }
+
   return (
     <section className="relative bg-black mt-6 md:mt-8 py-6 md:py-8">
       <Carousel setApi={setApi} className="w-full">
         <CarouselContent>
-          {heroImages.map((img, idx) => (
+          {banners.map((img, idx) => (
             <CarouselItem key={idx}>
               <div
                 className="
@@ -37,7 +74,7 @@ export default function Hero() {
                   w-full
                 "
               >
-                {/* Responsive Image */}
+                {/* Responsive Banner Image */}
                 <img
                   src={img}
                   alt={`Hero banner ${idx + 1} — Vikramshila Automobiles`}

@@ -40,22 +40,6 @@ export default function Header() {
             <div className="flex flex-col items-end">
               {/* Top Links - visible only on desktop */}
               <div className="hidden md:flex items-center gap-6 mb-2 text-sm">
-                <Link
-                  to="/ace-ev"
-                  className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
-                >
-                  📝{" "}
-                  <span className="whitespace-nowrap">EV Charging Station</span>
-                </Link>
-                <a
-                  href="#"
-                  className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
-                >
-                  📝{" "}
-                  <span className="whitespace-nowrap">
-                    Locate Service Network
-                  </span>
-                </a>
                 <a
                   href="tel:18002097979"
                   className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
@@ -171,18 +155,7 @@ export default function Header() {
                   ))}
 
                   {/* Extra Links for mobile */}
-                  <a
-                    href="#"
-                    className="flex items-center gap-2 text-sm text-gray-300"
-                  >
-                    📝 EV Charging Station
-                  </a>
-                  <a
-                    href="#"
-                    className="flex items-center gap-2 text-sm text-gray-300"
-                  >
-                    📝 Locate Service Network
-                  </a>
+
                   <a
                     href="tel:18002097979"
                     className="flex items-center gap-2 text-sm text-gray-300"

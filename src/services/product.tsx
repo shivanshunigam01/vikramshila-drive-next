@@ -1,7 +1,7 @@
 // src/services/products.ts
 import axios from "axios";
 
-const API = import.meta.env.API_URL || "http://localhost:5000/api";
+const API = "https://api.vikramshilaautomobiles.com/api"
 
 // 🚀 Fetch all products
 export const getProducts = async () => {
