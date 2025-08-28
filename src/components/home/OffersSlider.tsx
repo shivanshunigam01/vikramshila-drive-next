@@ -1,14 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { offers } from "@/data/products";
+import { getSchemes } from "@/services/schemeServices";
 import { useEffect, useState } from "react";
 
 export default function OffersSlider() {
+  const [schemes, setSchemes] = useState<any[]>([]);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setIndex((i) => (i + 1) % offers.length), 4000);
-    return () => clearInterval(t);
+    getSchemes().then((data) => setSchemes(data));
   }, []);
+
+  useEffect(() => {
+    if (schemes.length > 0) {
+      const t = setInterval(
+        () => setIndex((i) => (i + 1) % schemes.length),
+        4000
+      );
+      return () => clearInterval(t);
+    }
+  }, [schemes]);
 
   return (
     <section className="w-full bg-black py-12">
@@ -22,26 +32,34 @@ export default function OffersSlider() {
 
         {/* Offers Grid */}
         <div className="grid md:grid-cols-3 gap-6">
-          {offers.map((o, i) => (
+          {schemes.map((o, i) => (
             <div
-              key={o.title}
-              className={`rounded-xl border p-6 shadow-lg transition-all duration-500
+              key={o._id}
+              className={`rounded-xl border p-6 shadow-lg transition-all duration-500 flex flex-col
                 ${
                   i === index
                     ? "bg-[#1e2125] border-blue-600 shadow-blue-900/40 scale-[1.02]"
                     : "bg-[#1e2125] border-gray-800 opacity-60"
                 }`}
             >
+              {/* Scheme Image */}
+              {o.photos?.length > 0 && (
+                <img
+                  src={o.photos[0]}
+                  alt={o.title}
+                  className="w-full h-40 object-cover rounded-lg mb-4"
+                />
+              )}
+
+              {/* Scheme Content */}
               <h3 className="text-xl font-semibold text-white">{o.title}</h3>
-              <p className="text-sm text-gray-400 mt-1">{o.subtitle}</p>
-              <p className="text-xs text-gray-500 mt-2">
-                Valid till {o.expires}
+              <p className="text-sm text-gray-400 mt-1 line-clamp-2">
+                {o.description}
               </p>
-              <div className="mt-5">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
-                  Claim This Offer
-                </Button>
-              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Valid: {new Date(o.startDate).toLocaleDateString()} -{" "}
+                {new Date(o.endDate).toLocaleDateString()}
+              </p>
             </div>
           ))}
         </div>

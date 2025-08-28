@@ -40,13 +40,13 @@ export default function Header() {
             <div className="flex flex-col items-end">
               {/* Top Links - visible only on desktop */}
               <div className="hidden md:flex items-center gap-6 mb-2 text-sm">
-                <a
-                  href="#"
+                <Link
+                  to="/ace-ev"
                   className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
                 >
                   📝{" "}
                   <span className="whitespace-nowrap">EV Charging Station</span>
-                </a>
+                </Link>
                 <a
                   href="#"
                   className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
@@ -67,6 +67,13 @@ export default function Header() {
                 <Button className="bg-white text-black hover:bg-gray-200 text-xs px-4 py-2 rounded-lg shadow">
                   Book Now
                 </Button>
+
+                {/* Book Your Service */}
+                <Link to="/book-service">
+                  <Button className="bg-white text-black hover:bg-gray-200 text-xs px-4 py-2 rounded-lg shadow">
+                    Book Your Service
+                  </Button>
+                </Link>
 
                 {/* Admin Login Button */}
                 <Link to="http://34.68.6.114:8081/">
@@ -120,7 +127,7 @@ export default function Header() {
                 <Phone className="h-4 w-4" /> +91 8406991610
               </a>
               <a
-                href="https://wa.me/8406991610"
+                href="https://wa.me/918406991610"
                 target="_blank"
                 rel="noreferrer"
                 className="hidden md:flex items-center gap-2 text-sm text-green-400 hover:text-green-500 transition-colors"

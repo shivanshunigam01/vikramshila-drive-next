@@ -1,4 +1,11 @@
-import { Facebook, Instagram, Youtube, Mail, Phone, MessageCircle } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Youtube,
+  Mail,
+  Phone,
+  MessageCircle,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -23,29 +30,49 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold mb-3">Contact</h3>
           <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +91 99999 99999</li>
-            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> sales@vikramshilaauto.com</li>
-            <li className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> WhatsApp: 99999 99999</li>
+            <li className="flex items-center gap-2">
+              <Phone className="h-4 w-4" /> +91 8406991610
+            </li>
+            <li className="flex items-center gap-2">
+              <Mail className="h-4 w-4" /> sales@vikramshilaauto.com
+            </li>
+            <li className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" /> WhatsApp: 918406991610All Vehicles
+            </li>
           </ul>
           <div className="flex gap-3 mt-4">
-            <a aria-label="Facebook" href="#" className="hover:opacity-90"><Facebook /></a>
-            <a aria-label="Instagram" href="#" className="hover:opacity-90"><Instagram /></a>
-            <a aria-label="YouTube" href="#" className="hover:opacity-90"><Youtube /></a>
+            <a aria-label="Facebook" href="#" className="hover:opacity-90">
+              <Facebook />
+            </a>
+            <a aria-label="Instagram" href="#" className="hover:opacity-90">
+              <Instagram />
+            </a>
+            <a aria-label="YouTube" href="#" className="hover:opacity-90">
+              <Youtube />
+            </a>
           </div>
         </div>
 
         <div>
           <h3 className="text-lg font-semibold mb-3">Newsletter</h3>
-          <p className="text-primary-foreground/90 text-sm mb-3">Get product updates, offers, and finance schemes.</p>
+          <p className="text-primary-foreground/90 text-sm mb-3">
+            Get product updates, offers, and finance schemes.
+          </p>
           <div className="flex gap-2">
-            <Input placeholder="Your email" className="bg-white text-foreground" />
+            <Input
+              placeholder="Your email"
+              className="bg-white text-foreground"
+            />
             <Button variant="accent">Subscribe</Button>
           </div>
         </div>
       </div>
       <div className="border-t border-primary-foreground/20">
         <div className="container mx-auto py-4 text-xs opacity-90 flex items-center justify-between">
-          <p>© {new Date().getFullYear()} Vikramshila Automobiles Pvt. Ltd. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} Vikramshila Automobiles Pvt. Ltd. All
+            rights reserved.
+          </p>
           <p>Authorized Tata Motors Dealership</p>
         </div>
       </div>

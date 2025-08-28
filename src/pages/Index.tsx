@@ -15,6 +15,8 @@ import NewLaunches from "./NewLaunches";
 import ProductDisplay from "@/components/home/ProductDisplay";
 import LaunchSection from "@/components/home/LaunchSection";
 import EnquireNow from "@/components/home/EnquireNow";
+import scrollImage from "@/assets/new-launch.png";
+import FloatingVehicleBanner from "@/components/home/FloatingVehicleBanner";
 
 export default function Index() {
   return (
@@ -28,6 +30,12 @@ export default function Index() {
         <link rel="canonical" href="/" />
       </Helmet>
       <Header />
+
+      {/* Floating Banner */}
+      <FloatingVehicleBanner
+        imageUrl={scrollImage} // use the imported image here
+        label="New Launch: Tata ACE Pro"
+      />
       <main>
         <Hero />
         <div className="sr-fade">

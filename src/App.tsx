@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Products from "./pages/Products";
@@ -13,14 +15,60 @@ import ServicesPage from "./pages/ServicesPage";
 import FinancePage from "./pages/FinancePage";
 import OffersPage from "./pages/OffersPage";
 import VideosPage from "./pages/VideosPage";
-import Contact from "./pages/Contact";
-import NewLaunches from "./pages/NewLaunches";
 import ContactPage from "./components/home/ContactPage";
+import NewLaunches from "./pages/NewLaunches";
 import ScrollToTop from "./components/common/ScrollToTop";
 import BookService from "./pages/BookService";
 import FinanceDocuments from "./pages/FinanceDocuments";
+import AuthModal from "./components/auth/AuthModal";
+import AceEvPage from "./pages/AceEvPage";
 
 const queryClient = new QueryClient();
+
+function AppRoutes() {
+  const location = useLocation();
+  const [authOpen, setAuthOpen] = useState(false);
+
+  // Check login status whenever route changes
+  useEffect(() => {
+    const token =
+      localStorage.getItem("admin_token") ||
+      document.cookie.split("; ").find((row) => row.startsWith("admin_token="));
+
+    setAuthOpen(!token); // if no token -> open modal
+  }, [location]);
+
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/:id" element={<VehicleDetails />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/finance" element={<FinancePage />} />
+        <Route path="/offers" element={<OffersPage />} />
+        <Route path="/videos" element={<VideosPage />} />
+        <Route path="/new-launches" element={<NewLaunches />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/book-service" element={<BookService />} />
+        <Route path="/finance-documents" element={<FinanceDocuments />} />
+        <Route path="/ace-ev" element={<AceEvPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      {/* Always check login before allowing use */}
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onLoginSuccess={() => {
+          setAuthOpen(false);
+        }}
+      />
+    </>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -29,24 +77,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:slug" element={<VehicleDetails />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/finance" element={<FinancePage />} />
-            <Route path="/offers" element={<OffersPage />} />
-            <Route path="/videos" element={<VideosPage />} />
-            <Route path="/new-launches" element={<NewLaunches />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/book-service" element={<BookService />} />
-            <Route path="/finance-documents" element={<FinanceDocuments />} />
-
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </HelmetProvider>

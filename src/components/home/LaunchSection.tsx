@@ -32,13 +32,6 @@ export default function LaunchSection() {
             Step into the future of last-mile delivery with the{" "}
             <span className="font-bold">Ace Pro</span>
           </p>
-
-          {/* Button */}
-          <Link to="/products/ace-pro">
-            <Button className="bg-white hover:bg-gray-200 text-blue-600 font-bold text-lg px-10 py-4 rounded-md shadow-lg">
-              Explore Ace Pro
-            </Button>
-          </Link>
         </div>
       </div>
     </section>
