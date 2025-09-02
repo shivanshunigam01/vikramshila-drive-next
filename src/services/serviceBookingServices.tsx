@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "https://api.vikramshilaautomobiles.com/api";
+const API = import.meta.env.VITE_API_URL;
 export const createServiceBooking = (data: FormData | Record<string, any>) => {
   return axios.post(`${API}/service-booking`, data, {
     headers:

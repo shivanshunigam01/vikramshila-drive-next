@@ -47,7 +47,7 @@ export default function Services() {
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Add-On Services for
             <br />
-            Your Trucks Purchase
+            Your Product Purchase
           </h2>
         </div>
 

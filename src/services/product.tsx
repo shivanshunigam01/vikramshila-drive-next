@@ -1,7 +1,7 @@
 // src/services/products.ts
 import axios from "axios";
 
-const API = "https://api.vikramshilaautomobiles.com/api"
+const API = import.meta.env.VITE_API_URL;
 
 // 🚀 Fetch all products
 export const getProducts = async () => {

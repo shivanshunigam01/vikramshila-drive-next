@@ -52,7 +52,7 @@ export default function ServicesPage() {
       {/* Services Section */}
       <div className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-semibold mb-10 text-center">
-          Add-On Services for Your Trucks Purchase
+          Add-On Services for Your Product Purchase
         </h2>
 
         {/* Fleet Edge */}

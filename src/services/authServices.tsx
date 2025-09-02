@@ -1,15 +1,15 @@
 import axios from "axios";
 
-const API = "https://api.vikramshilaautomobiles.com/api"
+const API = import.meta.env.VITE_API_URL;
 
 export const loginUser = (data: { email: string; password: string }) =>
-  axios.post(`${API}/auth/login`, data);
+  axios.post(`${API}/auth/login-customer`, data);
 
-export const sendOtp = (email: string) =>
-  axios.post(`${API}/otp/send-otp`, { email });
+export const sendOtp = (phone: string) =>
+  axios.post(`${API}/auth/send-otp`, { phone });
 
-export const verifyOtp = (email: string, otp: string) =>
-  axios.post(`${API}/otp/verify-otp`, { email, otp });
+export const verifyOtp = (phone: string, otp: string) =>
+  axios.post(`${API}/auth/verify-otp`, { phone, otp });
 
 export const registerUser = (data: { email: string; password: string }) =>
-  axios.post(`${API}/otp/register`, data);
+  axios.post(`${API}/auth/register-customer`, data);

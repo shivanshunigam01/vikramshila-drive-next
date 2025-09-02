@@ -22,6 +22,12 @@ import BookService from "./pages/BookService";
 import FinanceDocuments from "./pages/FinanceDocuments";
 import AuthModal from "./components/auth/AuthModal";
 import AceEvPage from "./pages/AceEvPage";
+import TruckFinder from "./components/home/TruckFinder";
+import { FilterProvider } from "./contexts/FilterContext";
+import FinanceCalculator from "./components/home/FinanceCalculator";
+import Review from "./components/home/Review";
+import ProductComparison from "./pages/ProductComparision";
+import ThankYou from "./pages/ThankYou";
 
 const queryClient = new QueryClient();
 
@@ -40,32 +46,44 @@ function AppRoutes() {
 
   return (
     <>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/products/:id" element={<VehicleDetails />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/services" element={<ServicesPage />} />
-        <Route path="/finance" element={<FinancePage />} />
-        <Route path="/offers" element={<OffersPage />} />
-        <Route path="/videos" element={<VideosPage />} />
-        <Route path="/new-launches" element={<NewLaunches />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/book-service" element={<BookService />} />
-        <Route path="/finance-documents" element={<FinanceDocuments />} />
-        <Route path="/ace-ev" element={<AceEvPage />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <FilterProvider>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/:id" element={<VehicleDetails />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/finance" element={<FinancePage />} />
+          <Route path="/offers" element={<OffersPage />} />
+          <Route path="/videos" element={<VideosPage />} />
+          <Route path="/new-launches" element={<NewLaunches />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/book-service" element={<BookService />} />
+          <Route path="/finance-documents" element={<FinanceDocuments />} />
+          <Route path="/ace-ev" element={<AceEvPage />} />
+          <Route path="/truck-finder" element={<TruckFinder />} />
+          <Route path="/review" element={<Review />} />
+          <Route path="/compare/:productIds" element={<ProductComparison />} />
+          <Route path="/thank-you" element={<ThankYou />} />
 
-      {/* Always check login before allowing use */}
-      <AuthModal
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
-        onLoginSuccess={() => {
-          setAuthOpen(false);
-        }}
-      />
+          <Route
+            path="/finance-calculator/:id"
+            element={<FinanceCalculator />}
+          />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+
+        {/* Always check login before allowing use */}
+        <AuthModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+          onLoginSuccess={() => {
+            setAuthOpen(false);
+          }}
+        />
+      </FilterProvider>
     </>
   );
 }

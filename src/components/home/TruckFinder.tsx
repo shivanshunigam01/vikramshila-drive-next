@@ -1,13 +1,40 @@
 import findTruck from "@/assets/find-truck.jpg";
 import { useState } from "react";
+import { productFind } from "@/services/productService";
+import { useNavigate } from "react-router-dom";
 
 export default function TruckFinder() {
+  const [application, setApplication] = useState("All");
+  const [fuelType, setFuelType] = useState("All");
+  const [tonnage, setTonnage] = useState("All");
   const [priceRange, setPriceRange] = useState("All");
+  const navigate = useNavigate();
 
-  const handleFindNow = () => {
-    alert(`Searching with Price Range: ${priceRange}`);
-    // 👉 replace this with API call or filter logic later
+  const handleFindNow = async () => {
+    try {
+      // Create filter parameters object
+      const filterParams = {
+        application: application !== "All" ? application : undefined,
+        fuelType: fuelType !== "All" ? fuelType : undefined,
+        tonnage: tonnage !== "All" ? tonnage : undefined,
+        priceRange: priceRange !== "All" ? priceRange : undefined,
+      };
+
+      // Remove undefined values
+      const cleanedParams = Object.fromEntries(
+        Object.entries(filterParams).filter(([_, value]) => value !== undefined)
+      );
+
+      // Create URL search params
+      const searchParams = new URLSearchParams(cleanedParams);
+
+      // Navigate to products page with filter parameters
+      navigate(`/products?${searchParams.toString()}`);
+    } catch (error: any) {
+      alert(error.message || "Something went wrong");
+    }
   };
+
   return (
     <div
       className="relative w-full h-screen bg-cover bg-center flex items-center justify-center"
@@ -29,145 +56,34 @@ export default function TruckFinder() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Application Dropdown */}
           <div className="relative">
-            <select className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10">
-              <option
-                value="All"
-                selected
-                className="bg-white text-black border-b"
-              >
+            <select
+              value={application}
+              onChange={(e) => setApplication(e.target.value)}
+              className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10"
+            >
+              <option value="All" className="bg-white text-black border-b">
                 Choose Application
               </option>
               <option value="12" className="bg-white text-black border-b">
                 Agricultural
               </option>
               <option value="13" className="bg-white text-black border-b">
-                -Fruits and Vegetables
+                Fruits and Vegetables
               </option>
               <option value="14" className="bg-white text-black border-b">
-                -Agri products
+                Agri Products
               </option>
               <option value="15" className="bg-white text-black border-b">
-                -cereal
+                Cereal
               </option>
               <option value="16" className="bg-white text-black border-b">
-                -Market Load
+                Market Load
               </option>
               <option value="21" className="bg-white text-black border-b">
                 Logistics
               </option>
               <option value="63" className="bg-white text-black border-b">
-                -Refrigerated Vans
-              </option>
-              <option value="22" className="bg-white text-black border-b">
-                -Pharma
-              </option>
-              <option value="23" className="bg-white text-black border-b">
-                -Poultry
-              </option>
-              <option value="24" className="bg-white text-black border-b">
-                -Service support van
-              </option>
-              <option value="25" className="bg-white text-black border-b">
-                -Parcel & Courier
-              </option>
-              <option value="26" className="bg-white text-black border-b">
-                -LPG Cylinders
-              </option>
-              <option value="27" className="bg-white text-black border-b">
-                -Lifestyle
-              </option>
-              <option value="28" className="bg-white text-black border-b">
-                -Gas Cylinders
-              </option>
-              <option value="29" className="bg-white text-black border-b">
-                -Cash Vans
-              </option>
-              <option value="30" className="bg-white text-black border-b">
-                -Cement
-              </option>
-              <option value="31" className="bg-white text-black border-b">
-                -E-Commerce
-              </option>
-              <option value="32" className="bg-white text-black border-b">
-                Utility Vehicles
-              </option>
-              <option value="33" className="bg-white text-black border-b">
-                -Event Management
-              </option>
-              <option value="34" className="bg-white text-black border-b">
-                -Food allied services
-              </option>
-              <option value="35" className="bg-white text-black border-b">
-                -Hotels
-              </option>
-              <option value="36" className="bg-white text-black border-b">
-                -Perishable goods
-              </option>
-              <option value="37" className="bg-white text-black border-b">
-                -Tent house
-              </option>
-              <option value="38" className="bg-white text-black border-b">
-                -Municipal application
-              </option>
-              <option value="39" className="bg-white text-black border-b">
-                -Furniture
-              </option>
-              <option value="40" className="bg-white text-black border-b">
-                -White Goods
-              </option>
-              <option value="41" className="bg-white text-black border-b">
-                Fisheries
-              </option>
-              <option value="42" className="bg-white text-black border-b">
-                FMCG
-              </option>
-              <option value="43" className="bg-white text-black border-b">
-                -Bakery
-              </option>
-              <option value="44" className="bg-white text-black border-b">
-                -Catering
-              </option>
-              <option value="45" className="bg-white text-black border-b">
-                -Foodtruck
-              </option>
-              <option value="46" className="bg-white text-black border-b">
-                -Cold drinks
-              </option>
-              <option value="47" className="bg-white text-black border-b">
-                -Milk
-              </option>
-              <option value="48" className="bg-white text-black border-b">
-                -Milk Grains
-              </option>
-              <option value="111" className="bg-white text-black border-b">
-                -Pure water
-              </option>
-              <option value="112" className="bg-white text-black border-b">
-                -Milk & Diary
-              </option>
-              <option value="49" className="bg-white text-black border-b">
-                -Mineral Water
-              </option>
-              <option value="50" className="bg-white text-black border-b">
-                -Tea leaves
-              </option>
-              <option value="51" className="bg-white text-black border-b">
-                -Water bottles
-              </option>
-              <option value="113" className="bg-white text-black border-b">
-                -Food Grains
-              </option>
-              <option value="17" className="bg-white text-black border-b">
-                Construction
-              </option>
-              <option value="18" className="bg-white text-black border-b">
-                -Building & Construction
-              </option>
-              <option value="19" className="bg-white text-black border-b">
-                -Industrial Goods
-              </option>
-              <option value="20" className="bg-white text-black border-b">
-                -Heavy Industries
+                Refrigerated Vans
               </option>
             </select>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white">
@@ -177,12 +93,12 @@ export default function TruckFinder() {
 
           {/* Fuel Type Dropdown */}
           <div className="relative">
-            <select className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10">
-              <option
-                value="All"
-                selected
-                className="bg-white text-black border-b"
-              >
+            <select
+              value={fuelType}
+              onChange={(e) => setFuelType(e.target.value)}
+              className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10"
+            >
+              <option value="All" className="bg-white text-black border-b">
                 Choose Fuel Type
               </option>
               <option value="cng" className="bg-white text-black border-b">
@@ -211,12 +127,12 @@ export default function TruckFinder() {
 
           {/* Tonnage Dropdown */}
           <div className="relative">
-            <select className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10">
-              <option
-                value="All"
-                selected
-                className="bg-white text-black border-b"
-              >
+            <select
+              value={tonnage}
+              onChange={(e) => setTonnage(e.target.value)}
+              className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10"
+            >
+              <option value="All" className="bg-white text-black border-b">
                 Choose Tonnage
               </option>
               <option value="61" className="bg-white text-black border-b">
@@ -243,7 +159,7 @@ export default function TruckFinder() {
             </span>
           </div>
 
-          {/* /* Price Range Dropdown */}
+          {/* Price Range Dropdown */}
           <div className="relative">
             <select
               value={priceRange}
@@ -272,6 +188,7 @@ export default function TruckFinder() {
           </div>
         </div>
 
+        {/* Find Now Button */}
         <button
           onClick={handleFindNow}
           className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded font-medium shadow-lg"

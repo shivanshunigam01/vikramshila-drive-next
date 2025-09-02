@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { registerUser } from "@/services/authServices";
+import { sendOtp, verifyOtp, registerUser } from "@/services/authServices";
+import { useNavigate } from "react-router-dom";
 
 interface RegisterFormProps {
   onRegister: () => void;
@@ -17,78 +18,111 @@ export default function RegisterForm({
   onCancel,
 }: RegisterFormProps) {
   const [formData, setFormData] = useState({
+    phone: "",
+    otp: "",
     name: "",
     email: "",
     password: "",
-    otp: "",
   });
 
-  const [step, setStep] = useState<"email" | "otp" | "details">("email");
-  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [step, setStep] = useState<"phone" | "otp" | "details">("phone");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Fake OTP generator
-  const handleSendOtp = () => {
-    const fakeOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(fakeOtp);
-    setFormData({ ...formData, otp: fakeOtp }); // auto-fill OTP
-    toast({ title: "OTP Sent", description: `Fake OTP: ${fakeOtp}` });
-    setStep("otp");
-  };
-
-  // Fake OTP verify
-  const handleVerifyOtp = () => {
-    if (formData.otp === generatedOtp) {
-      toast({ title: "Email Verified", description: "You can continue now." });
-      setStep("details");
-    } else {
-      toast({ title: "Invalid OTP", variant: "destructive" });
+  // Step 1: Send OTP
+  const handleSendOtp = async () => {
+    try {
+      setIsLoading(true);
+      await sendOtp(formData.phone);
+      toast({
+        title: "OTP Sent",
+        description: "Check your phone for the OTP.",
+      });
+      setStep("otp");
+    } catch (error: any) {
+      toast({
+        title: "Failed to send OTP",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Final Register
-  const handleRegister = async (data: any) => {
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async () => {
     try {
-      // Fake OTP verification bypass
+      setIsLoading(true);
+      await verifyOtp(formData.phone, formData.otp);
+      toast({ title: "OTP Verified", description: "You can continue now." });
+      setStep("details");
+    } catch (error: any) {
+      toast({
+        title: "Invalid OTP",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 3: Final Register
+  // Step 3: Final Register
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
       const payload = {
-        email: data.email,
-        password: data.password,
-        otp: "123456", // send fixed otp (backend may accept)
-        otp_verified: true, // if backend supports this flag
+        phone: formData.phone,
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
       };
 
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await registerUser(payload);
 
-      const result = await res.json();
+      if (response.data?.success) {
+        // ✅ Save token & customer in localStorage
+        const { token, customer } = response.data;
+        toast({ title: "Registration Successful" });
+        navigate("/");
 
-      if (res.ok) {
+        // ✅ Move to login screen
         onRegister();
       } else {
-        console.error(result.message || "Register failed");
+        toast({
+          title: "Registration Failed",
+          description: response.data?.message || "Please try again",
+          variant: "destructive",
+        });
       }
-    } catch (err) {
-      console.error("Error:", err);
+    } catch (error: any) {
+      toast({
+        title: "Registration Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleRegister} className="space-y-4">
-      {/* Step 1: Enter Email */}
-      {step === "email" && (
+      {/* Step 1: Phone Number */}
+      {step === "phone" && (
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="phone">Phone Number</Label>
           <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            value={formData.email}
+            id="phone"
+            type="text"
+            placeholder="Enter your phone number"
+            value={formData.phone}
             onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
+              setFormData({ ...formData, phone: e.target.value })
             }
             required
             className="text-black"
@@ -97,14 +131,14 @@ export default function RegisterForm({
             type="button"
             onClick={handleSendOtp}
             className="bg-blue-600 text-white w-full"
-            disabled={isLoading || !formData.email}
+            disabled={isLoading || !formData.phone}
           >
-            Send OTP
+            {isLoading ? "Sending OTP..." : "Send OTP"}
           </Button>
         </div>
       )}
 
-      {/* Step 2: Enter OTP */}
+      {/* Step 2: OTP */}
       {step === "otp" && (
         <div className="space-y-2">
           <Label htmlFor="otp">Enter OTP</Label>
@@ -123,12 +157,12 @@ export default function RegisterForm({
             className="bg-blue-600 text-white w-full"
             disabled={isLoading || !formData.otp}
           >
-            Verify OTP
+            {isLoading ? "Verifying..." : "Verify OTP"}
           </Button>
         </div>
       )}
 
-      {/* Step 3: Enter Details */}
+      {/* Step 3: Details */}
       {step === "details" && (
         <>
           <div className="space-y-2">
@@ -140,6 +174,21 @@ export default function RegisterForm({
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
+              }
+              required
+              className="text-black"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
               }
               required
               className="text-black"
@@ -172,7 +221,7 @@ export default function RegisterForm({
             <Button
               type="button"
               onClick={onCancel}
-              className="flex-1 bg-blue-600 text-white"
+              className="flex-1 bg-gray-400 text-white"
               disabled={isLoading}
             >
               Cancel

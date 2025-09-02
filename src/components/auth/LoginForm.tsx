@@ -19,7 +19,7 @@ export default function LoginForm({ onLogin, onCancel }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  debugger;
+  // debugger;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -32,6 +32,7 @@ export default function LoginForm({ onLogin, onCancel }: LoginFormProps) {
       console.log(response);
       if (response.data?.success) {
         const { token, user } = response.data.data;
+        toast({ title: "Login Successful" });
 
         // Save token & user in localStorage (or context)
         localStorage.setItem("admin_token", token);

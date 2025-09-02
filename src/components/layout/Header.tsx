@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Menu, Phone, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -19,6 +19,7 @@ const nav = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -47,9 +48,11 @@ export default function Header() {
                   <Phone className="h-4 w-4" /> <span>1800 209 7979</span>
                 </a>
 
-                {/* Book Now Button */}
-                <Button className="bg-white text-black hover:bg-gray-200 text-xs px-4 py-2 rounded-lg shadow">
-                  Book Now
+                <Button
+                  className="bg-white text-black hover:bg-gray-200 text-xs px-4 py-2 rounded-lg shadow"
+                  onClick={() => navigate("/truck-finder")}
+                >
+                  Book Your Vehicle
                 </Button>
 
                 {/* Book Your Service */}
