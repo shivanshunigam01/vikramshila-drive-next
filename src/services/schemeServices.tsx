@@ -1,11 +1,11 @@
 // src/services/schemes.ts
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_VITE_API_URL;
 
 export async function getSchemes() {
   try {
-    const res = await axios.get(`${API_URL}/schemes`);
+    const res = await axios.get(`${API}/schemes`);
     if (res.data?.success) {
       return res.data.data;
     }

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_VITE_API_URL;
 
 // 🚀 Create a new lead
 export const createLead = async (leadData) => {
