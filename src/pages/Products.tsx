@@ -261,13 +261,20 @@ export default function Products() {
                   className="appearance-none w-full bg-black border border-gray-700 px-4 py-3 rounded text-white focus:ring-2 focus:ring-blue-500 pr-10"
                 >
                   <option value="All">Choose Application</option>
-                  <option value="12">Agricultural</option>
-                  <option value="13">Fruits and Vegetables</option>
-                  <option value="14">Agri Products</option>
-                  <option value="15">Cereal</option>
-                  <option value="16">Market Load</option>
-                  <option value="21">Logistics</option>
-                  <option value="63">Refrigerated Vans</option>
+                  <option value="Fruits & Vegetables">
+                    Fruits & Vegetables
+                  </option>
+                  <option value="Food Grain">Food Grain</option>
+                  <option value="Cement bags">Cement Bags</option>
+                  <option value="LPG">LPG</option>
+                  <option value="Milk">Milk</option>
+                  <option value="Fish">Fish</option>
+                  <option value="Market Load">Market Load</option>
+                  <option value="Animal husbandry">Animal Husbandry</option>
+                  <option value="Poultry">Poultry</option>
+                  <option value="Logistics">Logistics</option>
+                  <option value="FMCG">FMCG</option>
+                  <option value="Refrigrated Van">Refrigerated Van</option>
                 </select>
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                   ▼
@@ -301,14 +308,11 @@ export default function Products() {
                   className="appearance-none w-full bg-black border border-gray-700 px-4 py-3 rounded text-white focus:ring-2 focus:ring-blue-500 pr-10"
                 >
                   <option value="All">Choose Payload</option>
-                  <option value="750">750 Kgs</option>
-                  <option value="1000">1000 Kgs</option>
-                  <option value="1500">1500 Kgs</option>
-                  <option value="2000">2000 Kgs</option>
-                  <option value="5000">5000 Kgs</option>
-                  <option value="7500">7500 Kgs</option>
-                  <option value="10000">10000 Kgs</option>
-                  <option value="12500">12500 Kgs</option>
+                  <option value="500-750">500 - 750 Kg</option>
+                  <option value="750-1500">750 - 1500 Kg</option>
+                  <option value="1500-3000">1500 - 3000 Kg</option>
+                  <option value="3000-6000">3000 - 6000 Kg</option>
+                  <option value="6000+">6000 Kg +</option>
                 </select>
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                   ▼
@@ -323,11 +327,13 @@ export default function Products() {
                   className="appearance-none w-full bg-black border border-gray-700 px-4 py-3 rounded text-white focus:ring-2 focus:ring-blue-500 pr-10"
                 >
                   <option value="All">Vehicle Price Range</option>
-                  <option value="0-10L">0 - 10 Lakhs</option>
-                  <option value="10-20L">10 - 20 Lakhs</option>
-                  <option value="20-30L">20 - 30 Lakhs</option>
+                  <option value="5-15L">5 - 15 Lakhs</option>
+                  <option value="15-20L">15 - 20 Lakhs</option>
+                  <option value="20-25L">20 - 25 Lakhs</option>
+                  <option value="25-30L">25 - 30 Lakhs</option>
                   <option value="30L+">30 Lakhs +</option>
                 </select>
+
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                   ▼
                 </span>

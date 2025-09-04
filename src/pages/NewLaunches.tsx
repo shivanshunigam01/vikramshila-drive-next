@@ -121,7 +121,7 @@ export default function NewLaunchesPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-16 flex gap-10">
         {/* Sidebar Filters */}
-        <aside className="w-72 bg-gray-900 rounded-lg shadow p-6 h-fit">
+        {/* <aside className="w-72 bg-gray-900 rounded-lg shadow p-6 h-fit">
           <h3 className="text-lg font-semibold mb-6">Filters</h3>
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -167,7 +167,7 @@ export default function NewLaunchesPage() {
               )
             )}
           </div>
-        </aside>
+        </aside> */}
 
         {/* Launches Content */}
         <main className="flex-1">

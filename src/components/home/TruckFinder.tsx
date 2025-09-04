@@ -71,7 +71,7 @@ export default function TruckFinder() {
                 Fruits and Vegetables
               </option>
               <option value="14" className="bg-white text-black border-b">
-                Agri Products
+                Agri products
               </option>
               <option value="15" className="bg-white text-black border-b">
                 Cereal
@@ -84,6 +84,117 @@ export default function TruckFinder() {
               </option>
               <option value="63" className="bg-white text-black border-b">
                 Refrigerated Vans
+              </option>
+              <option value="22" className="bg-white text-black border-b">
+                Pharma
+              </option>
+              <option value="23" className="bg-white text-black border-b">
+                Poultry
+              </option>
+              <option value="24" className="bg-white text-black border-b">
+                Service support van
+              </option>
+              <option value="25" className="bg-white text-black border-b">
+                Parcel & Courier
+              </option>
+              <option value="26" className="bg-white text-black border-b">
+                LPG Cylinders
+              </option>
+              <option value="27" className="bg-white text-black border-b">
+                Lifestyle
+              </option>
+              <option value="28" className="bg-white text-black border-b">
+                Gas Cylinders
+              </option>
+              <option value="29" className="bg-white text-black border-b">
+                Cash Vans
+              </option>
+              <option value="30" className="bg-white text-black border-b">
+                Cement
+              </option>
+              <option value="31" className="bg-white text-black border-b">
+                E-Commerce
+              </option>
+              <option value="32" className="bg-white text-black border-b">
+                Utility Vehicles
+              </option>
+              <option value="33" className="bg-white text-black border-b">
+                Event Management
+              </option>
+              <option value="34" className="bg-white text-black border-b">
+                Food allied services
+              </option>
+              <option value="35" className="bg-white text-black border-b">
+                Hotels
+              </option>
+              <option value="36" className="bg-white text-black border-b">
+                Perishable goods
+              </option>
+              <option value="37" className="bg-white text-black border-b">
+                Tent house
+              </option>
+              <option value="38" className="bg-white text-black border-b">
+                Municipal application
+              </option>
+              <option value="39" className="bg-white text-black border-b">
+                Furniture
+              </option>
+              <option value="40" className="bg-white text-black border-b">
+                White Goods
+              </option>
+              <option value="41" className="bg-white text-black border-b">
+                Fisheries
+              </option>
+              <option value="42" className="bg-white text-black border-b">
+                FMCG
+              </option>
+              <option value="43" className="bg-white text-black border-b">
+                Bakery
+              </option>
+              <option value="44" className="bg-white text-black border-b">
+                Catering
+              </option>
+              <option value="45" className="bg-white text-black border-b">
+                Foodtruck
+              </option>
+              <option value="46" className="bg-white text-black border-b">
+                Cold drinks
+              </option>
+              <option value="47" className="bg-white text-black border-b">
+                Milk
+              </option>
+              <option value="48" className="bg-white text-black border-b">
+                Milk Grains
+              </option>
+              <option value="111" className="bg-white text-black border-b">
+                Pure water
+              </option>
+              <option value="112" className="bg-white text-black border-b">
+                Milk & Diary
+              </option>
+              <option value="49" className="bg-white text-black border-b">
+                Mineral Water
+              </option>
+              <option value="50" className="bg-white text-black border-b">
+                Tea leaves
+              </option>
+              <option value="51" className="bg-white text-black border-b">
+                Water bottles
+              </option>
+              <option value="113" className="bg-white text-black border-b">
+                Food Grains
+              </option>
+              <option value="17" className="bg-white text-black border-b">
+                Construction
+              </option>
+              <option value="18" className="bg-white text-black border-b">
+                Building & Construction
+              </option>
+              <option value="19" className="bg-white text-black border-b">
+                Industrial Goods
+              </option>
+              <option value="20" className="bg-white text-black border-b">
+                Heavy Industries
               </option>
             </select>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white">
@@ -125,7 +236,7 @@ export default function TruckFinder() {
             </span>
           </div>
 
-          {/* Tonnage Dropdown */}
+          {/* Payload Dropdown */}
           <div className="relative">
             <select
               value={payload}
@@ -135,19 +246,39 @@ export default function TruckFinder() {
               <option value="All" className="bg-white text-black border-b">
                 Choose Payload
               </option>
-
-              {/* Generate payload options from 750 to 12500 */}
-              {Array.from({ length: 17 }, (_, i) => 750 + i * 750).map(
-                (payload) => (
-                  <option
-                    key={payload}
-                    value={payload}
-                    className="bg-white text-black border-b"
-                  >
-                    {payload} Kgs
-                  </option>
-                )
-              )}
+              <option value="500-750" className="bg-white text-black border-b">
+                500 - 750 Kgs
+              </option>
+              <option value="750-1500" className="bg-white text-black border-b">
+                750 - 1500 Kgs
+              </option>
+              <option
+                value="1500-3000"
+                className="bg-white text-black border-b"
+              >
+                1500 - 3000 Kgs
+              </option>
+              <option
+                value="3000-6000"
+                className="bg-white text-black border-b"
+              >
+                3000 - 6000 Kgs
+              </option>
+              <option
+                value="6000-9000"
+                className="bg-white text-black border-b"
+              >
+                6000 - 9000 Kgs
+              </option>
+              <option
+                value="9000-12000"
+                className="bg-white text-black border-b"
+              >
+                9000 - 12000 Kgs
+              </option>
+              <option value="12000+" className="bg-white text-black border-b">
+                12000 Kgs +
+              </option>
             </select>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white">
               ▼
@@ -164,17 +295,17 @@ export default function TruckFinder() {
               <option value="All" className="bg-white text-black border-b">
                 Vehicle Price Range
               </option>
-              <option value="0-10L" className="bg-white text-black border-b">
-                0 - 10 Lakhs
+              <option value="5-15L" className="bg-white text-black border-b">
+                5 - 15 Lakhs
               </option>
-              <option value="10-20L" className="bg-white text-black border-b">
-                10 - 20 Lakhs
+              <option value="15-20L" className="bg-white text-black border-b">
+                15 - 20 Lakhs
               </option>
-              <option value="20-30L" className="bg-white text-black border-b">
-                20 - 30 Lakhs
+              <option value="20-25L" className="bg-white text-black border-b">
+                20 - 25 Lakhs
               </option>
               <option value="30L+" className="bg-white text-black border-b">
-                30 Lakhs +
+                30 Lakhs or More
               </option>
             </select>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white">
