@@ -108,7 +108,7 @@ export default function Contact() {
                 Send to WhatsApp
               </Button>
               <a
-                href="mailto:sales@vikramshilaauto.com"
+                href="mailto:nagendarzee@gmail.com"
                 className="inline-flex items-center justify-center rounded-md px-4 py-2 bg-secondary text-secondary-foreground"
               >
                 Email Us
@@ -131,7 +131,7 @@ export default function Contact() {
               <h2 className="font-semibold mb-2">Reach Us</h2>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>Phone: +91 99999 99999</li>
-                <li>Email: sales@vikramshilaauto.com</li>
+                <li>Email: nagendarzee@gmail.com</li>
                 <li>WhatsApp: 8406991610</li>
               </ul>
             </div>

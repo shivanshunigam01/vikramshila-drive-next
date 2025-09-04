@@ -12,9 +12,12 @@ import { Helmet } from "react-helmet-async";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getProducts } from "@/services/product";
-import { productFind } from "@/services/productService";
+import {
+  downloadBrochureService,
+  productFind,
+} from "@/services/productService";
 import { useFilter } from "@/contexts/FilterContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import FinanceCalculator from "@/components/home/FinanceCalculator";
 import MyCalculator from "@/components/myCalculator";
 
@@ -35,11 +38,12 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
 
   const { setFilters, isFiltered, clearFilters } = useFilter();
+  const location = useLocation();
 
   // Local dropdown states (not triggering API automatically)
   const [application, setApplication] = useState("All");
   const [fuelType, setFuelType] = useState("All");
-  const [tonnage, setTonnage] = useState("All");
+  const [payload, setPayload] = useState("All");
   const [priceRange, setPriceRange] = useState("All");
 
   // Track selected products
@@ -49,11 +53,25 @@ export default function Products() {
 
   // Initial fetch → get all products
   useEffect(() => {
-    const fetchInitial = async () => {
+    const fetchProducts = async () => {
       setLoading(true);
       try {
-        const data = await getProducts();
-        setProducts(data);
+        const searchParams = new URLSearchParams(location.search);
+        const filters: any = {};
+
+        searchParams.forEach((value, key) => {
+          filters[key] = value;
+        });
+
+        if (Object.keys(filters).length > 0) {
+          // ✅ If query params exist → call productFind
+          const response = await productFind(filters);
+          setProducts(response.data?.data || []);
+        } else {
+          // ✅ Otherwise → fetch all products
+          const data = await getProducts();
+          setProducts(data);
+        }
       } catch (err) {
         console.error("Failed to fetch products:", err);
         setProducts([]);
@@ -61,8 +79,9 @@ export default function Products() {
         setLoading(false);
       }
     };
-    fetchInitial();
-  }, []);
+
+    fetchProducts();
+  }, [location.search]); // 👈 refetch when query params change
 
   // Apply Filters → Fetch API once
   const handleApplyFilters = async () => {
@@ -71,10 +90,10 @@ export default function Products() {
       if (
         application !== "All" ||
         fuelType !== "All" ||
-        tonnage !== "All" ||
+        payload !== "All" ||
         priceRange !== "All"
       ) {
-        const newFilters = { application, fuelType, tonnage, priceRange };
+        const newFilters = { application, fuelType, payload, priceRange };
         setFilters(newFilters);
         const response = await productFind(newFilters);
         setProducts(response.data?.data || []);
@@ -95,7 +114,7 @@ export default function Products() {
   const handleResetFilters = async () => {
     setApplication("All");
     setFuelType("All");
-    setTonnage("All");
+    setPayload("All");
     setPriceRange("All");
     clearFilters();
     setLoading(true);
@@ -142,7 +161,44 @@ export default function Products() {
   const clearSelection = () => {
     setSelected([]);
   };
+  const handleDownloadBrochure = async (
+    productId: string,
+    brochureFile?: any
+  ) => {
+    if (!productId || !brochureFile) {
+      alert("Brochure not available");
+      return;
+    }
 
+    try {
+      const response = await downloadBrochureService(productId);
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"],
+      });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+
+      let filename = "brochure.pdf";
+      const contentDisposition = response.headers["content-disposition"];
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?(.+)"?/);
+        if (match && match[1]) filename = match[1];
+      } else if (brochureFile?.originalName) {
+        filename = brochureFile.originalName;
+      }
+
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error("Download failed:", err);
+      alert(`Download failed: ${err.message}`);
+    }
+  };
   return (
     <div className="bg-black min-h-screen text-white relative">
       <Helmet>
@@ -237,20 +293,22 @@ export default function Products() {
                 </span>
               </div>
 
-              {/* Tonnage */}
+              {/* Payload */}
               <div className="relative">
                 <select
-                  value={tonnage}
-                  onChange={(e) => setTonnage(e.target.value)}
+                  value={payload}
+                  onChange={(e) => setPayload(e.target.value)}
                   className="appearance-none w-full bg-black border border-gray-700 px-4 py-3 rounded text-white focus:ring-2 focus:ring-blue-500 pr-10"
                 >
-                  <option value="All">Choose Tonnage</option>
-                  <option value="61">11500 Kgs</option>
-                  <option value="62">11600 Kgs</option>
-                  <option value="69">11800 Kgs</option>
-                  <option value="70">20000 Kgs</option>
-                  <option value="71">21000 Kgs</option>
-                  <option value="72">22000 Kgs</option>
+                  <option value="All">Choose Payload</option>
+                  <option value="750">750 Kgs</option>
+                  <option value="1000">1000 Kgs</option>
+                  <option value="1500">1500 Kgs</option>
+                  <option value="2000">2000 Kgs</option>
+                  <option value="5000">5000 Kgs</option>
+                  <option value="7500">7500 Kgs</option>
+                  <option value="10000">10000 Kgs</option>
+                  <option value="12500">12500 Kgs</option>
                 </select>
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                   ▼
@@ -393,14 +451,16 @@ export default function Products() {
                         >
                           Know More
                         </Link>
-                        <a
-                          href={v.brochureFile}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center w-11 h-11 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
-                        >
-                          PDF
-                        </a>
+                        {v.brochureFile && (
+                          <button
+                            onClick={() =>
+                              handleDownloadBrochure(v._id, v.brochureFile)
+                            }
+                            className="flex items-center justify-center w-11 h-11 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
+                          >
+                            PDF
+                          </button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

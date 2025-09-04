@@ -34,10 +34,11 @@ export default function Footer() {
               <Phone className="h-4 w-4" /> +91 8406991610
             </li>
             <li className="flex items-center gap-2">
-              <Mail className="h-4 w-4" /> sales@vikramshilaauto.com
+              <Mail className="h-4 w-4" /> nagendarzee@gmail.com
             </li>
             <li className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" /> WhatsApp: 918406991610All Vehicles
+              <MessageCircle className="h-4 w-4" /> WhatsApp: 918406991610All
+              Vehicles
             </li>
           </ul>
           <div className="flex gap-3 mt-4">

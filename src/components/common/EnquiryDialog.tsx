@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,21 +20,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { vehicles } from "@/data/products";
+import { sendEnquiryService } from "@/services/enquiry.service";
+import { Textarea } from "../ui/textarea";
 
-// ✅ Module-level external control
-let externalOpen: ((product?: string) => void) | null = null;
+let externalOpen: (() => void) | null = null;
 
-export function openEnquiryDialog(product?: string) {
-  if (externalOpen) externalOpen(product);
+export function openEnquiryDialog(title: any) {
+  if (externalOpen) externalOpen();
 }
 
 const schema = z.object({
@@ -42,7 +35,7 @@ const schema = z.object({
   mobile: z.string().regex(/^\d{10}$/g, "Enter a valid 10-digit mobile number"),
   state: z.string().min(2, "Select your state"),
   pincode: z.string().regex(/^\d{6}$/g, "Enter a valid 6-digit pincode"),
-  product: z.string().min(1, "Select a product"),
+  briefDescription: z.string().min(5, "Please add a brief description"),
   consentCall: z.literal(true, {
     errorMap: () => ({ message: "Consent is required" }),
   }),
@@ -86,17 +79,10 @@ const INDIAN_STATES = [
 
 export default function EnquiryDialog() {
   const [open, setOpen] = useState(false);
-  const [thankYou, setThankYou] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [prefillProduct, setPrefillProduct] = useState<string | undefined>();
+  const [isLoading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // ✅ Register external controller
-  externalOpen = (product?: string) => {
-    setPrefillProduct(product);
-    setOpen(true);
-  };
-
-  const productOptions = useMemo(() => vehicles.map((v) => v.name), []);
+  externalOpen = () => setOpen(true);
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -105,43 +91,31 @@ export default function EnquiryDialog() {
       mobile: "",
       state: "",
       pincode: "",
-      product: prefillProduct || "",
+      briefDescription: "",
       consentCall: true,
       consentWhatsApp: true,
     },
   });
 
-  useEffect(() => {
-    if (prefillProduct) form.setValue("product", prefillProduct);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prefillProduct]);
-
   const onSubmit = async (values: z.infer<typeof schema>) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://api.vikramshilaautomobiles.com/api/enquiries",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fullName: values.name,
-            mobileNumber: values.mobile,
-            state: values.state,
-            pincode: values.pincode,
-            product: values.product,
-            whatsappConsent: values.consentWhatsApp,
-          }),
-        }
-      );
-
-      if (response.ok) {
+      const response = await sendEnquiryService({
+        fullName: values.name,
+        mobileNumber: values.mobile,
+        state: values.state,
+        pincode: values.pincode,
+        briefDescription: values.briefDescription,
+        whatsappConsent: values.consentWhatsApp,
+      });
+      debugger;
+      if (response.data.success) {
         form.reset();
-        setThankYou(true);
+        setShowSuccess(true);
         setTimeout(() => {
-          setThankYou(false);
+          setShowSuccess(false);
           setOpen(false);
-        }, 2500);
+        }, 3000); // Close after 3 seconds
       } else {
         alert("❌ Failed to submit enquiry. Please try again.");
       }
@@ -162,17 +136,19 @@ export default function EnquiryDialog() {
           </DialogTitle>
         </DialogHeader>
 
-        {thankYou ? (
+        {showSuccess ? (
           <div className="text-center py-6">
-            <h2 className="text-green-600 font-bold text-lg">🎉 Thank you!</h2>
+            <h2 className="text-green-600 font-bold text-lg">
+              🎉 Enquiry Submitted!
+            </h2>
             <p className="text-gray-700 mt-2">
-              Your enquiry has been submitted successfully.
+              Our team will reach out within 6 hours.
             </p>
           </div>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <FormField
                   control={form.control}
                   name="name"
@@ -185,6 +161,7 @@ export default function EnquiryDialog() {
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
                   name="mobile"
@@ -201,32 +178,30 @@ export default function EnquiryDialog() {
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
                   name="state"
                   render={({ field }) => (
                     <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select State" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="max-h-64">
+                      <FormControl>
+                        <select
+                          className="w-full border rounded p-2"
+                          {...field}
+                        >
+                          <option value="">Select State</option>
                           {INDIAN_STATES.map((s) => (
-                            <SelectItem key={s} value={s}>
+                            <option key={s} value={s}>
                               {s}
-                            </SelectItem>
+                            </option>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </select>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
                   name="pincode"
@@ -243,33 +218,24 @@ export default function EnquiryDialog() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="product"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Product" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="max-h-64">
-                          {productOptions.map((p) => (
-                            <SelectItem key={p} value={p}>
-                              {p}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
+
+              <FormField
+                control={form.control}
+                name="briefDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Brief description"
+                        className="min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="space-y-2">
                 <FormField
@@ -283,15 +249,10 @@ export default function EnquiryDialog() {
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <div className="space-y-0.5">
-                        <FormLabel className="font-normal">
-                          I agree that by clicking on 'Submit', I am explicitly
-                          soliciting a call from Vikramshila Automobiles or its
-                          associates on my mobile number to assist me in
-                          purchasing Tata Vehicles.
-                        </FormLabel>
-                        <FormMessage />
-                      </div>
+                      <FormLabel className="font-normal">
+                        I agree to receive a call from Vikramshila Automobiles.
+                      </FormLabel>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -306,13 +267,10 @@ export default function EnquiryDialog() {
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <div className="space-y-0.5">
-                        <FormLabel className="font-normal">
-                          Allow Tata Motors to send you information about Tata
-                          Products on WhatsApp.
-                        </FormLabel>
-                        <FormMessage />
-                      </div>
+                      <FormLabel className="font-normal">
+                        Allow Tata Motors to send information via WhatsApp.
+                      </FormLabel>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -322,9 +280,9 @@ export default function EnquiryDialog() {
                 <Button
                   type="submit"
                   className="bg-green-600 hover:bg-green-700 text-white rounded-xl"
-                  disabled={loading}
+                  disabled={isLoading}
                 >
-                  {loading ? "Submitting..." : "Submit"}
+                  {isLoading ? "Submitting..." : "Submit"}
                 </Button>
               </div>
             </form>

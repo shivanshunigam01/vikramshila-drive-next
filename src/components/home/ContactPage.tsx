@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-
-import contactBanner from "../../assets/contact_page.png"; // add a banner image
+import ModalWrapper from "@/components/ui/ModalWrapper";
+import contactBanner from "../../assets/contact_page.png";
+import GrievanceForm from "../common/GrievanceForm";
 
 export default function ContactPage() {
+  const [openGrievance, setOpenGrievance] = useState(false);
+
   return (
     <div className="bg-black text-white font-sans">
-      {/* Header/Navbar */}
       <Header />
 
-      {/* Breadcrumb (same as New Launches) */}
       <nav className="max-w-7xl mx-auto px-6 py-4 text-sm">
         <ol className="flex items-center space-x-2">
           <li>
@@ -27,7 +28,6 @@ export default function ContactPage() {
         </ol>
       </nav>
 
-      {/* Hero Section */}
       <div
         className="relative h-[400px] bg-cover bg-center flex items-center justify-center"
         style={{ backgroundImage: `url(${contactBanner})` }}
@@ -39,12 +39,18 @@ export default function ContactPage() {
             We’re here to help. Reach out to us anytime for sales, service, or
             support.
           </p>
+
+          {/* ✅ Grievance Button */}
+          <button
+            onClick={() => setOpenGrievance(true)}
+            className="mt-6 px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold text-white text-lg"
+          >
+            Submit Grievance
+          </button>
         </div>
       </div>
 
-      {/* Contact Section */}
       <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12">
-        {/* Map */}
         <div className="rounded-lg overflow-hidden shadow-lg aspect-video">
           <iframe
             title="Bhagalpur Location"
@@ -57,7 +63,6 @@ export default function ContactPage() {
           />
         </div>
 
-        {/* Contact Details */}
         <div className="flex flex-col justify-center space-y-6">
           <h2 className="text-2xl font-semibold">Get in Touch</h2>
           <p className="text-gray-300">
@@ -66,21 +71,20 @@ export default function ContactPage() {
           </p>
           <ul className="space-y-3 text-lg">
             <li>📞 +91 99999 99999</li>
-            <li>✉️ sales@vikramshilaauto.com</li>
+            <li>✉️ nagendarzee@gmail.com</li>
             <li>💬 WhatsApp: +91 8406991610</li>
           </ul>
         </div>
       </div>
 
-      {/* Assistance Banner
-      <div className="bg-blue-600 py-10 text-center">
-        <h3 className="text-xl font-semibold mb-3">
-          For any assistance, call now
-        </h3>
-        <p className="text-2xl font-bold">18002097979</p> */}
-      {/* </div> */}
+      {/* Modal for Grievance Form */}
+      <ModalWrapper
+        open={openGrievance}
+        onClose={() => setOpenGrievance(false)}
+      >
+        <GrievanceForm />
+      </ModalWrapper>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

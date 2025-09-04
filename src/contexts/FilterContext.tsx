@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 interface FilterState {
   application: string;
   fuelType: string;
-  tonnage: string;
+  payload: string;
   priceRange: string;
 }
 
@@ -20,7 +20,7 @@ const FilterContext = createContext<FilterContextType | undefined>(undefined);
 const defaultFilters: FilterState = {
   application: "All",
   fuelType: "All",
-  tonnage: "All",
+  payload: "All",
   priceRange: "All",
 };
 

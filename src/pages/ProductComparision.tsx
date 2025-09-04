@@ -432,20 +432,20 @@ export default function ProductComparison() {
                 </p>
 
                 {/* Quick Stats */}
-                {/* <div className="grid grid-cols-2 gap-4 mb-4"> */}
-                {/* <div className="text-center p-3 bg-gray-800/50 rounded-lg"> */}
-                {/* <div className="text-2xl font-bold text-blue-400">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-400">
                       {getFeatureScore(product)}%
                     </div>
-                    <div className="text-xs text-gray-400">Feature Score</div> */}
-                {/* </div>
+                    <div className="text-xs text-gray-400">Feature Score</div>
+                  </div>
                   <div className="text-center p-3 bg-gray-800/50 rounded-lg">
                     <div className="text-2xl font-bold text-green-400">
                       {product.features?.length || 0}
-                    </div> */}
-                {/* <div className="text-xs text-gray-400">Features</div> */}
-                {/* </div> */}
-                {/* </div> */}
+                    </div>
+                    <div className="text-xs text-gray-400">Features</div>
+                  </div>
+                </div>
 
                 <div className="flex justify-between items-center">
                   <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
@@ -519,7 +519,7 @@ export default function ProductComparison() {
           {activeTab === "overview" && (
             <>
               {/* Quick Winner Analysis */}
-              {/* <Card className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/30">
+              <Card className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/30">
                 <CardHeader>
                   <CardTitle className="text-xl flex items-center gap-2">
                     <Award className="w-6 h-6 text-yellow-500" />
@@ -573,7 +573,7 @@ export default function ProductComparison() {
                     </div>
                   </div>
                 </CardContent>
-              </Card> */}
+              </Card>
 
               {/* Basic Information */}
               <Card className="bg-gray-900 border border-gray-800 hover:border-gray-700 transition-colors">

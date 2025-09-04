@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 export default function TruckFinder() {
   const [application, setApplication] = useState("All");
   const [fuelType, setFuelType] = useState("All");
-  const [tonnage, setTonnage] = useState("All");
+  const [payload, setPayload] = useState("All");
   const [priceRange, setPriceRange] = useState("All");
   const navigate = useNavigate();
 
@@ -16,7 +16,7 @@ export default function TruckFinder() {
       const filterParams = {
         application: application !== "All" ? application : undefined,
         fuelType: fuelType !== "All" ? fuelType : undefined,
-        tonnage: tonnage !== "All" ? tonnage : undefined,
+        payload: payload !== "All" ? payload : undefined,
         priceRange: priceRange !== "All" ? priceRange : undefined,
       };
 
@@ -128,31 +128,26 @@ export default function TruckFinder() {
           {/* Tonnage Dropdown */}
           <div className="relative">
             <select
-              value={tonnage}
-              onChange={(e) => setTonnage(e.target.value)}
+              value={payload}
+              onChange={(e) => setPayload(e.target.value)}
               className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10"
             >
               <option value="All" className="bg-white text-black border-b">
-                Choose Tonnage
+                Choose Payload
               </option>
-              <option value="61" className="bg-white text-black border-b">
-                11500 Kgs
-              </option>
-              <option value="62" className="bg-white text-black border-b">
-                11600 Kgs
-              </option>
-              <option value="69" className="bg-white text-black border-b">
-                11800 Kgs
-              </option>
-              <option value="70" className="bg-white text-black border-b">
-                20000 Kgs
-              </option>
-              <option value="71" className="bg-white text-black border-b">
-                21000 Kgs
-              </option>
-              <option value="72" className="bg-white text-black border-b">
-                22000 Kgs
-              </option>
+
+              {/* Generate payload options from 750 to 12500 */}
+              {Array.from({ length: 17 }, (_, i) => 750 + i * 750).map(
+                (payload) => (
+                  <option
+                    key={payload}
+                    value={payload}
+                    className="bg-white text-black border-b"
+                  >
+                    {payload} Kgs
+                  </option>
+                )
+              )}
             </select>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white">
               ▼

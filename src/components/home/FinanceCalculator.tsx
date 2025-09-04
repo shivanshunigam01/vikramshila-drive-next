@@ -39,14 +39,22 @@ export default function FinanceCalculator({
     return Math.round(e);
   }, [principal, roi, tenure]);
 
-  const waText = encodeURIComponent(
-    `Hello Vikramshila Automobiles, I'm interested in finance options. Price: ${formatINR(
-      price
-    )}, Down: ${formatINR(
-      downPayment
-    )}, Tenure: ${tenure} months, ROI: ${roi}%. EMI approx: ${formatINR(emi)}.`
-  );
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
 
+  const waText = encodeURIComponent(
+    `Hello Vikramshila Automobiles, I'm interested in finance options.
+Price: ${formatINR(price)},
+Down: ${formatINR(downPayment)},
+Tenure: ${tenure} months,
+ROI: ${roi}%,
+EMI approx: ${formatINR(emi)}.
+
+My Details:
+Name: ${user?.name || "N/A"},
+Email: ${user?.email || "N/A"},
+Phone: ${user?.phone || "N/A"}`
+  );
   return (
     <section className="w-full bg-black py-12">
       <div className="container mx-auto px-4">
@@ -140,7 +148,7 @@ export default function FinanceCalculator({
 
             <div className="mt-6 flex flex-wrap gap-3">
               <a
-                href={`https://wa.me/919999999999?text=${waText}`}
+                href={`https://wa.me/918406991610?text=${waText}`}
                 target="_blank"
                 rel="noreferrer"
               >

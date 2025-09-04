@@ -48,20 +48,20 @@ export default function Header() {
                   <Phone className="h-4 w-4" /> <span>1800 209 7979</span>
                 </a>
 
-                <Button
-                  className="bg-white text-black hover:bg-gray-200 text-xs px-4 py-2 rounded-lg shadow"
+                <button
                   onClick={() => navigate("/truck-finder")}
+                  className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
                 >
-                  Book Your Vehicle
-                </Button>
+                  <span>Book Your Vehicle</span>
+                </button>
 
                 {/* Book Your Service */}
-                <Link to="/book-service">
-                  <Button className="bg-white text-black hover:bg-gray-200 text-xs px-4 py-2 rounded-lg shadow">
-                    Book Your Service
-                  </Button>
+                <Link
+                  to="/book-service"
+                  className="flex items-center gap-2 px-2 py-1 text-gray-300 hover:text-blue-400 transition-colors"
+                >
+                  <span>Book Your Service</span>
                 </Link>
-
                 {/* Admin Login Button */}
                 <Link to="http://34.68.6.114:8081/">
                   <Button className="bg-blue-600 text-white hover:bg-blue-700 text-xs px-4 py-2 rounded-lg shadow">
