@@ -84,10 +84,6 @@ const FloatingVehicleBanner: React.FC<FloatingVehicleBannerProps> = ({
         <motion.div
           className="fixed bottom-6 z-50 flex items-stretch shadow-lg rounded overflow-visible"
           style={{ right: `${rightPosition}px` }}
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
-          transition={{ duration: 0.4 }}
         >
           {/* Content appears first - Blue and White sections */}
           <AnimatePresence>
@@ -140,18 +136,15 @@ const FloatingVehicleBanner: React.FC<FloatingVehicleBannerProps> = ({
             )}
           </AnimatePresence>
 
-          {/* Vehicle Image appears last - positioned after the labels */}
-          <motion.div
-            className="flex items-center bg-transparent ml-4"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-          >
+          {/* Vehicle Image (static, no animation, fixed size) */}
+          <div className="flex items-center bg-transparent ml-4">
             <img
               src={imageUrl}
               alt={label}
               className="h-16 w-24 object-contain transform -scale-x-100"
+              style={{ flexShrink: 0 }}
             />
-          </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

@@ -9,12 +9,13 @@ import {
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Search, Download, Filter } from "lucide-react";
+import { ReactNode, useEffect, useState } from "react";
 import { getProducts } from "@/services/product";
 import {
   downloadBrochureService,
   productFind,
+  applicationFind,
 } from "@/services/productService";
 import { useFilter } from "@/contexts/FilterContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -22,6 +23,7 @@ import FinanceCalculator from "@/components/home/FinanceCalculator";
 import MyCalculator from "@/components/myCalculator";
 
 interface Product {
+  gvw: ReactNode;
   _id: string;
   title: string;
   description: string;
@@ -29,6 +31,20 @@ interface Product {
   category: string;
   images?: string[];
   brochureFile?: string;
+  tonnage?: string;
+  fuelTankCapacity?: string;
+  gradeability?: string;
+  application?: string;
+  fuelType?: string;
+  payload?: string;
+  priceRange?: string;
+}
+
+interface FilterState {
+  application: string;
+  fuelType: string;
+  payload: string;
+  priceRange: string;
 }
 
 export default function Products() {
@@ -36,22 +52,43 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [applications, setApplications] = useState<string[]>([]);
 
   const { setFilters, isFiltered, clearFilters } = useFilter();
   const location = useLocation();
 
   // Local dropdown states (not triggering API automatically)
-  const [application, setApplication] = useState("All");
-  const [fuelType, setFuelType] = useState("All");
-  const [payload, setPayload] = useState("All");
-  const [priceRange, setPriceRange] = useState("All");
+  const [application, setApplication] = useState("all");
+  const [fuelType, setFuelType] = useState("all");
+  const [payload, setPayload] = useState("all");
+  const [priceRange, setPriceRange] = useState("all");
 
   // Track selected products
   const [selected, setSelected] = useState<string[]>([]);
   const [showCalculator, setShowCalculator] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Initial fetch → get all products
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Fetch Applications from API
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const res = await applicationFind({});
+        if (res.data.success && Array.isArray(res.data.data)) {
+          setApplications(res.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      }
+    };
+
+    fetchApplications();
+  }, []);
+
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -59,18 +96,43 @@ export default function Products() {
         const searchParams = new URLSearchParams(location.search);
         const filters: any = {};
 
-        searchParams.forEach((value, key) => {
-          filters[key] = value;
-        });
+        if (
+          searchParams.get("application") &&
+          searchParams.get("application") !== "all"
+        ) {
+          filters.application = searchParams.get("application");
+          setApplication(searchParams.get("application") || "all");
+        }
+        if (
+          searchParams.get("fuelType") &&
+          searchParams.get("fuelType") !== "all"
+        ) {
+          filters.fuelType = searchParams.get("fuelType");
+          setFuelType(searchParams.get("fuelType") || "all");
+        }
+        if (
+          searchParams.get("payload") &&
+          searchParams.get("payload") !== "all"
+        ) {
+          filters.payload = searchParams.get("payload");
+          setPayload(searchParams.get("payload") || "all");
+        }
+        if (
+          searchParams.get("priceRange") &&
+          searchParams.get("priceRange") !== "all"
+        ) {
+          filters.priceRange = searchParams.get("priceRange");
+          setPriceRange(searchParams.get("priceRange") || "all");
+        }
 
         if (Object.keys(filters).length > 0) {
-          // ✅ If query params exist → call productFind
           const response = await productFind(filters);
           setProducts(response.data?.data || []);
+          setFilters(filters); // ✅ safe inside effect body
         } else {
-          // ✅ Otherwise → fetch all products
           const data = await getProducts();
           setProducts(data);
+          clearFilters(); // reset when no filters
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -81,24 +143,41 @@ export default function Products() {
     };
 
     fetchProducts();
-  }, [location.search]); // 👈 refetch when query params change
+  }, [location.search]); // ✅ removed setFilters
 
   // Apply Filters → Fetch API once
   const handleApplyFilters = async () => {
     setLoading(true);
     try {
       if (
-        application !== "All" ||
-        fuelType !== "All" ||
-        payload !== "All" ||
-        priceRange !== "All"
+        application !== "all" ||
+        fuelType !== "all" ||
+        payload !== "all" ||
+        priceRange !== "all"
       ) {
-        const newFilters = { application, fuelType, payload, priceRange };
-        setFilters(newFilters);
-        const response = await productFind(newFilters);
+        const filterParams: FilterState = {
+          application,
+          fuelType,
+          payload,
+          priceRange,
+        };
+
+        setFilters(filterParams);
+
+        // Update URL with filters
+        const searchParams = new URLSearchParams({
+          application: String(application),
+          fuelType: String(fuelType),
+          payload: String(payload),
+          priceRange: String(priceRange),
+        });
+        navigate(`/products?${searchParams.toString()}`, { replace: true });
+
+        const response = await productFind(filterParams);
         setProducts(response.data?.data || []);
       } else {
         clearFilters();
+        navigate("/products", { replace: true });
         const data = await getProducts();
         setProducts(data);
       }
@@ -110,20 +189,17 @@ export default function Products() {
     }
   };
 
-  // Reset filters
-  const handleResetFilters = async () => {
-    setApplication("All");
-    setFuelType("All");
-    setPayload("All");
-    setPriceRange("All");
-    clearFilters();
-    setLoading(true);
-    try {
-      const data = await getProducts();
-      setProducts(data);
-    } finally {
-      setLoading(false);
-    }
+  // Reset filters → Navigate to clean URL
+  const handleResetFilters = () => {
+    // Reset local state
+    setApplication("all");
+    setFuelType("all");
+    setPayload("all");
+    setPriceRange("all");
+    setSearchTerm("");
+
+    // Navigate to clean URL - useEffect will handle loading all products
+    navigate("/products", { replace: true });
   };
 
   // Search filter (client-side)
@@ -161,6 +237,7 @@ export default function Products() {
   const clearSelection = () => {
     setSelected([]);
   };
+
   const handleDownloadBrochure = async (
     productId: string,
     brochureFile?: any
@@ -170,6 +247,7 @@ export default function Products() {
       return;
     }
 
+    setDownloadingId(productId); // show loader for this product
     try {
       const response = await downloadBrochureService(productId);
       const blob = new Blob([response.data], {
@@ -197,8 +275,11 @@ export default function Products() {
     } catch (err: any) {
       console.error("Download failed:", err);
       alert(`Download failed: ${err.message}`);
+    } finally {
+      setDownloadingId(null); // hide loader after response
     }
   };
+
   return (
     <div className="bg-black min-h-screen text-white relative">
       <Helmet>
@@ -216,9 +297,9 @@ export default function Products() {
       <div className="bg-black border-b border-gray-800">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center text-sm text-gray-400">
-            <a href="/" className="hover:text-white">
+            <Link to="/" className="hover:text-white">
               Home
-            </a>
+            </Link>
             <span className="mx-2">›</span>
             <span className="text-white">All Vehicles</span>
           </div>
@@ -228,115 +309,112 @@ export default function Products() {
       <div className="container mx-auto px-4 py-10">
         <div className="flex gap-8">
           {/* Sidebar Filters */}
-          <div className="w-72 bg-black rounded-lg border border-gray-800 h-fit p-5">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Filters</h2>
-              <button
-                onClick={handleResetFilters}
-                className="text-blue-500 text-sm hover:underline"
-              >
-                Reset All
-              </button>
-            </div>
-
-            {/* Search */}
-            <div className="relative mb-6">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search vehicles"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg bg-black text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Dropdowns */}
-            <div className="space-y-5">
-              {/* Application */}
-              <div className="relative">
-                <select
-                  value={application}
-                  onChange={(e) => setApplication(e.target.value)}
-                  className="appearance-none w-full bg-black border border-gray-700 px-4 py-3 rounded text-white focus:ring-2 focus:ring-blue-500 pr-10"
+          {/* Sidebar Filters */}
+          <div className="w-80 md:w-96 bg-black rounded-lg border border-gray-800 p-6 flex flex-col">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-5 h-5 text-blue-500" />
+                  <h2 className="text-base font-semibold">Filters</h2>
+                </div>
+                <button
+                  onClick={handleResetFilters}
+                  className="text-blue-500 text-xs hover:underline"
                 >
-                  <option value="All">Choose Application</option>
-                  <option value="Fruits & Vegetables">
-                    Fruits & Vegetables
-                  </option>
-                  <option value="Food Grain">Food Grain</option>
-                  <option value="Cement bags">Cement Bags</option>
-                  <option value="LPG">LPG</option>
-                  <option value="Milk">Milk</option>
-                  <option value="Fish">Fish</option>
-                  <option value="Market Load">Market Load</option>
-                  <option value="Animal husbandry">Animal Husbandry</option>
-                  <option value="Poultry">Poultry</option>
-                  <option value="Logistics">Logistics</option>
-                  <option value="FMCG">FMCG</option>
-                  <option value="Refrigrated Van">Refrigerated Van</option>
-                </select>
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  ▼
-                </span>
+                  Reset
+                </button>
               </div>
 
-              {/* Fuel Type */}
-              <div className="relative">
-                <select
-                  value={fuelType}
-                  onChange={(e) => setFuelType(e.target.value)}
-                  className="appearance-none w-full bg-black border border-gray-700 px-4 py-3 rounded text-white focus:ring-2 focus:ring-blue-500 pr-10"
-                >
-                  <option value="All">Choose Fuel Type</option>
-                  <option value="cng">CNG</option>
-                  <option value="diesel">Diesel</option>
-                  <option value="petrol">Petrol</option>
-                  <option value="cng_petrol">CNG+Petrol</option>
-                  <option value="electric">Electric</option>
-                </select>
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  ▼
-                </span>
+              {/* Search */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search vehicles"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-gray-700 rounded-md bg-black text-white placeholder-gray-400 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
 
-              {/* Payload */}
-              <div className="relative">
-                <select
-                  value={payload}
-                  onChange={(e) => setPayload(e.target.value)}
-                  className="appearance-none w-full bg-black border border-gray-700 px-4 py-3 rounded text-white focus:ring-2 focus:ring-blue-500 pr-10"
-                >
-                  <option value="All">Choose Payload</option>
-                  <option value="500-750">500 - 750 Kg</option>
-                  <option value="750-1500">750 - 1500 Kg</option>
-                  <option value="1500-3000">1500 - 3000 Kg</option>
-                  <option value="3000-6000">3000 - 6000 Kg</option>
-                  <option value="6000+">6000 Kg +</option>
-                </select>
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  ▼
-                </span>
-              </div>
+              {/* Dropdowns */}
+              <div className="space-y-3 text-sm">
+                {/* Application Dropdown */}
+                <div className="relative">
+                  <select
+                    value={application}
+                    onChange={(e) => setApplication(e.target.value)}
+                    className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
+                  >
+                    <option value="all">Application</option>
+                    {applications.map((app, idx) => (
+                      <option key={idx} value={app}>
+                        {app}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    ▼
+                  </span>
+                </div>
 
-              {/* Price Range */}
-              <div className="relative">
-                <select
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="appearance-none w-full bg-black border border-gray-700 px-4 py-3 rounded text-white focus:ring-2 focus:ring-blue-500 pr-10"
-                >
-                  <option value="All">Vehicle Price Range</option>
-                  <option value="5-15L">5 - 15 Lakhs</option>
-                  <option value="15-20L">15 - 20 Lakhs</option>
-                  <option value="20-25L">20 - 25 Lakhs</option>
-                  <option value="25-30L">25 - 30 Lakhs</option>
-                  <option value="30L+">30 Lakhs +</option>
-                </select>
+                {/* Fuel Type Dropdown */}
+                <div className="relative">
+                  <select
+                    value={fuelType}
+                    onChange={(e) => setFuelType(e.target.value)}
+                    className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
+                  >
+                    <option value="All">Choose Fuel Type</option>
+                    <option value="cng">CNG</option>
+                    <option value="diesel">Diesel</option>
+                    <option value="petrol">Petrol</option>
+                    <option value="cng_petrol">CNG+Petrol</option>
+                    <option value="electric">Electric</option>
+                    {/* Add more fuel types if needed */}
+                  </select>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    ▼
+                  </span>
+                </div>
 
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  ▼
-                </span>
+                {/* Payload Dropdown */}
+                <div className="relative">
+                  <select
+                    value={payload}
+                    onChange={(e) => setPayload(e.target.value)}
+                    className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
+                  >
+                    <option value="All">Choose Payload</option>
+                    <option value="500-750">500 - 750 Kg</option>
+                    <option value="750-1500">750 - 1500 Kg</option>
+                    <option value="1500-3000">1500 - 3000 Kg</option>
+                    <option value="3000-6000">3000 - 6000 Kg</option>
+                    <option value="6000+">6000 Kg +</option>
+                  </select>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    ▼
+                  </span>
+                </div>
+
+                {/* Price Range Dropdown */}
+                <div className="relative">
+                  <select
+                    value={priceRange}
+                    onChange={(e) => setPriceRange(e.target.value)}
+                    className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
+                  >
+                    <option value="All">Vehicle Price Range</option>
+                    <option value="5-15L">5 - 15 Lakhs</option>
+                    <option value="15-20L">15 - 20 Lakhs</option>
+                    <option value="20-25L">20 - 25 Lakhs</option>
+                    <option value="25-30L">25 - 30 Lakhs</option>
+                    <option value="30L+">30 Lakhs +</option>
+                  </select>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    ▼
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -379,36 +457,68 @@ export default function Products() {
 
           {/* Products Grid */}
           <div className="flex-1">
+            {/* Results Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">
+                {isFiltered ? "Filtered Results" : "All Vehicles"}
+              </h1>
+              <p className="text-gray-400">
+                {filteredProducts.length} vehicle
+                {filteredProducts.length !== 1 ? "s" : ""} found
+              </p>
+            </div>
+
             {loading ? (
               <div className="flex justify-center items-center py-20">
-                <div className="h-10 w-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-gray-400">Loading vehicles...</span>
+                </div>
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="text-center py-20 bg-gray-900 rounded-lg border border-gray-800">
-                <h3 className="text-lg font-medium mb-2">No vehicles found</h3>
-                <p className="text-gray-400 text-sm">
-                  {isFiltered
-                    ? "Try adjusting your filters"
-                    : "No products available"}
-                </p>
-                {isFiltered && (
-                  <Button
-                    onClick={handleResetFilters}
-                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    View All
-                  </Button>
-                )}
+                <div className="max-w-md mx-auto">
+                  <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">
+                    No vehicles found
+                  </h3>
+                  <p className="text-gray-400 text-sm mb-4">
+                    {searchTerm
+                      ? `No results for "${searchTerm}"`
+                      : isFiltered
+                      ? "Try adjusting your filters"
+                      : "No products available"}
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    {searchTerm && (
+                      <Button
+                        onClick={() => setSearchTerm("")}
+                        variant="outline"
+                        className="bg-transparent border-gray-700 text-white hover:bg-gray-800"
+                      >
+                        Clear Search
+                      </Button>
+                    )}
+                    {isFiltered && (
+                      <Button
+                        onClick={handleResetFilters}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        View All Vehicles
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProducts.map((v) => (
                   <Card
                     key={v._id}
-                    className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden group relative"
+                    className="bg-black border border-gray-800 rounded-lg overflow-hidden group relative w-[280px] md:w-[300px]"
                   >
-                    {/* Checkbox top-right */}
-                    <div className="absolute top-3 right-3 z-10">
+                    {/* ✅ Checkbox Row (above the image, not overlapping) */}
+                    <div className="flex items-center justify-end space-x-2 px-3 pt-3">
                       <input
                         type="checkbox"
                         checked={selected.includes(v._id)}
@@ -417,11 +527,18 @@ export default function Products() {
                         disabled={
                           !selected.includes(v._id) && selected.length >= 2
                         }
-                      />
+                      />{" "}
+                      <label
+                        htmlFor={`compare-${v._id}`}
+                        className="text-sm text-white cursor-pointer"
+                      >
+                        Compare
+                      </label>
                     </div>
 
-                    <CardHeader className="p-0">
-                      <div className="aspect-[4/3] bg-black overflow-hidden">
+                    {/* Product Image */}
+                    <CardHeader className="p-0 bg-black">
+                      <div className="aspect-[4/3] overflow-hidden flex items-center justify-center bg-black">
                         <img
                           src={v.images?.[0]}
                           alt={v.title}
@@ -430,26 +547,32 @@ export default function Products() {
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-6 flex flex-col">
-                      <CardTitle className="text-lg font-semibold text-white mb-3">
+                    {/* Product Content */}
+                    <CardContent className="p-4 flex flex-col bg-black text-white">
+                      {/* Title */}
+                      <CardTitle className="text-lg font-semibold mb-3 text-white">
                         {v.title}
                       </CardTitle>
 
-                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                        {v.description}
-                      </p>
-
-                      <div className="flex justify-between text-sm text-gray-300 mb-4 border-t border-gray-700 pt-4">
+                      {/* Specs row */}
+                      <div className="grid grid-cols-3 gap-4 text-center text-sm text-gray-300 mb-4">
                         <div>
-                          <p className="font-semibold">{v.price}</p>
-                          <p className="text-xs">Price</p>
+                          <p className="font-bold text-white">{v.gvw}</p>
+                          <p className="text-xs text-gray-400">Tonnage (GVW)</p>
                         </div>
                         <div>
-                          <p className="font-semibold">{v.category}</p>
-                          <p className="text-xs">Category</p>
+                          <p className="font-bold text-white">
+                            {v.fuelTankCapacity}
+                          </p>
+                          <p className="text-xs text-gray-400">Fuel Tank</p>
+                        </div>
+                        <div>
+                          <p className="font-bold text-white">{v.payload}</p>
+                          <p className="text-xs text-gray-400">Payload</p>
                         </div>
                       </div>
 
+                      {/* Buttons */}
                       <div className="flex gap-3 mt-auto">
                         <Link
                           to={`/products/${v._id}`}

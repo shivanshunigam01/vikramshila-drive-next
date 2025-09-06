@@ -62,7 +62,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="relative bg-black mt-6 md:mt-8 py-6 md:py-8">
+    <section className="relative ">
       <Carousel setApi={setApi} className="w-full">
         <CarouselContent>
           {banners.map((img, idx) => (

@@ -11,9 +11,12 @@ export const productFind = (payload: any) => {
   return axios.post(`${API}/products/filter`, payload);
 };
 
-
 export const downloadBrochureService = (id: string) => {
   return axios.get(`${API}/products/${id}/download-brochure`, {
     responseType: "blob", // important for file downloads
-  })
+  });
+};
+
+export const applicationFind = (payload: any) => {
+  return axios.get(`${API}/products/applications/list`, { params: payload });
 };
