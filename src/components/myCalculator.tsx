@@ -1,7 +1,7 @@
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function formatINR(n: number) {
@@ -25,17 +25,51 @@ interface Product {
 interface MyCalculatorProps {
   initialPrice?: number;
   selectedProduct?: Product;
+  selectedProducts?: Product[]; // when 2 products
+  onApplyFinance?: (args: {
+    financeData: {
+      vehiclePrice: number;
+      downPaymentPercentage: number;
+      downPaymentAmount: number;
+      tenure: number; // months
+      interestRate: number;
+      loanAmount: number;
+      estimatedEMI: number;
+    };
+    financedProductId: string;
+  }) => void;
 }
 
 export default function MyCalculator({
   initialPrice = 599000,
   selectedProduct,
+  selectedProducts,
+  onApplyFinance,
 }: MyCalculatorProps) {
   const [price, setPrice] = useState(initialPrice);
   const [downPct, setDownPct] = useState(10);
   const [tenure, setTenure] = useState(36);
   const [roi, setRoi] = useState(9.5);
   const navigate = useNavigate();
+
+  const defaultTarget =
+    selectedProduct ??
+    (selectedProducts && selectedProducts.length > 0
+      ? selectedProducts[0]
+      : undefined);
+
+  const [financeTarget, setFinanceTarget] = useState<Product | undefined>(
+    defaultTarget
+  );
+
+  useEffect(() => {
+    if (financeTarget?.price) {
+      const p = parseInt(financeTarget.price as unknown as string, 10);
+      if (!Number.isNaN(p)) setPrice(p);
+    } else {
+      setPrice(initialPrice);
+    }
+  }, [financeTarget, initialPrice]);
 
   const downPayment = useMemo(
     () => Math.round((downPct / 100) * price),
@@ -53,7 +87,7 @@ export default function MyCalculator({
     return Math.round(e);
   }, [principal, roi, tenure]);
 
-  const handleReviewQuote = () => {
+  const handleContinue = () => {
     const financeData = {
       vehiclePrice: price,
       downPaymentPercentage: downPct,
@@ -64,12 +98,18 @@ export default function MyCalculator({
       estimatedEMI: emi,
     };
 
-    // Navigate to review page with both product and finance data
-    navigate("/review", {
-      state: {
-        product: selectedProduct,
+    // Two-product flow → call back to parent to open TCO
+    if (selectedProducts && selectedProducts.length === 2 && onApplyFinance) {
+      onApplyFinance({
         financeData,
-      },
+        financedProductId: financeTarget?._id ?? selectedProducts[0]._id,
+      });
+      return;
+    }
+
+    // Single-product flow → same as before
+    navigate("/review", {
+      state: { product: selectedProduct, financeData },
     });
   };
 
@@ -85,6 +125,30 @@ export default function MyCalculator({
             Adjust sliders to estimate your EMI instantly.
           </p>
         </header>
+
+        {selectedProducts && selectedProducts.length === 2 && (
+          <div className="mb-6">
+            <label className="text-sm font-medium text-gray-300">
+              Choose vehicle to finance
+            </label>
+            <select
+              className="mt-2 w-full bg-gray-900 border border-gray-700 text-white rounded px-3 py-2 text-sm"
+              value={financeTarget?._id}
+              onChange={(e) => {
+                const next = selectedProducts.find(
+                  (p) => p._id === e.target.value
+                );
+                setFinanceTarget(next);
+              }}
+            >
+              {selectedProducts.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Controls */}
@@ -164,13 +228,14 @@ export default function MyCalculator({
               </div>
             </div>
 
-            {/* Single Button */}
             <div className="mt-6">
               <Button
-                onClick={handleReviewQuote}
+                onClick={handleContinue}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm"
               >
-                Review & Submit Quote for the Product
+                {selectedProducts && selectedProducts.length === 2
+                  ? "Apply Finance & Continue to TCO"
+                  : "Review & Submit Quote for the Product"}
               </Button>
             </div>
           </div>

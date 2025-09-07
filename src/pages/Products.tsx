@@ -9,8 +9,8 @@ import {
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
-import { Search, Download, Filter } from "lucide-react";
-import { ReactNode, useEffect, useState } from "react";
+import { Search, Filter } from "lucide-react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { getProducts } from "@/services/product";
 import {
   downloadBrochureService,
@@ -19,8 +19,8 @@ import {
 } from "@/services/productService";
 import { useFilter } from "@/contexts/FilterContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import FinanceCalculator from "@/components/home/FinanceCalculator";
 import MyCalculator from "@/components/myCalculator";
+import TcoCalculator, { TcoResult, TcoInput } from "@/components/TcoCalculator";
 
 interface Product {
   gvw: ReactNode;
@@ -38,6 +38,12 @@ interface Product {
   fuelType?: string;
   payload?: string;
   priceRange?: string;
+
+  // optional backend fields used by TCO
+  mileage?: string; // e.g. "6 km/l"
+  tyreLife?: string; // e.g. "60000 km"
+  tyresCost?: string | number; // e.g. "60000"
+  freightRate?: string;
 }
 
 interface FilterState {
@@ -45,6 +51,17 @@ interface FilterState {
   fuelType: string;
   payload: string;
   priceRange: string;
+}
+
+function numOnly(v?: string | number) {
+  if (v == null) return NaN;
+  if (typeof v === "number") return v;
+  const cleaned = String(v).replace(/[,₹\s]/g, "");
+  const m = cleaned.match(/-?\d+(\.\d+)?/);
+  return m ? parseFloat(m[0]) : NaN;
+}
+function kmNumber(s?: string) {
+  return numOnly(s);
 }
 
 export default function Products() {
@@ -57,23 +74,35 @@ export default function Products() {
   const { setFilters, isFiltered, clearFilters } = useFilter();
   const location = useLocation();
 
-  // Local dropdown states (not triggering API automatically)
+  // Local dropdown states
   const [application, setApplication] = useState("all");
   const [fuelType, setFuelType] = useState("all");
   const [payload, setPayload] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
 
-  // Track selected products
+  // Selection / modals
   const [selected, setSelected] = useState<string[]>([]);
   const [showCalculator, setShowCalculator] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  // TCO modal (now opened AFTER finance)
+  const [showTco, setShowTco] = useState(false);
+  const [tcoInitialInputs, setTcoInitialInputs] = useState<TcoInput[] | null>(
+    null
+  );
+
+  // Keep the two selected Product objects handy
+  const selectedProducts = useMemo(
+    () => products.filter((p) => selected.includes(p._id)).slice(0, 2),
+    [selected, products]
+  );
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Fetch Applications from API
+  // Fetch Applications
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -90,7 +119,7 @@ export default function Products() {
   }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProductsAsync = async () => {
       setLoading(true);
       try {
         const searchParams = new URLSearchParams(location.search);
@@ -128,11 +157,11 @@ export default function Products() {
         if (Object.keys(filters).length > 0) {
           const response = await productFind(filters);
           setProducts(response.data?.data || []);
-          setFilters(filters); // ✅ safe inside effect body
+          setFilters(filters);
         } else {
           const data = await getProducts();
           setProducts(data);
-          clearFilters(); // reset when no filters
+          clearFilters();
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -142,10 +171,9 @@ export default function Products() {
       }
     };
 
-    fetchProducts();
-  }, [location.search]); // ✅ removed setFilters
+    fetchProductsAsync();
+  }, [location.search]);
 
-  // Apply Filters → Fetch API once
   const handleApplyFilters = async () => {
     setLoading(true);
     try {
@@ -163,8 +191,6 @@ export default function Products() {
         };
 
         setFilters(filterParams);
-
-        // Update URL with filters
         const searchParams = new URLSearchParams({
           application: String(application),
           fuelType: String(fuelType),
@@ -189,32 +215,26 @@ export default function Products() {
     }
   };
 
-  // Reset filters → Navigate to clean URL
   const handleResetFilters = () => {
-    // Reset local state
     setApplication("all");
     setFuelType("all");
     setPayload("all");
     setPriceRange("all");
     setSearchTerm("");
-
-    // Navigate to clean URL - useEffect will handle loading all products
     navigate("/products", { replace: true });
   };
 
-  // Search filter (client-side)
   const filteredProducts = products.filter((p) =>
     p.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle checkbox select
   const toggleSelect = (id: string) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  // Open Finance Calculator modal
+  // Single-product flow → open Finance for that one product
   const openCalculator = () => {
     if (selected.length === 1) {
       const product = products.find((p) => p._id === selected[0]);
@@ -225,18 +245,70 @@ export default function Products() {
     }
   };
 
-  // Navigate to comparison page
+  // TWO-product flow → open Finance FIRST (not TCO)
   const handleCompareProducts = () => {
     if (selected.length === 2) {
-      const productIds = selected.join(",");
-      navigate(`/compare/${productIds}`);
+      setSelectedProduct(null); // not used in 2-product mode
+      setShowCalculator(true);
     }
   };
 
-  // Clear selection
-  const clearSelection = () => {
-    setSelected([]);
+  // Finance done callback (from MyCalculator) → seed TCO for BOTH products
+  const handleFinanceDone = ({
+    financeData,
+    financedProductId,
+  }: {
+    financeData: {
+      vehiclePrice: number;
+      downPaymentPercentage: number;
+      downPaymentAmount: number;
+      tenure: number; // months
+      interestRate: number;
+      loanAmount: number;
+      estimatedEMI: number;
+    };
+    financedProductId: string;
+  }) => {
+    // Seed each product’s TCO using the SAME finance assumptions (roi, tenure, down%),
+    // but with its OWN vehicle price; keep API defaults for mileage/tyres where available.
+    const pct = financeData.downPaymentPercentage / 100;
+    const tenureYears = Math.max(1, Math.round(financeData.tenure / 12));
+
+    const inputs: TcoInput[] = selectedProducts.map((p) => {
+      const price = numOnly(p.price) || 0;
+      const down = Math.round(price * pct);
+      const loan = Math.max(price - down, 0);
+
+      return {
+        vehiclePrice: price,
+        loanAmount: loan,
+        interestRate: financeData.interestRate,
+        tenureYears,
+        downPayment: down,
+        monthlyRunning: 3000,
+        mileage: kmNumber(p.mileage) || 0,
+        fuelPrice: 95,
+        monthlyMaintenance: 2500,
+        insuranceYear: 40000,
+        tyresCost: numOnly(p.tyresCost) || 0,
+        tyreLife: kmNumber(p.tyreLife) || 0,
+        resalePct5yr: 25,
+      };
+    });
+
+    setTcoInitialInputs(inputs);
+    setShowCalculator(false);
+    setShowTco(true);
   };
+
+  const handleTcoDone = (results: TcoResult[]) => {
+    const productIds = selected.join(",");
+    navigate(`/compare/${productIds}`, {
+      state: { tcoResults: results },
+    });
+  };
+
+  const clearSelection = () => setSelected([]);
 
   const handleDownloadBrochure = async (
     productId: string,
@@ -247,7 +319,7 @@ export default function Products() {
       return;
     }
 
-    setDownloadingId(productId); // show loader for this product
+    setDownloadingId(productId);
     try {
       const response = await downloadBrochureService(productId);
       const blob = new Blob([response.data], {
@@ -276,7 +348,7 @@ export default function Products() {
       console.error("Download failed:", err);
       alert(`Download failed: ${err.message}`);
     } finally {
-      setDownloadingId(null); // hide loader after response
+      setDownloadingId(null);
     }
   };
 
@@ -309,7 +381,6 @@ export default function Products() {
       <div className="container mx-auto px-4 py-10">
         <div className="flex gap-8">
           {/* Sidebar Filters */}
-          {/* Sidebar Filters */}
           <div className="w-80 md:w-96 bg-black rounded-lg border border-gray-800 p-6 flex flex-col">
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -339,7 +410,6 @@ export default function Products() {
 
               {/* Dropdowns */}
               <div className="space-y-3 text-sm">
-                {/* Application Dropdown */}
                 <div className="relative">
                   <select
                     value={application}
@@ -358,7 +428,6 @@ export default function Products() {
                   </span>
                 </div>
 
-                {/* Fuel Type Dropdown */}
                 <div className="relative">
                   <select
                     value={fuelType}
@@ -371,14 +440,12 @@ export default function Products() {
                     <option value="petrol">Petrol</option>
                     <option value="cng_petrol">CNG+Petrol</option>
                     <option value="electric">Electric</option>
-                    {/* Add more fuel types if needed */}
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     ▼
                   </span>
                 </div>
 
-                {/* Payload Dropdown */}
                 <div className="relative">
                   <select
                     value={payload}
@@ -397,7 +464,6 @@ export default function Products() {
                   </span>
                 </div>
 
-                {/* Price Range Dropdown */}
                 <div className="relative">
                   <select
                     value={priceRange}
@@ -418,7 +484,6 @@ export default function Products() {
               </div>
             </div>
 
-            {/* Apply Filters */}
             <Button
               onClick={handleApplyFilters}
               className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
@@ -426,7 +491,6 @@ export default function Products() {
               Apply Filters
             </Button>
 
-            {/* Selection Info */}
             {selected.length > 0 && (
               <div className="mt-6 p-4 bg-gray-800 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
@@ -457,7 +521,6 @@ export default function Products() {
 
           {/* Products Grid */}
           <div className="flex-1">
-            {/* Results Header */}
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold">
                 {isFiltered ? "Filtered Results" : "All Vehicles"}
@@ -517,7 +580,6 @@ export default function Products() {
                     key={v._id}
                     className="bg-black border border-gray-800 rounded-lg overflow-hidden group relative w-[280px] md:w-[300px]"
                   >
-                    {/* ✅ Checkbox Row (above the image, not overlapping) */}
                     <div className="flex items-center justify-end space-x-2 px-3 pt-3">
                       <input
                         type="checkbox"
@@ -527,7 +589,7 @@ export default function Products() {
                         disabled={
                           !selected.includes(v._id) && selected.length >= 2
                         }
-                      />{" "}
+                      />
                       <label
                         htmlFor={`compare-${v._id}`}
                         className="text-sm text-white cursor-pointer"
@@ -536,7 +598,6 @@ export default function Products() {
                       </label>
                     </div>
 
-                    {/* Product Image */}
                     <CardHeader className="p-0 bg-black">
                       <div className="aspect-[4/3] overflow-hidden flex items-center justify-center bg-black">
                         <img
@@ -547,14 +608,11 @@ export default function Products() {
                       </div>
                     </CardHeader>
 
-                    {/* Product Content */}
                     <CardContent className="p-4 flex flex-col bg-black text-white">
-                      {/* Title */}
                       <CardTitle className="text-lg font-semibold mb-3 text-white">
                         {v.title}
                       </CardTitle>
 
-                      {/* Specs row */}
                       <div className="grid grid-cols-3 gap-4 text-center text-sm text-gray-300 mb-4">
                         <div>
                           <p className="font-bold text-white">{v.gvw}</p>
@@ -572,7 +630,6 @@ export default function Products() {
                         </div>
                       </div>
 
-                      {/* Buttons */}
                       <div className="flex gap-3 mt-auto">
                         <Link
                           to={`/products/${v._id}`}
@@ -644,7 +701,7 @@ export default function Products() {
 
       {/* Finance Calculator Modal */}
       <Dialog open={showCalculator} onOpenChange={setShowCalculator}>
-        <DialogContent className="max-w-3xl bg-black text-white">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-black text-white">
           <DialogHeader>
             <DialogTitle>Finance Calculator</DialogTitle>
           </DialogHeader>
@@ -654,10 +711,23 @@ export default function Products() {
                 ? parseInt(selectedProduct.price, 10)
                 : 599000
             }
-            selectedProduct={selectedProduct}
+            selectedProduct={selectedProduct as any}
+            selectedProducts={selectedProducts as any}
+            onApplyFinance={handleFinanceDone} // <- NEW
           />
         </DialogContent>
       </Dialog>
+
+      {/* TCO Calculator Modal (opens AFTER finance for 2 products) */}
+      {selected.length === 2 && (
+        <TcoCalculator
+          open={showTco}
+          onOpenChange={setShowTco}
+          products={selectedProducts as any}
+          onDone={handleTcoDone}
+          initialInputs={tcoInitialInputs || undefined} // <- NEW
+        />
+      )}
 
       <Footer />
     </div>
