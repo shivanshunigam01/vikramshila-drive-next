@@ -19,8 +19,13 @@ import {
 } from "@/services/productService";
 import { useFilter } from "@/contexts/FilterContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import MyCalculator from "@/components/myCalculator";
+
 import TcoCalculator, { TcoResult, TcoInput } from "@/components/TcoCalculator";
+import ProfitCalculator, {
+  ProfitInput,
+  ProfitResult,
+} from "@/components/ProfitCalculator";
+import MyCalculator from "@/components/myCalculator";
 
 interface Product {
   gvw: ReactNode;
@@ -30,20 +35,20 @@ interface Product {
   price: string;
   category: string;
   images?: string[];
-  brochureFile?: string;
+  brochureFile?: any;
   tonnage?: string;
   fuelTankCapacity?: string;
   gradeability?: string;
   application?: string;
   fuelType?: string;
-  payload?: string;
+  payload?: string; // e.g., "2000 Kg"
   priceRange?: string;
 
   // optional backend fields used by TCO
   mileage?: string; // e.g. "6 km/l"
   tyreLife?: string; // e.g. "60000 km"
   tyresCost?: string | number; // e.g. "60000"
-  freightRate?: string;
+  freightRate?: string; // e.g. "28"
 }
 
 interface FilterState {
@@ -63,16 +68,24 @@ function numOnly(v?: string | number) {
 function kmNumber(s?: string) {
   return numOnly(s);
 }
+function toTons(payloadStr?: string): number {
+  if (!payloadStr) return 1;
+  const n = parseFloat(String(payloadStr).replace(/[^\d.]/g, ""));
+  if (!isFinite(n) || n <= 0) return 1;
+  // assume if value > 100 it is kg; else already tons
+  return n > 100 ? n / 1000 : n;
+}
 
 export default function Products() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<string[]>([]);
 
   const { setFilters, isFiltered, clearFilters } = useFilter();
-  const location = useLocation();
 
   // Local dropdown states
   const [application, setApplication] = useState("all");
@@ -86,11 +99,20 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // TCO modal (now opened AFTER finance)
+  // TCO modal (opens after Finance)
   const [showTco, setShowTco] = useState(false);
   const [tcoInitialInputs, setTcoInitialInputs] = useState<TcoInput[] | null>(
     null
   );
+  const [lastTcoResults, setLastTcoResults] = useState<TcoResult[] | null>(
+    null
+  );
+
+  // Profit modal (opens after TCO)
+  const [showProfit, setShowProfit] = useState(false);
+  const [profitInitialInputs, setProfitInitialInputs] = useState<
+    ProfitInput[] | null
+  >(null);
 
   // Keep the two selected Product objects handy
   const selectedProducts = useMemo(
@@ -118,6 +140,7 @@ export default function Products() {
     fetchApplications();
   }, []);
 
+  // Fetch products (and optionally restore modal state when returning from Compare)
   useEffect(() => {
     const fetchProductsAsync = async () => {
       setLoading(true);
@@ -174,6 +197,64 @@ export default function Products() {
     fetchProductsAsync();
   }, [location.search]);
 
+  // Reopen flow when coming "Back" from Compare (Compare navigates with state)
+  useEffect(() => {
+    const s = location.state as
+      | {
+          reopen?: "profit" | "tco" | "finance";
+          selectedIds?: string[];
+          tcoResults?: TcoResult[];
+          profitResults?: ProfitResult[]; // <-- accept profit results too
+        }
+      | undefined;
+
+    if (!s) return;
+
+    if (s.selectedIds?.length) setSelected(s.selectedIds);
+
+    if (s.tcoResults) {
+      setLastTcoResults(s.tcoResults);
+      setTcoInputsFromResults(s.tcoResults);
+    }
+
+    // If profit results are provided, seed Profit inputs *first*,
+    // then open the modal so it renders fully populated.
+    if (s.reopen === "profit") {
+      if (s.profitResults?.length) {
+        setProfitInitialInputs(s.profitResults.map((r) => r.inputs));
+        // ensure we have the same selected product objects
+        // (wait until products are loaded and selectedProducts resolves)
+        const waitAndOpen = setInterval(() => {
+          const ready =
+            selectedProducts.length > 0 &&
+            (!!profitInitialInputs ||
+              s.profitResults?.length === selectedProducts.length);
+          if (ready) {
+            setShowProfit(true);
+            clearInterval(waitAndOpen);
+          }
+        }, 0);
+      } else {
+        // fallback: seed from TCO and then open
+        const inputs = makeProfitSeedsFromTco(
+          products.filter((p) => s.selectedIds?.includes(p._id)) as Product[],
+          s.tcoResults || lastTcoResults || []
+        );
+        setProfitInitialInputs(inputs);
+        setShowProfit(true);
+      }
+    } else if (s.reopen === "tco") {
+      setShowTco(true);
+    } else if (s.reopen === "finance") {
+      setShowCalculator(true);
+    }
+
+    // clean the state
+    if (s.reopen) {
+      navigate(location.pathname + location.search, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
   const handleApplyFilters = async () => {
     setLoading(true);
     try {
@@ -245,7 +326,7 @@ export default function Products() {
     }
   };
 
-  // TWO-product flow → open Finance FIRST (not TCO)
+  // TWO-product flow → open Finance FIRST
   const handleCompareProducts = () => {
     if (selected.length === 2) {
       setSelectedProduct(null); // not used in 2-product mode
@@ -256,7 +337,6 @@ export default function Products() {
   // Finance done callback (from MyCalculator) → seed TCO for BOTH products
   const handleFinanceDone = ({
     financeData,
-    financedProductId,
   }: {
     financeData: {
       vehiclePrice: number;
@@ -267,10 +347,8 @@ export default function Products() {
       loanAmount: number;
       estimatedEMI: number;
     };
-    financedProductId: string;
   }) => {
-    // Seed each product’s TCO using the SAME finance assumptions (roi, tenure, down%),
-    // but with its OWN vehicle price; keep API defaults for mileage/tyres where available.
+    // Seed each product’s TCO using SAME finance assumptions, but product-specific price
     const pct = financeData.downPaymentPercentage / 100;
     const tenureYears = Math.max(1, Math.round(financeData.tenure / 12));
 
@@ -301,10 +379,81 @@ export default function Products() {
     setShowTco(true);
   };
 
+  const handleTcoBack = () => {
+    // Back to Finance
+    setShowTco(false);
+    setShowCalculator(true);
+  };
+
+  const setTcoInputsFromResults = (results?: TcoResult[] | null) => {
+    if (!results || !results.length) return;
+    setTcoInitialInputs(results.map((r) => r.inputs));
+  };
+  const handleProfitBack = () => {
+    // restore TCO form exactly as it was when you clicked Continue
+    setTcoInputsFromResults(lastTcoResults);
+    setShowProfit(false);
+    setShowTco(true);
+  };
   const handleTcoDone = (results: TcoResult[]) => {
+    // Store TCO results and open Profit Calculator with seeded inputs
+    setLastTcoResults(results);
+
+    const inputs: ProfitInput[] = makeProfitSeedsFromTco(
+      selectedProducts,
+      results
+    );
+    setProfitInitialInputs(inputs);
+    setShowTco(false);
+    setShowProfit(true);
+  };
+
+  function makeProfitSeedsFromTco(
+    productsList: Product[],
+    tcoResults: TcoResult[]
+  ): ProfitInput[] {
+    const byId = tcoResults.reduce<Record<string, TcoResult>>((acc, r) => {
+      acc[r.productId] = r;
+      return acc;
+    }, {});
+    return productsList.map((p) => {
+      const t = byId[p._id];
+      const vehiclePrice =
+        t?.inputs?.vehiclePrice ??
+        (isFinite(numOnly(p.price)) ? numOnly(p.price) : 0);
+      const tcoPerKm = t ? t.costPerKm : 15;
+      const monthlyRunning = t?.inputs?.monthlyRunning ?? 3000;
+      const downPayment =
+        t?.inputs?.downPayment ?? Math.round(vehiclePrice * 0.1);
+      const resalePct5yr = t?.inputs?.resalePct5yr ?? 25;
+      const billedPct = 85;
+      const addOnPerKm = 2;
+      const fixedAddOns = 3000;
+      const freightRate = isFinite(numOnly(p.freightRate))
+        ? numOnly(p.freightRate)
+        : 28;
+      const payloadTon = toTons(p.payload);
+
+      return {
+        vehiclePrice,
+        tcoPerKm,
+        monthlyRunning,
+        billedPct,
+        freightRate,
+        addOnPerKm,
+        fixedAddOns,
+        downPayment,
+        resalePct5yr,
+        payloadTon,
+      };
+    });
+  }
+
+  const handleProfitDone = (profitResults: ProfitResult[]) => {
+    // Proceed to Compare with both TCO + Profit results
     const productIds = selected.join(",");
     navigate(`/compare/${productIds}`, {
-      state: { tcoResults: results },
+      state: { tcoResults: lastTcoResults, profitResults },
     });
   };
 
@@ -592,9 +741,9 @@ export default function Products() {
                       />
                       <label
                         htmlFor={`compare-${v._id}`}
-                        className="text-sm text-white cursor-pointer"
+                        className="text-white cursor-pointer"
                       >
-                        Compare
+                        <span className="text-xs">Compare</span>
                       </label>
                     </div>
 
@@ -644,7 +793,7 @@ export default function Products() {
                             }
                             className="flex items-center justify-center w-11 h-11 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
                           >
-                            PDF
+                            {downloadingId === v._id ? "…" : "PDF"}
                           </button>
                         )}
                       </div>
@@ -701,7 +850,7 @@ export default function Products() {
 
       {/* Finance Calculator Modal */}
       <Dialog open={showCalculator} onOpenChange={setShowCalculator}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-black text-white">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-black text-white">
           <DialogHeader>
             <DialogTitle>Finance Calculator</DialogTitle>
           </DialogHeader>
@@ -713,21 +862,41 @@ export default function Products() {
             }
             selectedProduct={selectedProduct as any}
             selectedProducts={selectedProducts as any}
-            onApplyFinance={handleFinanceDone} // <- NEW
+            onApplyFinance={handleFinanceDone}
+            onBack={() => setShowCalculator(false)} // Back to Products
           />
         </DialogContent>
       </Dialog>
 
-      {/* TCO Calculator Modal (opens AFTER finance for 2 products) */}
-      {selected.length === 2 && (
+      {/* TCO Calculator Modal */}
+      {selected.length >= 1 && (
         <TcoCalculator
           open={showTco}
           onOpenChange={setShowTco}
           products={selectedProducts as any}
           onDone={handleTcoDone}
-          initialInputs={tcoInitialInputs || undefined} // <- NEW
+          onBack={handleTcoBack}
+          initialInputs={tcoInitialInputs || undefined}
         />
       )}
+
+      {/* Profit Calculator Modal */}
+      {selected.length >= 1 &&
+        showProfit &&
+        profitInitialInputs &&
+        profitInitialInputs.length === selectedProducts.length && (
+          <ProfitCalculator
+            open={true}
+            onOpenChange={setShowProfit}
+            products={selectedProducts.map((p) => ({
+              _id: p._id,
+              title: p.title,
+            }))}
+            initialInputs={profitInitialInputs}
+            onDone={handleProfitDone}
+            onBack={handleProfitBack} // <-- reopen TCO with previous values
+          />
+        )}
 
       <Footer />
     </div>

@@ -30,19 +30,20 @@ export default function TruckFinder() {
   }, []);
   // ✅ Handle Find Now
   const handleFindNow = async () => {
-    try {
-      const filterParams: Record<string, string> = {
-        ...(application !== "all" && { application }),
-        ...(fuelType !== "all" && { fuelType }),
-        ...(payload !== "all" && { payload }),
-        ...(priceRange !== "all" && { priceRange }),
-      };
+    const filterParams: Record<string, string> = {
+      ...(application !== "all" && { application }),
+      ...(fuelType !== "all" && { fuelType }),
+      ...(payload !== "all" && { payload }),
+      ...(priceRange !== "all" && { priceRange }),
+    };
 
-      const searchParams = new URLSearchParams(filterParams);
-      navigate(`/products?${searchParams.toString()}`);
-    } catch (error: any) {
-      alert(error.message || "Something went wrong");
-    }
+    // Option A: navigate and let Products page fetch with GET /products/filter
+    const searchParams = new URLSearchParams(filterParams);
+    navigate(`/products?${searchParams.toString()}`);
+
+    // Option B: or fetch right here (if you render results on the same page)
+    // const { data } = await axios.get(`/api/products/filter`, { params: filterParams });
+    // setResults(data.data);
   };
 
   return (
