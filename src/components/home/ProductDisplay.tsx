@@ -1,4 +1,3 @@
-// ProductDisplay.tsx
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ export default function ProductDisplay() {
       .then((res) => {
         if (res.data?.data && Array.isArray(res.data.data)) {
           const seen = new Set();
-          // keep a single representative per category (unchanged)
           const uniqueCategoryProducts = res.data.data.filter((item: any) => {
             const cat = item.category || "Others";
             if (!seen.has(cat)) {
@@ -75,10 +73,9 @@ export default function ProductDisplay() {
           </h2>
         </header>
 
-        {/* Card grid styled like New Launch cards */}
+        {/* Grid of product cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((p: any) => {
-            const category = p.category || "Others";
             const image = p.images?.[0];
 
             return (
@@ -86,14 +83,14 @@ export default function ProductDisplay() {
                 key={p._id}
                 className="bg-black border border-gray-800 rounded-2xl overflow-hidden group relative"
               >
-                {/* Image header (no description block) */}
+                {/* Image wrapper (uniform height & ratio) */}
                 <CardHeader className="p-0 bg-black">
-                  <div className="aspect-[4/3] overflow-hidden flex items-center justify-center bg-black">
+                  <div className="h-56 md:h-64 flex items-center justify-center bg-black/80">
                     {image ? (
                       <img
                         src={image}
-                        alt={category}
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        alt={p.title}
+                        className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                         loading="lazy"
                       />
                     ) : (
@@ -104,11 +101,12 @@ export default function ProductDisplay() {
 
                 {/* Content */}
                 <CardContent className="p-4 flex flex-col bg-black text-white">
-                  <CardTitle className="text-lg font-semibold mb-3 text-white uppercase">
-                    {category}
+                  {/* Show product title instead of category */}
+                  <CardTitle className="text-lg font-semibold mb-3 text-white">
+                    {p.title || "Untitled Product"}
                   </CardTitle>
 
-                  {/* 3 spec columns, like the New Launch card */}
+                  {/* 3 spec columns */}
                   <div className="grid grid-cols-3 gap-4 text-center text-sm text-gray-300 mb-4">
                     <div>
                       <p className="font-bold text-white">{p.gvw || "—"}</p>
@@ -126,17 +124,15 @@ export default function ProductDisplay() {
                     </div>
                   </div>
 
-                  {/* Buttons row */}
+                  {/* Buttons */}
                   <div className="flex gap-3 mt-auto">
-                    {/* Keep your original CTA: goes to Products filtered by category */}
                     <Link
-                      to={`/products?category=${encodeURIComponent(category)}`}
+                      to={`/products/${p._id}`}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-center"
                     >
-                      Know More
+                      Explore {p.category || "Product"}
                     </Link>
 
-                    {/* Round PDF button only if brochure exists */}
                     {p.brochureFile ? (
                       <button
                         onClick={() => handleDownload(p)}
