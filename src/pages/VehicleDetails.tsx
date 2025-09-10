@@ -9,6 +9,8 @@ import { openEnquiryDialog } from "@/components/common/EnquiryDialog";
 import { getProductById } from "@/services/product";
 import { downloadBrochureService } from "@/services/productService";
 
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react"; // optional icon; remove if not using lucide
 export default function VehicleDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState<any | null>(null);
@@ -17,6 +19,8 @@ export default function VehicleDetails() {
   const [activeTab, setActiveTab] = useState<
     "overview" | "specs" | "reviews" | "testimonials"
   >("overview");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (id) {
@@ -113,6 +117,32 @@ export default function VehicleDetails() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+        {/* Back + Breadcrumb */}
+        <nav className="px-1 mb-6 flex items-center justify-between">
+          {/* Back button (history-aware) */}
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 rounded-full bg-gray-900/70 hover:bg-gray-800 border border-gray-700 text-gray-200 px-3 py-1.5 transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="text-sm">Back</span>
+          </button>
+
+          {/* Breadcrumb (Home › All Vehicles) */}
+          <ol className="flex items-center gap-2 text-sm">
+            <li>
+              <Link
+                to="/"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Home
+              </Link>
+            </li>
+            <li className="text-gray-500">›</li>
+            <li className="text-white font-semibold">Vehicle Details</li>
+          </ol>
+        </nav>
         {/* Hero Section */}
         <section className="grid lg:grid-cols-2 gap-8 items-center">
           <div className="rounded-2xl overflow-hidden shadow-lg">
