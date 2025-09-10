@@ -114,7 +114,7 @@ export default function TruckFinder() {
             </span>
           </div>
 
-          {/* Payload Dropdown */}
+          {/* Payload Dropdown (same options as Products page) */}
           <div className="relative">
             <select
               value={payload}
@@ -136,14 +136,8 @@ export default function TruckFinder() {
               <option value="3000-6000" className="bg-white text-black">
                 3000 - 6000 Kg
               </option>
-              <option value="6000-9000" className="bg-white text-black">
-                6000 - 9000 Kg
-              </option>
-              <option value="9000-12000" className="bg-white text-black">
-                9000 - 12000 Kg
-              </option>
-              <option value="12000+" className="bg-white text-black">
-                12000 Kg+
+              <option value="6000+" className="bg-white text-black">
+                6000 Kg +
               </option>
             </select>
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white">

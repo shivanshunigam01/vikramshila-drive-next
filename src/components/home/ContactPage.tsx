@@ -70,7 +70,7 @@ export default function ContactPage() {
             WhatsApp.
           </p>
           <ul className="space-y-3 text-lg">
-            <li>📞 +91 99999 99999</li>
+            <li>📞 +91 8406991610</li>
             <li>✉️ nagendarzee@gmail.com</li>
             <li>💬 WhatsApp: +91 8406991610</li>
           </ul>

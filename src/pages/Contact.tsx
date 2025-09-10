@@ -7,10 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { FormEvent, useState } from "react";
+import { MapPin } from "lucide-react";
 
 export default function Contact() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+
+  // 👉 Place / URLs (same behavior as your Footer)
+  const PLACE_QUERY = "Vikramshila Automobiles, Bhagalpur";
+  const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    PLACE_QUERY
+  )}`;
+  const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(
+    PLACE_QUERY
+  )}&hl=en&z=14&output=embed`;
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,14 +62,16 @@ export default function Contact() {
             contactPoint: [
               {
                 "@type": "ContactPoint",
-                telephone: "+91-9999999999",
+                telephone: "+91-8406991610",
                 contactType: "customer service",
               },
             ],
           })}
         </script>
       </Helmet>
+
       <Header />
+
       <main className="container mx-auto py-10">
         <h1 className="text-3xl font-semibold">Contact</h1>
         <p className="text-muted-foreground mt-2 max-w-3xl">
@@ -68,11 +80,16 @@ export default function Contact() {
         </p>
 
         <section className="grid md:grid-cols-2 gap-8 mt-6">
-          <form onSubmit={onSubmit} className="space-y-4 p-6 rounded border">
+          {/* Form */}
+          <form
+            onSubmit={onSubmit}
+            className="space-y-4 p-6 rounded border bg-background"
+          >
             <div>
               <Label htmlFor="name">Full Name</Label>
               <Input id="name" name="name" required placeholder="Your name" />
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="phone">Phone</Label>
@@ -93,6 +110,7 @@ export default function Contact() {
                 />
               </div>
             </div>
+
             <div>
               <Label htmlFor="message">Message</Label>
               <Textarea
@@ -103,6 +121,7 @@ export default function Contact() {
                 rows={5}
               />
             </div>
+
             <div className="flex gap-3">
               <Button type="submit" disabled={loading}>
                 Send to WhatsApp
@@ -115,29 +134,42 @@ export default function Contact() {
               </a>
             </div>
           </form>
+          {/* Clickable map */}
+          <div className="relative aspect-video rounded overflow-hidden shadow-elegant group">
+            {/* The iframe renders the map visually */}
+            <iframe
+              title={PLACE_QUERY}
+              src={mapsEmbedUrl}
+              width="100%"
+              height="100%"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full pointer-events-none" // ensure our overlay handles clicks
+            />
+            {/* Full-size overlay link so any click goes to Google Maps */}
+            <a
+              aria-label={`Open ${PLACE_QUERY} in Google Maps`}
+              href={mapsSearchUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="absolute inset-0"
+            />
 
-          <aside className="space-y-4">
-            <div className="aspect-video rounded overflow-hidden shadow-elegant">
-              <iframe
-                title="Vikramshila Automobiles Location"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d228114.3616227414!2d86.8570123!3d25.2451866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f04d9818f6dd33%3A0xd0ef9f5d7f5e7b73!2sBhagalpur%2C%20Bihar!5e0!3m2!1sen!2sin!4v1700000000000"
-                width="100%"
-                height="100%"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
-            <div className="p-6 rounded border">
-              <h2 className="font-semibold mb-2">Reach Us</h2>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>Phone: +91 99999 99999</li>
-                <li>Email: nagendarzee@gmail.com</li>
-                <li>WhatsApp: 8406991610</li>
-              </ul>
-            </div>
-          </aside>
+            {/* Small CTA pill */}
+            <a
+              href={mapsSearchUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 backdrop-blur px-2.5 py-1 text-xs text-white border border-white/15 opacity-90 group-hover:opacity-100 transition"
+            >
+              <MapPin className="h-3.5 w-3.5" />
+              Open in Maps
+            </a>
+          </div>
+          s
         </section>
       </main>
+
       <Footer />
     </div>
   );

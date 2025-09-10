@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+// src/pages/NewLaunchesPage.tsx
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Calendar, Zap } from "lucide-react";
+import { Search, Calendar, Zap } from "lucide-react";
 
-import acepro1 from "../assets/acepro-1.jpg";
 import acepro2 from "../assets/acepro-2.jpg";
 import acepro3 from "../assets/acepro-3.jpg";
 import launchBanner from "../assets/fleet-care_new_banner.jpg";
@@ -14,77 +14,140 @@ import launchBanner from "../assets/fleet-care_new_banner.jpg";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
-// New launch products
-const newLaunchProducts = [
-  {
-    id: "intra-v70",
-    name: "Tata Intra V70",
-    category: "SCV Cargo",
-    subcategory: "Tata Intra Series",
-    description:
-      "The revolutionary Tata Intra V70 with advanced technology, superior payload capacity, and enhanced fuel efficiency for modern business needs.",
-    image: acepro1,
-    launchDate: "2024",
-    isNew: true,
-    keyFeatures: [
-      "Enhanced Payload Capacity",
-      "Advanced BS6 Engine",
-      "Smart Connectivity",
-    ],
-    tonnage: "1070 kg",
-    engine: "1.2L BS6",
-    fuelType: "Diesel",
-    startingPrice: "₹6.85 Lakh*",
-  },
-];
+import {
+  getProducts,
+  downloadBrochureService,
+} from "@/services/productService";
 
-// Upcoming launches
-const upcomingLaunches = [
-  {
-    id: "ace-ev-plus",
-    name: "Tata Ace EV Plus",
-    category: "SCV Cargo",
-    subcategory: "Tata Ace Series",
-    description:
-      "Next-generation electric commercial vehicle with extended range and faster charging capabilities.",
-    image: acepro2,
-    launchDate: "Q2 2025",
-    isUpcoming: true,
-    range: "150 km",
-    battery: "21.3 kWh",
-    chargingTime: "4.5 hrs",
-    expectedPrice: "₹7.50 Lakh*",
-  },
-  {
-    id: "yodha-ev",
-    name: "Tata Yodha EV",
-    category: "Yodha Pickup",
-    description:
-      "Revolutionary electric pickup truck designed for sustainable cargo transportation.",
-    image: acepro3,
-    launchDate: "Q4 2025",
-    isUpcoming: true,
-    payload: "1500 kg",
-    range: "200 km",
-    battery: "35 kWh",
-    expectedPrice: "₹12.50 Lakh*",
-  },
-];
+// ---------- helpers ----------
+function formatINR(n: number) {
+  return n.toLocaleString("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  });
+}
+function formatINRShort(n: number) {
+  if (!isFinite(n) || n <= 0) return "—";
+  if (n >= 1e5) {
+    const lakhs = n / 1e5;
+    const val = Math.round(lakhs * 10) / 10;
+    return `₹${val} Lakh`;
+  }
+  return formatINR(n);
+}
+function extractEnginePower(engine?: string): string | undefined {
+  if (!engine) return undefined;
+  const kW = engine.match(/(\d+(?:\.\d+)?)\s*kW/i)?.[1];
+  const PS = engine.match(/(\d+(?:\.\d+)?)\s*PS/i)?.[1];
+  if (kW && PS) return `${kW} kW (${PS} PS)`;
+  if (kW) return `${kW} kW`;
+  if (PS) return `${PS} PS`;
+  return engine;
+}
+
+// ---------- API type ----------
+type ApiProduct = {
+  brochureFile?: any;
+  _id: string;
+  title: string;
+  description?: string;
+  price?: string; // "1850000"
+  images?: string[];
+  category?: string;
+  gvw?: string; // "9950 kg"
+  engine?: string;
+  fuelTankCapacity?: string; // "90 L"
+  fuelType?: string; // "Diesel"
+  payload?: string; // "7000 kg"
+  newLaunch?: number | string; // 1 => new
+  // (other fields omitted)
+};
 
 export default function NewLaunchesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedFilters, setExpandedFilters] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const toggleFilter = (filterLabel) => {
-    setExpandedFilters((prev) => ({
-      ...prev,
-      [filterLabel]: !prev[filterLabel],
-    }));
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await getProducts(); // axios response
+        // Accept either { data: [...] } or raw [...]
+        const data: ApiProduct[] = Array.isArray(res.data?.data)
+          ? res.data.data
+          : Array.isArray(res.data)
+          ? res.data
+          : [];
+        if (mounted) setAllProducts(data);
+      } catch (e: any) {
+        if (mounted) setError(e?.message || "Failed to load products");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Filter ONLY new launches (handles 1 or "1")
+  const newLaunchProducts = useMemo(
+    () =>
+      (allProducts || [])
+        .filter((p) => Number(p.newLaunch) === 1)
+        .filter((p) => {
+          if (!searchTerm.trim()) return true;
+          const hay = `${p.title ?? ""} ${p.category ?? ""} ${
+            p.description ?? ""
+          }`.toLowerCase();
+          return hay.includes(searchTerm.toLowerCase());
+        }),
+    [allProducts, searchTerm]
+  );
+
+  // brochure download
+  const handleDownload = async (p: ApiProduct) => {
+    if (!p._id || !p.brochureFile) return;
+    try {
+      setDownloadingId(p._id);
+      const res = await downloadBrochureService(p._id);
+      const blob = new Blob([res.data], { type: res.headers["content-type"] });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+
+      let filename = "brochure.pdf";
+      const cd = res.headers["content-disposition"];
+      if (cd) {
+        const m = cd.match(/filename="?(.+?)"?$/);
+        if (m && m[1]) filename = m[1];
+      } else if (p.brochureFile?.originalName) {
+        filename = p.brochureFile.originalName;
+      }
+
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Brochure download failed:", err);
+      alert("Brochure download failed. Please try again.");
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
     <div className="bg-black text-white font-sans">
-      {/* Header/Navbar */}
       <Header />
 
       <nav className="max-w-7xl mx-auto px-6 py-4 text-sm">
@@ -101,7 +164,8 @@ export default function NewLaunchesPage() {
           <li className="text-white font-medium">New Launches</li>
         </ol>
       </nav>
-      {/* Hero Section */}
+
+      {/* Hero */}
       <div
         className="relative h-[450px] bg-cover bg-center flex items-center justify-center"
         style={{ backgroundImage: `url(${launchBanner})` }}
@@ -112,218 +176,141 @@ export default function NewLaunchesPage() {
             Discover Tata Motors’ New & Upcoming Launches
           </h1>
           <p className="text-lg md:text-xl text-gray-300">
-            From advanced SCVs to powerful EV pickups, explore the future-ready
-            vehicles designed to drive your business ahead.
+            From advanced SCVs to powerful trucks and EVs, explore the
+            future-ready vehicles designed to drive your business ahead.
           </p>
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main */}
       <div className="max-w-7xl mx-auto px-6 py-16 flex gap-10">
-        {/* Sidebar Filters */}
-        {/* <aside className="w-72 bg-gray-900 rounded-lg shadow p-6 h-fit">
-          <h3 className="text-lg font-semibold mb-6">Filters</h3>
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search launches"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="space-y-4">
-            {["Launch Status", "Vehicle Type", "Fuel Type", "Launch Year"].map(
-              (label) => (
-                <div key={label} className="border-b border-gray-700 pb-4">
-                  <button
-                    onClick={() => toggleFilter(label)}
-                    className="flex items-center justify-between w-full text-left text-gray-300 hover:text-white"
-                  >
-                    {label}
-                    <Plus className="w-4 h-4" />
-                  </button>
-                  {expandedFilters[label] && (
-                    <div className="mt-2 space-y-2 text-sm text-gray-400">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="rounded bg-gray-800 border-gray-600"
-                        />
-                        Option 1
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="rounded bg-gray-800 border-gray-600"
-                        />
-                        Option 2
-                      </label>
-                    </div>
-                  )}
-                </div>
-              )
-            )}
-          </div>
-        </aside> */}
-
-        {/* Launches Content */}
         <main className="flex-1">
-          {/* Latest Launches */}
+          {/* Latest Launches (dynamic) */}
           <section className="mb-16">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-4">
               <h2 className="text-2xl font-semibold">Latest Launches</h2>
               <Badge className="bg-green-700 text-white">Available Now</Badge>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {newLaunchProducts.map((product) => (
-                <Card
-                  key={product.id}
-                  className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden group"
-                >
-                  <CardHeader className="p-0 relative">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-56 object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <Badge className="absolute top-4 left-4 bg-blue-600 text-white flex items-center">
-                      <Zap className="w-3 h-3 mr-1" /> New Launch
-                    </Badge>
-                  </CardHeader>
-
-                  <CardContent className="p-6">
-                    <CardTitle className="text-lg font-semibold mb-2">
-                      {product.name}
-                    </CardTitle>
-                    <p className="text-gray-400 text-sm mb-4">
-                      {product.description}
-                    </p>
-
-                    <div className="grid grid-cols-3 gap-4 mb-4 text-center">
-                      <div>
-                        <div className="font-semibold">{product.tonnage}</div>
-                        <div className="text-xs text-gray-400">Payload</div>
-                      </div>
-                      <div>
-                        <div className="font-semibold">{product.engine}</div>
-                        <div className="text-xs text-gray-400">Engine</div>
-                      </div>
-                      <div>
-                        <div className="font-semibold">{product.fuelType}</div>
-                        <div className="text-xs text-gray-400">Fuel</div>
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      Starting at{" "}
-                      <span className="font-semibold text-lg text-blue-400">
-                        {product.startingPrice}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                        Book Test Drive
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full border-gray-700 text-gray-300 hover:bg-gray-800"
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-
-          {/* Coming Soon */}
-          <section>
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl font-semibold">Coming Soon</h2>
-              <Badge className="bg-orange-600 text-white">Upcoming</Badge>
+            {/* Search */}
+            <div className="relative mb-6 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search new launches"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingLaunches.map((product) => (
-                <Card
-                  key={product.id}
-                  className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden group"
-                >
-                  <CardHeader className="p-0 relative">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-56 object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <Badge className="absolute top-4 left-4 bg-orange-600 text-white flex items-center">
-                      <Calendar className="w-3 h-3 mr-1" /> {product.launchDate}
-                    </Badge>
-                  </CardHeader>
+            {loading ? (
+              <div className="text-gray-400">Loading launches…</div>
+            ) : error ? (
+              <div className="text-red-400">Error: {error}</div>
+            ) : newLaunchProducts.length === 0 ? (
+              <div className="text-gray-400">
+                No new launches available right now.
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {newLaunchProducts.map((p) => {
+                  const image = p.images?.[0];
 
-                  <CardContent className="p-6">
-                    <CardTitle className="text-lg font-semibold mb-2">
-                      {product.name}
-                    </CardTitle>
-                    <p className="text-gray-400 text-sm mb-4">
-                      {product.description}
-                    </p>
-
-                    <div className="grid grid-cols-3 gap-4 mb-4 text-center">
-                      <div>
-                        <div className="font-semibold">
-                          {product.payload || product.range}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {product.payload ? "Payload" : "Range"}
-                        </div>
+                  return (
+                    <Card
+                      key={p._id}
+                      className="bg-black border border-gray-800 rounded-2xl overflow-hidden group relative w-[280px] md:w-[300px]"
+                    >
+                      {/* Badge */}
+                      <div className="absolute top-3 left-3">
+                        <Badge className="bg-blue-600 text-white flex items-center gap-1">
+                          <Zap className="w-3 h-3" /> New Launch
+                        </Badge>
                       </div>
-                      <div>
-                        <div className="font-semibold">{product.battery}</div>
-                        <div className="text-xs text-gray-400">Battery</div>
-                      </div>
-                      <div>
-                        <div className="font-semibold">
-                          {product.chargingTime || product.range}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {product.chargingTime ? "Charging" : "Range"}
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="mb-4">
-                      Expected at{" "}
-                      <span className="font-semibold text-lg text-orange-400">
-                        {product.expectedPrice}
-                      </span>
-                    </div>
+                      {/* Image */}
+                      <CardHeader className="p-0 bg-black">
+                        <div className="aspect-[4/3] overflow-hidden flex items-center justify-center bg-black">
+                          {image ? (
+                            <img
+                              src={image}
+                              alt={p.title}
+                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-900" />
+                          )}
+                        </div>
+                      </CardHeader>
 
-                    <div className="space-y-2">
-                      <Button className="w-full bg-orange-600 hover:bg-orange-700">
-                        Notify Me
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full border-gray-700 text-gray-300 hover:bg-gray-800"
-                      >
-                        Learn More
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      {/* Content */}
+                      <CardContent className="p-4 flex flex-col bg-black text-white">
+                        <CardTitle className="text-lg font-semibold mb-3 text-white">
+                          {p.title}
+                        </CardTitle>
+
+                        {/* 3 spec columns */}
+                        <div className="grid grid-cols-3 gap-4 text-center text-sm text-gray-300 mb-4">
+                          <div>
+                            <p className="font-bold text-white">
+                              {p.gvw || "—"}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              Tonnage (GVW)
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-bold text-white">
+                              {p.fuelTankCapacity || "—"}
+                            </p>
+                            <p className="text-xs text-gray-400">Fuel Tank</p>
+                          </div>
+                          <div>
+                            <p className="font-bold text-white">
+                              {p.payload || "—"}
+                            </p>
+                            <p className="text-xs text-gray-400">Payload</p>
+                          </div>
+                        </div>
+
+                        {/* Buttons row */}
+                        <div className="flex gap-3 mt-auto">
+                          <Link
+                            to={`/products/${p._id}`}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-center"
+                          >
+                            Know More
+                          </Link>
+
+                          {/* Round PDF button (enabled only if brochure exists) */}
+                          {p.brochureFile ? (
+                            <button
+                              onClick={() => handleDownload(p)}
+                              className="flex items-center justify-center w-11 h-11 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
+                            >
+                              {downloadingId === p._id ? "…" : "PDF"}
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="flex items-center justify-center w-11 h-11 rounded-full border border-gray-700 text-gray-600 cursor-not-allowed"
+                              title="Brochure not available"
+                            >
+                              PDF
+                            </button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </section>
         </main>
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

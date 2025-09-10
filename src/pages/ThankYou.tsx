@@ -83,12 +83,13 @@ export default function ThankYou() {
 
           <div className="max-w-md mx-auto mb-8">
             <p className="text-xl text-gray-200 leading-relaxed mb-4">
-              Your quote has been submitted successfully!
+              {/* UPDATED LINE */}
+              Your request has been submitted successfully!
             </p>
             <p className="text-lg text-gray-300">
-              The{" "}
+              {/* UPDATED BRAND LINE */}
               <span className="font-semibold text-blue-400">
-                Vikramshila team
+                Vikramshila Automobiles
               </span>{" "}
               will get back to you shortly.
             </p>
@@ -103,7 +104,10 @@ export default function ThankYou() {
         >
           <div className="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-700/30 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
             <Mail className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-            <h3 className="font-semibold text-gray-100 mb-2">Quote Received</h3>
+            {/* UPDATED CARD HEADING */}
+            <h3 className="font-semibold text-gray-100 mb-2">
+              Request Received
+            </h3>
             <p className="text-sm text-gray-300">
               Your request is now in our system
             </p>
@@ -171,10 +175,10 @@ export default function ThankYou() {
               </a>{" "}
               or call us at{" "}
               <a
-                href="tel:+1234567890"
+                href="tel:+918406991610"
                 className="text-indigo-600 hover:text-indigo-800 font-medium underline decoration-2 underline-offset-2"
               >
-                +91 12345 67890
+                +91 8406991610
               </a>
             </p>
           </div>

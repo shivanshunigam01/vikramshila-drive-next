@@ -93,7 +93,7 @@ export default function ReviewQuote() {
       const result = await createLead(leadData);
 
       if (result.success) {
-        toast.success("Quote submitted successfully!");
+        toast.success("Request submitted successfully!");
         navigate("/thank-you"); // ✅ redirect to Thank You page
       }
     } catch (error) {
@@ -322,7 +322,7 @@ export default function ReviewQuote() {
                   Submitting Quote...
                 </div>
               ) : (
-                "Submit Quote & Generate Lead"
+                "Submit Request"
               )}
             </Button>
           </div>
