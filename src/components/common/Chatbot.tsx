@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
@@ -76,6 +76,7 @@ const QUICK_QUESTIONS = [
 interface ChatMsg {
   role: "user" | "bot";
   content: string;
+  id?: string | number;
 }
 
 export default function Chatbot({ inline = false }: { inline?: boolean }) {
@@ -87,18 +88,46 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
       role: "bot",
       content:
         "Hi! I’m your 24/7 assistant. Ask me about models, prices, finance, service, or tap a quick question below.",
+      id: 0,
     },
   ]);
 
+  // --- Sticky header measurement so aside can avoid overlapping it
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [stickyTop, setStickyTop] = useState(56); // fallback
+  useLayoutEffect(() => {
+    const h = headerRef.current?.getBoundingClientRect().height ?? 56;
+    setStickyTop(Math.round(h + 16)); // header height + 16px gap
+  }, []);
+
+  // --- Chat autoscroll (left column)
   const listRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const isNearBottom = () => {
+    const el = listRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+  };
+
+  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    if (!isNearBottom()) return;
+    bottomRef.current?.scrollIntoView({ block: "end", behavior });
+  };
 
   useEffect(() => {
-    listRef.current?.scrollTo({
-      top: listRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages, open]);
+    const id = requestAnimationFrame(() => scrollToBottom("smooth"));
+    return () => cancelAnimationFrame(id);
+  }, [messages.length, isTyping]);
 
+  useEffect(() => {
+    if (open) {
+      const t = setTimeout(() => scrollToBottom("auto"), 60);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
+
+  // --- Simple KB reply
   const findAnswer = useMemo(
     () => (text: string) => {
       const s = text.toLowerCase();
@@ -121,22 +150,28 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
     const answer = findAnswer(text);
     setIsTyping(true);
     setTimeout(() => {
-      setMessages((m) => [...m, { role: "bot", content: answer }]);
+      setMessages((m) => [
+        ...m,
+        { role: "bot", content: answer, id: `${Date.now()}-bot` },
+      ]);
       setIsTyping(false);
-    }, 500);
+    }, 450);
   };
 
   const send = (text?: string) => {
     const value = (text ?? input).trim();
     if (!value) return;
-    setMessages((m) => [...m, { role: "user", content: value }]);
+    setMessages((m) => [
+      ...m,
+      { role: "user", content: value, id: `${Date.now()}-user` },
+    ]);
     setInput("");
     reply(value);
   };
 
   return (
     <>
-      {/* Floating button only if not inline */}
+      {/* Floating trigger */}
       {!inline && !open && (
         <div className="fixed bottom-4 right-4 z-50 md:top-24 md:bottom-auto">
           <Button
@@ -150,7 +185,7 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
         </div>
       )}
 
-      {/* Inline button */}
+      {/* Inline trigger */}
       {inline && (
         <Button
           variant="outline"
@@ -162,15 +197,15 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
         </Button>
       )}
 
-      {/* Chat Sheet */}
+      {/* Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent
-          side="top"
-          className="h-[100vh] md:h-[70vh] p-0" // Fullscreen on mobile
-        >
+        <SheetContent side="top" className="h-[100vh] md:h-[70vh] p-0">
           <div className="h-full w-full bg-background flex flex-col">
-            {/* Header */}
-            <div className="border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+            {/* Header (measured for sticky offset) */}
+            <div
+              ref={headerRef}
+              className="z-10 border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
+            >
               <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
                 <div>
                   <h3 className="text-base font-semibold">24/7 Chat Support</h3>
@@ -184,7 +219,7 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
                     size="sm"
                     onClick={() => {
                       setOpen(false);
-                      openEnquiryDialog();
+                      openEnquiryDialog("Enquire Now");
                     }}
                   >
                     Enquire Now
@@ -201,82 +236,96 @@ export default function Chatbot({ inline = false }: { inline?: boolean }) {
               </div>
             </div>
 
-            {/* Main Content */}
-            <div className="mx-auto grid flex-1 w-full max-w-5xl grid-cols-1 gap-4 px-4 py-4 md:grid-cols-3 overflow-hidden">
-              {/* Chat window */}
-              <div className="md:col-span-2 flex h-full flex-col rounded-md border bg-card">
-                <div
-                  ref={listRef}
-                  className="flex-1 space-y-3 overflow-y-auto p-4"
-                >
-                  {messages.map((m, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "flex",
-                        m.role === "user" ? "justify-end" : "justify-start"
-                      )}
-                    >
+            {/* Content area */}
+            <div className="mx-auto flex-1 min-h-0 w-full max-w-5xl px-4 py-4">
+              <div className="grid h-full min-h-0 grid-cols-1 gap-4 md:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+                {/* LEFT: Chat column */}
+                <div className="flex min-h-0 h-full flex-col rounded-md border bg-card">
+                  <div
+                    ref={listRef}
+                    className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3"
+                  >
+                    {messages.map((m) => (
                       <div
+                        key={m.id}
                         className={cn(
-                          "max-w-[80%] rounded-lg px-3 py-2 text-sm",
-                          m.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
+                          "flex",
+                          m.role === "user" ? "justify-end" : "justify-start"
                         )}
                       >
-                        {m.content}
+                        <div
+                          className={cn(
+                            "max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                            m.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          )}
+                        >
+                          {m.content}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {isTyping && (
-                    <div className="flex justify-start">
-                      <div className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
-                        Typing...
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    ))}
 
-                {/* Input */}
-                <div className="border-t p-3">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") send();
-                      }}
-                      placeholder="Type your question..."
-                      aria-label="Type your question"
-                    />
-                    <Button onClick={() => send()} aria-label="Send message">
-                      <Send className="h-4 w-4" />
-                    </Button>
+                    {isTyping && (
+                      <div className="flex justify-start">
+                        <div className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
+                          Typing...
+                        </div>
+                      </div>
+                    )}
+
+                    <div ref={bottomRef} />
+                  </div>
+
+                  {/* Input */}
+                  <div className="border-t p-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onFocus={() => scrollToBottom("auto")}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") send();
+                        }}
+                        placeholder="Type your question..."
+                        aria-label="Type your question"
+                      />
+                      <Button onClick={() => send()} aria-label="Send message">
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Quick help / FAQs (desktop only) */}
-              <aside className="hidden h-full flex-col rounded-md border bg-card p-4 md:flex">
-                <h4 className="mb-2 text-sm font-medium">Quick questions</h4>
-                <div className="flex flex-wrap gap-2">
-                  {QUICK_QUESTIONS.map((q) => (
-                    <Button
-                      key={q}
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => send(q)}
-                    >
-                      {q}
-                    </Button>
-                  ))}
-                </div>
-                <div className="mt-4 rounded-md bg-muted p-3 text-xs text-muted-foreground">
-                  Tip: You can also tap Enquire Now for a quick call-back from
-                  our team.
-                </div>
-              </aside>
+                {/* RIGHT: Quick questions (fixed/sticky) */}
+                <aside className="hidden md:block">
+                  <div
+                    className="sticky self-start rounded-md border bg-card p-4"
+                    style={{ top: stickyTop }}
+                  >
+                    <h4 className="mb-2 text-sm font-medium">
+                      Quick questions
+                    </h4>
+                    <div className="flex flex-col gap-3">
+                      {QUICK_QUESTIONS.map((q) => (
+                        <Button
+                          key={q}
+                          variant="secondary"
+                          size="sm"
+                          className="justify-start"
+                          onClick={() => send(q)}
+                        >
+                          {q}
+                        </Button>
+                      ))}
+                    </div>
+                    <div className="mt-4 rounded-md bg-muted p-3 text-xs text-muted-foreground">
+                      Tip: You can also tap Enquire Now for a quick call-back
+                      from our team.
+                    </div>
+                  </div>
+                </aside>
+              </div>
             </div>
           </div>
         </SheetContent>
