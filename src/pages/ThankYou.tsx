@@ -77,17 +77,18 @@ export default function ThankYou() {
             isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
           }`}
         >
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent mb-6">
-            🎉 Thank You!
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            <span className="text-yellow-400">🎉</span>{" "}
+            <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              Thank You!
+            </span>
           </h1>
 
           <div className="max-w-md mx-auto mb-8">
             <p className="text-xl text-gray-200 leading-relaxed mb-4">
-              {/* UPDATED LINE */}
               Your request has been submitted successfully!
             </p>
             <p className="text-lg text-gray-300">
-              {/* UPDATED BRAND LINE */}
               <span className="font-semibold text-blue-400">
                 Vikramshila Automobiles
               </span>{" "}
@@ -104,7 +105,6 @@ export default function ThankYou() {
         >
           <div className="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-700/30 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
             <Mail className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-            {/* UPDATED CARD HEADING */}
             <h3 className="font-semibold text-gray-100 mb-2">
               Request Received
             </h3>

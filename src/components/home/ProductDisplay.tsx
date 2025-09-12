@@ -74,23 +74,24 @@ export default function ProductDisplay() {
         </header>
 
         {/* Grid of product cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((p: any) => {
             const image = p.images?.[0];
 
             return (
               <Card
                 key={p._id}
-                className="bg-black border border-gray-800 rounded-2xl overflow-hidden group relative"
+                className="bg-black border border-gray-800 rounded-2xl overflow-hidden group relative
+             w-[280px] md:w-[300px]"
               >
                 {/* Image wrapper (uniform height & ratio) */}
-                <CardHeader className="p-0 bg-black">
-                  <div className="h-56 md:h-64 flex items-center justify-center bg-black/80">
+                <CardHeader className="p-0 overflow-hidden">
+                  <div className="aspect-[4/3] overflow-hidden flex items-center justify-center bg-black">
                     {image ? (
                       <img
                         src={image}
                         alt={p.title}
-                        className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                         loading="lazy"
                       />
                     ) : (

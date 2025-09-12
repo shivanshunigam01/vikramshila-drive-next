@@ -1,21 +1,27 @@
+// src/services/leadService.ts
 import axios from "axios";
 
-const API = import.meta.env.VITE_VITE_API_URL;
+const API = import.meta.env.VITE_VITE_API_URL || "/api";
 
-// 🚀 Create a new lead
-export const createLead = async (leadData) => {
+export const createLead = async (payload: FormData | Record<string, any>) => {
   try {
-    const res = await axios.post(`${API}/leads/leads-create`, leadData, {
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (res.data?.success) {
-      return res.data; // ✅ success response
+    if (payload instanceof FormData) {
+      const { data } = await axios.post(`${API}/leads/leads-create`, payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: false,
+        timeout: 30000,
+      });
+      return data;
     } else {
-      throw new Error(res.data?.message || "Failed to submit lead");
+      const { data } = await axios.post(`${API}/leads`, payload, {
+        withCredentials: false,
+        timeout: 30000,
+      });
+      return data;
     }
-  } catch (error) {
-    console.error("Error creating lead:", error);
-    throw error;
+  } catch (error: any) {
+    return (
+      error?.response?.data || { success: false, message: "Network error" }
+    );
   }
 };

@@ -4,7 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, ChangeEvent, useMemo } from "react";
 import { createLead } from "@/services/leadService";
 import { toast } from "sonner";
 
@@ -41,14 +41,36 @@ function formatINR(n: number) {
   });
 }
 
+// --- KYC upload guards ---
+const MAX_KYC_SIZE = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+
+function validateImage(file: File | null | undefined, docLabel: string) {
+  if (!file) return true;
+  if (!ALLOWED_MIME.includes(file.type)) {
+    toast.error(`${docLabel}: Only images are allowed (JPG/PNG/WEBP/AVIF).`);
+    return false;
+  }
+  if (file.size > MAX_KYC_SIZE) {
+    toast.error(`${docLabel}: File too large (max 10MB).`);
+    return false;
+  }
+  return true;
+}
+
 export default function ReviewQuote() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Local state for optional KYC files & numbers
+  const [aadharFile, setAadharFile] = useState<File | null>(null);
+  const [panCardFile, setPanCardFile] = useState<File | null>(null);
+  const [aadharNumber, setAadharNumber] = useState("");
+  const [panNumber, setPanNumber] = useState("");
+
   const state = location.state as LocationState;
 
-  // Redirect if no data is available
   if (!state || !state.product || !state.financeData) {
     return (
       <div className="bg-black min-h-screen text-white">
@@ -72,29 +94,99 @@ export default function ReviewQuote() {
 
   const { product, financeData } = state;
 
+  const onAadharChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!validateImage(file, "Aadhaar")) {
+      e.target.value = "";
+      setAadharFile(null);
+      return;
+    }
+    setAadharFile(file);
+  };
+
+  const onPanChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!validateImage(file, "PAN")) {
+      e.target.value = "";
+      setPanCardFile(null);
+      return;
+    }
+    setPanCardFile(file);
+  };
+
+  const totalPayable = useMemo(
+    () =>
+      financeData.downPaymentAmount +
+      financeData.estimatedEMI * financeData.tenure,
+    [financeData]
+  );
+  const totalInterest = useMemo(
+    () =>
+      financeData.estimatedEMI * financeData.tenure - financeData.loanAmount,
+    [financeData]
+  );
+
+  const validateNumbers = () => {
+    if (aadharNumber && !/^\d{12}$/.test(aadharNumber)) {
+      toast.error("Aadhaar number must be 12 digits.");
+      return false;
+    }
+    if (panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber)) {
+      toast.error("PAN must be 10 characters (e.g., ABCDE1234F).");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmitLead = async () => {
+    if (!validateNumbers()) return;
+
     setIsSubmitting(true);
-
     try {
-      const leadData = {
-        productId: product._id,
-        productTitle: product.title,
-        productCategory: product.category,
-        vehiclePrice: financeData.vehiclePrice,
-        downPaymentPercentage: financeData.downPaymentPercentage,
-        downPaymentAmount: financeData.downPaymentAmount,
-        tenure: financeData.tenure,
-        interestRate: financeData.interestRate,
-        loanAmount: financeData.loanAmount,
-        estimatedEMI: financeData.estimatedEMI,
-        status: "pending",
-      };
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
 
-      const result = await createLead(leadData);
+      // Final guard if someone bypasses "accept" attribute
+      if (aadharFile && !validateImage(aadharFile, "Aadhaar")) return;
+      if (panCardFile && !validateImage(panCardFile, "PAN")) return;
 
-      if (result.success) {
+      const form = new FormData();
+      form.append("productId", product._id);
+      form.append("productTitle", product.title);
+      form.append("productCategory", product.category || "");
+
+      form.append("vehiclePrice", String(financeData.vehiclePrice));
+      form.append("downPaymentAmount", String(financeData.downPaymentAmount));
+      form.append(
+        "downPaymentPercentage",
+        String(financeData.downPaymentPercentage)
+      );
+      form.append("loanAmount", String(financeData.loanAmount));
+      form.append("interestRate", String(financeData.interestRate));
+      form.append("tenure", String(financeData.tenure));
+      form.append("estimatedEMI", String(financeData.estimatedEMI));
+
+      form.append("status", "pending");
+
+      if (userData?.id) form.append("userId", userData.id);
+      if (userData?.name) form.append("userName", userData.name);
+      if (userData?.email) form.append("userEmail", userData.email);
+      if (userData?.phone) form.append("userPhone", userData.phone);
+
+      // Optional KYC
+      if (aadharFile) form.append("aadharFile", aadharFile);
+      if (panCardFile) form.append("panCardFile", panCardFile);
+      if (aadharNumber) form.append("aadharNumber", aadharNumber);
+      if (panNumber) form.append("panNumber", panNumber);
+
+      const result = await createLead(form);
+
+      if (result?.success) {
         toast.success("Request submitted successfully!");
-        navigate("/thank-you"); // ✅ redirect to Thank You page
+        navigate("/thank-you");
+      } else {
+        toast.error(
+          result?.message || "Failed to submit quote. Please try again."
+        );
       }
     } catch (error) {
       console.error("Failed to submit lead:", error);
@@ -154,7 +246,7 @@ export default function ReviewQuote() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {product.images && product.images[0] && (
+                {product.images?.[0] && (
                   <div className="aspect-[4/3] bg-black rounded-lg overflow-hidden">
                     <img
                       src={product.images[0]}
@@ -264,19 +356,13 @@ export default function ReviewQuote() {
                           Total Amount Payable:
                         </span>
                         <span className="text-white font-medium">
-                          {formatINR(
-                            financeData.downPaymentAmount +
-                              financeData.estimatedEMI * financeData.tenure
-                          )}
+                          {formatINR(totalPayable)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Total Interest:</span>
                         <span className="text-white font-medium">
-                          {formatINR(
-                            financeData.estimatedEMI * financeData.tenure -
-                              financeData.loanAmount
-                          )}
+                          {formatINR(totalInterest)}
                         </span>
                       </div>
                     </div>
@@ -285,6 +371,99 @@ export default function ReviewQuote() {
               </CardContent>
             </Card>
           </div>
+
+          {/* KYC (Optional) */}
+          <Card className="bg-gray-900 border border-gray-800 mt-8">
+            <CardHeader>
+              <CardTitle className="text-xl text-white">
+                KYC (Optional)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Numbers */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Aadhaar Number</p>
+                  <input
+                    type="text"
+                    value={aadharNumber}
+                    onChange={(e) => setAadharNumber(e.target.value.trim())}
+                    placeholder="Enter 12-digit Aadhaar"
+                    inputMode="numeric"
+                    maxLength={12}
+                    className="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-white text-sm"
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">PAN Number</p>
+                  <input
+                    type="text"
+                    value={panNumber}
+                    onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
+                    placeholder="Enter PAN (ABCDE1234F)"
+                    maxLength={10}
+                    className="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-white text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Files */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">
+                    Aadhaar (JPG/PNG/WEBP/AVIF)
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onAadharChange}
+                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                  />
+                  {aadharFile && (
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-300">
+                      <span>{aadharFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setAadharFile(null)}
+                        className="underline decoration-dotted hover:text-white"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">
+                    PAN (JPG/PNG/WEBP/AVIF)
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onPanChange}
+                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                  />
+                  {panCardFile && (
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-300">
+                      <span>{panCardFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setPanCardFile(null)}
+                        className="underline decoration-dotted hover:text-white"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-500">
+                All KYC fields are optional. You can also share these later with
+                our team.
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Important Note */}
           <Card className="bg-yellow-900/20 border border-yellow-600/30 mt-8">

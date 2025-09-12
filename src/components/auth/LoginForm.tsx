@@ -38,6 +38,10 @@ export default function LoginForm({ onLogin, onCancel }: LoginFormProps) {
         localStorage.setItem("admin_token", token);
         localStorage.setItem("user", JSON.stringify(user));
 
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 400);
+
         onLogin(); // trigger parent success callback
       } else {
         toast({
