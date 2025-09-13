@@ -5,7 +5,7 @@ import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, ChangeEvent, useMemo } from "react";
-import { createLead } from "@/services/leadService";
+import { createLead, fetchDemoCibilScore } from "@/services/leadService";
 import { toast } from "sonner";
 
 interface Product {
@@ -68,6 +68,11 @@ export default function ReviewQuote() {
   const [panCardFile, setPanCardFile] = useState<File | null>(null);
   const [aadharNumber, setAadharNumber] = useState("");
   const [panNumber, setPanNumber] = useState("");
+
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [cibilScore, setCibilScore] = useState<number | null>(null);
+  const [cibilStatus, setCibilStatus] = useState<string | null>(null);
+  const [isFetchingCibil, setIsFetchingCibil] = useState(false);
 
   const state = location.state as LocationState;
 
@@ -137,15 +142,18 @@ export default function ReviewQuote() {
     }
     return true;
   };
-
   const handleSubmitLead = async () => {
     if (!validateNumbers()) return;
+    if (phoneNumber && !/^\d{10}$/.test(phoneNumber)) {
+      toast.error("Phone number must be 10 digits.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
 
-      // Final guard if someone bypasses "accept" attribute
+      // File validation again (safety)
       if (aadharFile && !validateImage(aadharFile, "Aadhaar")) return;
       if (panCardFile && !validateImage(panCardFile, "PAN")) return;
 
@@ -182,6 +190,15 @@ export default function ReviewQuote() {
 
       if (result?.success) {
         toast.success("Request submitted successfully!");
+
+        // ✅ Now fetch CIBIL (demo only)
+        if (phoneNumber && panNumber) {
+          setIsFetchingCibil(true);
+          const res = await fetchDemoCibilScore(phoneNumber, panNumber);
+          setCibilScore(res.score);
+          setCibilStatus(res.status);
+          setIsFetchingCibil(false);
+        }
         navigate("/thank-you");
       } else {
         toast.error(
@@ -236,7 +253,6 @@ export default function ReviewQuote() {
               Please review all details before submitting your quote
             </p>
           </div>
-
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Product Details Card */}
             <Card className="bg-gray-900 border border-gray-800">
@@ -371,7 +387,6 @@ export default function ReviewQuote() {
               </CardContent>
             </Card>
           </div>
-
           {/* KYC (Optional) */}
           <Card className="bg-gray-900 border border-gray-800 mt-8">
             <CardHeader>
@@ -401,6 +416,18 @@ export default function ReviewQuote() {
                     value={panNumber}
                     onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
                     placeholder="Enter PAN (ABCDE1234F)"
+                    maxLength={10}
+                    className="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-white text-sm"
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Phone Number</p>
+                  <input
+                    type="text"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value.trim())}
+                    placeholder="Enter 10-digit mobile number"
+                    inputMode="numeric"
                     maxLength={10}
                     className="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 text-white text-sm"
                   />
@@ -464,7 +491,6 @@ export default function ReviewQuote() {
               </p>
             </CardContent>
           </Card>
-
           {/* Important Note */}
           <Card className="bg-yellow-900/20 border border-yellow-600/30 mt-8">
             <CardContent className="p-6">
@@ -480,32 +506,77 @@ export default function ReviewQuote() {
               </p>
             </CardContent>
           </Card>
-
           {/* Action Buttons */}
           <div className="flex gap-4 mt-8 justify-center">
-            <Button
-              onClick={() => navigate(-1)}
-              variant="outline"
-              className="px-8 py-3 bg-white text-black border border-gray-300 hover:bg-gray-200"
-            >
-              Go Back
-            </Button>
-            <Button
-              onClick={handleSubmitLead}
-              disabled={isSubmitting}
-              className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Submitting Quote...
-                </div>
-              ) : (
-                "Submit Request"
-              )}
-            </Button>
-          </div>
+            {/* Action Buttons */}
+            <div className="flex gap-4 mt-8 justify-center">
+              <Button
+                onClick={() => navigate(-1)}
+                variant="outline"
+                className="px-8 py-3 bg-white text-black border border-gray-300 hover:bg-gray-200"
+              >
+                Go Back
+              </Button>
 
+              <Button
+                onClick={async () => {
+                  if (!phoneNumber || !panNumber) {
+                    toast.error("Please enter phone & PAN first");
+                    return;
+                  }
+                  setIsFetchingCibil(true);
+                  const res = await fetchDemoCibilScore(phoneNumber, panNumber);
+                  setCibilScore(res.score);
+                  setCibilStatus(res.status);
+                  setIsFetchingCibil(false);
+                }}
+                disabled={isFetchingCibil}
+                className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+              >
+                {isFetchingCibil ? "Fetching..." : "Fetch CIBIL Score"}
+              </Button>
+              <Button
+                onClick={handleSubmitLead}
+                disabled={isSubmitting}
+                className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Submitting Quote...
+                  </div>
+                ) : (
+                  "Submit Request"
+                )}
+              </Button>
+            </div>
+
+            {/* ✅ Show CIBIL Results */}
+            {(isFetchingCibil || cibilScore) && (
+              <Card className="bg-gray-900 border border-gray-800 mt-8 text-center">
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-white mb-2">CIBIL Check</h3>
+                  {isFetchingCibil ? (
+                    <div className="flex items-center justify-center gap-2 text-blue-400">
+                      <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                      Fetching your CIBIL score...
+                    </div>
+                  ) : (
+                    cibilScore && (
+                      <div className="space-y-2">
+                        <p className="text-xl font-bold text-blue-400">
+                          CIBIL Score: {cibilScore}
+                        </p>
+                        <p className="text-sm text-gray-300">
+                          Status: {cibilStatus}
+                        </p>
+                      </div>
+                    )
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
           {/* Contact Info */}
           <div className="text-center mt-8 p-6 bg-gray-900 rounded-lg border border-gray-800">
             <h3 className="font-semibold text-white mb-2">Need Help?</h3>

@@ -871,7 +871,7 @@ export default function ProductComparison() {
         {/* Key Comparison (mapped to backend fields) */}
         <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 mb-10">
           <CardHeader>
-            <CardTitle className="text-xl">Key Comparison</CardTitle>
+            <CardTitle className="text-xl text-white">Key Comparison</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto rounded-lg border border-gray-800">
@@ -881,9 +881,13 @@ export default function ProductComparison() {
                     <th className="text-left py-3 px-4 text-gray-400">
                       Metric
                     </th>
-                    <th className="text-left py-3 px-4">{product1.title}</th>
+                    <th className="text-left  text-white py-3 px-4">
+                      {product1.title}
+                    </th>
                     {product2 && (
-                      <th className="text-left py-3 px-4">{product2.title}</th>
+                      <th className="text-left py-3 px-4  text-white">
+                        {product2.title}
+                      </th>
                     )}
                   </tr>
                 </thead>

@@ -25,3 +25,18 @@ export const createLead = async (payload: FormData | Record<string, any>) => {
     );
   }
 };
+
+export const fetchDemoCibilScore = (
+  phone: string,
+  pan: string
+): Promise<{ score: number; status: string }> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const score = Math.floor(Math.random() * 200) + 650; // random 650–850
+      resolve({
+        score,
+        status: score > 700 ? "Good" : "Needs Improvement",
+      });
+    }, 2000);
+  });
+};
