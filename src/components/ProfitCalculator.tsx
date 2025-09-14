@@ -455,29 +455,48 @@ export default function ProfitCalculator({
     );
   }
 
-  function Field({
-    label,
-    value,
-    onChange,
-  }: {
-    label: string;
-    value: number;
-    onChange: (v: string) => void;
-  }) {
-    return (
-      <div>
-        <label className="text-sm text-gray-300 font-medium mb-2 block">
-          {label}
-        </label>
-        <Input
-          type="number"
-          value={Number.isFinite(value) ? value : ""}
-          onChange={(e) => onChange(e.target.value)}
-          className="bg-gray-900 border-gray-700 text-white placeholder-gray-500"
-        />
-      </div>
-    );
-  }
+function Field({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: string) => void; // parent already expects string
+}) {
+  const [local, setLocal] = useState<string>(
+    Number.isFinite(value) ? String(value) : ""
+  );
+
+  // keep in sync if parent value changes (e.g., switching tabs/products)
+  useEffect(() => {
+    setLocal(Number.isFinite(value) ? String(value) : "");
+  }, [value]);
+
+  const commit = () => {
+    // send raw string up; parent will parse (your set*Field already handles "")
+    onChange(local);
+  };
+
+  return (
+    <div>
+      <label className="text-sm text-gray-300 font-medium mb-2 block">
+        {label}
+      </label>
+      <Input
+        type="text"               // allow partial entries like "-", "1.", etc.
+        inputMode="decimal"       // mobile shows numeric keypad
+        value={local}
+        onChange={(e) => setLocal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+        }}
+        className="bg-gray-900 border-gray-700 text-white placeholder-gray-500"
+      />
+    </div>
+  );
+}
 
   /** ------------ render ------------ */
   return (
