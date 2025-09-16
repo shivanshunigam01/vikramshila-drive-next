@@ -26,6 +26,11 @@ type AuthState = {
   name: string | null;
 };
 
+function getFirstName(name?: string | null) {
+  if (!name) return "";
+  return String(name).trim().split(" ")[0];
+}
+
 function readAuthFromStorage(): AuthState {
   let userName: string | null = null;
   let isAdmin = false;
@@ -41,10 +46,16 @@ function readAuthFromStorage(): AuthState {
     }
   } catch {}
   const hasAdminToken = !!localStorage.getItem("admin_token");
-  const hasGenericToken = !!localStorage.getItem("token");
+  const hasGenericToken = !!localStorage.getItem("token"); // legacy
+  const hasCustomerToken = !!localStorage.getItem("customer_token"); // OTP flow
   if (!userName && hasAdminToken) userName = "Admin";
   return {
-    loggedIn: !!(userName || hasAdminToken || hasGenericToken),
+    loggedIn: !!(
+      userName ||
+      hasAdminToken ||
+      hasGenericToken ||
+      hasCustomerToken
+    ),
     isAdmin: isAdmin || hasAdminToken,
     name: userName,
   };
@@ -101,7 +112,8 @@ export default function Header() {
     const known = [
       "admin_token",
       "admin_user",
-      "token",
+      "token", // legacy
+      "customer_token", // OTP flow
       "user",
       "payCalculatorInputs",
     ];
@@ -136,6 +148,17 @@ export default function Header() {
               <span className="text-[10px] md:text-[11px] text-gray-400 uppercase tracking-widest">
                 Driven by Trust. Delivered with Pride
               </span>
+
+              {/* GREETING — shows for customer logins (non-admin) */}
+              {auth.loggedIn && !auth.isAdmin && auth.name && (
+                <span className="mt-1 text-[11px] md:text-sm text-blue-300">
+                  Welcome Mr.{" "}
+                  <span className="font-semibold">
+                    {getFirstName(auth.name)}
+                  </span>{" "}
+                  to Virtual showroom of Vikramshila Automobiles.
+                </span>
+              )}
             </Link>
 
             <div className="flex flex-col items-end">

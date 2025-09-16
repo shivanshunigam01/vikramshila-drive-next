@@ -28,6 +28,10 @@ import FinanceCalculator from "./components/home/FinanceCalculator";
 import Review from "./components/home/Review";
 import ProductComparison from "./pages/ProductComparision";
 import ThankYou from "./pages/ThankYou";
+import CancellationRefunds from "./pages/CancellationRefunds";
+import TermsConditions from "./pages/TermsConditions";
+import Shipping from "./pages/Shipping";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -38,8 +42,8 @@ function AppRoutes() {
   // Check login status whenever route changes
   useEffect(() => {
     const token =
-      localStorage.getItem("admin_token") ||
-      document.cookie.split("; ").find((row) => row.startsWith("admin_token="));
+      localStorage.getItem("user") ||
+      document.cookie.split("; ").find((row) => row.startsWith("user="));
 
     setAuthOpen(!token); // if no token -> open modal
   }, [location]);
@@ -66,6 +70,13 @@ function AppRoutes() {
           <Route path="/review" element={<Review />} />
           <Route path="/compare/:productIds" element={<ProductComparison />} />
           <Route path="/thank-you" element={<ThankYou />} />
+          <Route
+            path="/cancellation-refunds"
+            element={<CancellationRefunds />}
+          />
+          <Route path="/terms-and-conditions" element={<TermsConditions />} />
+          <Route path="/shipping" element={<Shipping />} />
+          <Route path="/privacy-policy" element={<Privacy />} />
 
           <Route
             path="/finance-calculator/:id"
