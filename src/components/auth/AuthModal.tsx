@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, X } from "lucide-react";
-import OtpLoginForm from "./OTPLoginForm";
+import OtpLoginForm from "./OtpLoginForm";
 
 interface AuthModalProps {
   open: boolean;
