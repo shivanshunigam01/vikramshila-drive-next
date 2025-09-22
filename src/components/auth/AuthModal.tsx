@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, X } from "lucide-react";
-import OtpLoginForm from "./OtpLoginForm";
+import { User } from "lucide-react";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
 
 interface AuthModalProps {
   open: boolean;
@@ -17,58 +18,116 @@ export default function AuthModal({
   onClose,
   onLoginSuccess,
 }: AuthModalProps) {
+  const [activeForm, setActiveForm] = useState<"login" | "register" | null>(
+    null
+  );
+
   // Close on ESC
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose]
+  );
+
+  // Lock background scroll while open
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, handleKeyDown]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="relative w-full max-w-md bg-[#111] text-white vikram-card">
-        {/* Close button */}
-        <button
-          aria-label="Close"
-          className="absolute right-3 top-3 p-1 rounded-md hover:bg-white/10"
-          onClick={onClose}
-        >
-          <X className="h-5 w-5" />
-        </button>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="auth-modal-title"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      // close on backdrop click
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onTouchStart={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
 
-        <CardHeader className="text-center space-y-4">
+      {/* Sheet on mobile, centered on desktop */}
+      <Card
+        className="
+        relative z-10 w-full
+        rounded-t-2xl sm:rounded-2xl
+        bg-[#111] text-white vikram-card
+        max-h-[92vh] sm:max-h-[90vh]
+        overflow-y-auto
+        // widths
+        max-w-[92vw] sm:max-w-md
+      "
+      >
+        <CardHeader className="text-center space-y-4 sticky top-0 z-10 bg-[#111]/95 backdrop-blur supports-[backdrop-filter]:bg-[#111]/80">
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
             <User className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Login with Mobile OTP</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Enter your phone number to receive OTP. First time we’ll ask your
-            <span className="text-white font-medium"> Name</span> (required) and
-            <span className="text-white font-medium"> Email</span> (optional).
-          </p>
+          <CardTitle id="auth-modal-title" className="text-xl sm:text-2xl">
+            {activeForm === "register"
+              ? "Create an Account"
+              : activeForm === "login"
+              ? "Welcome Back"
+              : "Please login to continue using Vikramshila"}
+          </CardTitle>
         </CardHeader>
 
-        <CardContent>
-          <OtpLoginForm
-            onLogin={() => {
-              onLoginSuccess();
-              onClose();
-            }}
-            onCancel={onClose}
-          />
-
-          <div className="mt-4">
-            <Button
-              variant="ghost"
-              className="w-full text-muted-foreground"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-          </div>
+        <CardContent className="p-4 sm:p-6">
+          {!activeForm ? (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  className="vikram-button flex-1"
+                  onClick={() => setActiveForm("login")}
+                >
+                  Login
+                </Button>
+                <Button
+                  className="vikram-button flex-1"
+                  onClick={() => setActiveForm("register")}
+                >
+                  Register
+                </Button>
+              </div>
+              <Button
+                variant="ghost"
+                className="w-full text-muted-foreground"
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : activeForm === "login" ? (
+            <LoginForm
+              onLogin={() => {
+                onLoginSuccess();
+                setActiveForm(null);
+              }}
+              onCancel={() => setActiveForm(null)}
+            />
+          ) : (
+            <RegisterForm
+              onRegister={() => {
+                onLoginSuccess();
+                setActiveForm(null);
+              }}
+              onCancel={() => setActiveForm(null)}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

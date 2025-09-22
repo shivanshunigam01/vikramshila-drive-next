@@ -32,6 +32,7 @@ import CancellationRefunds from "./pages/CancellationRefunds";
 import TermsConditions from "./pages/TermsConditions";
 import Shipping from "./pages/Shipping";
 import Privacy from "./pages/Privacy";
+import { loadRazorpay } from "./lib/loadRazorpay";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,9 @@ function AppRoutes() {
   const location = useLocation();
   const [authOpen, setAuthOpen] = useState(false);
 
+  useEffect(() => {
+    loadRazorpay().catch(console.error);
+  }, []);
   // Check login status whenever route changes
   useEffect(() => {
     const token =

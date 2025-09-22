@@ -328,6 +328,13 @@ export default function ReviewQuote() {
     }
   };
 
+  console.log(
+    "Razorpay present?",
+    typeof (window as any).Razorpay === "function"
+  );
+  console.log("Key present?", !!import.meta.env.VITE_RAZORPAY_KEY_ID);
+  // console.log("Order id:", order?.id);
+
   return (
     <div className="bg-black min-h-screen text-white">
       <Helmet>
@@ -698,9 +705,9 @@ export default function ReviewQuote() {
                     mobile: phoneNumber,
                     pan: panNumber.toUpperCase(),
                   });
-                  setCibilScore(resp.score ?? null);
+                  setCibilScore(resp.score);
                   setCibilStatus(resp.ok ? "success" : "failed");
-                  setCibilResponse(resp);
+                  setCibilResponse(resp); // or resp.raw if you choose to include it
                 } catch (e: any) {
                   toast.error(e?.message || "Failed to fetch CIBIL score.");
                   setCibilStatus("failed");

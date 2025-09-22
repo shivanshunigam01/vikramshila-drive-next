@@ -34,14 +34,14 @@ interface Product {
   images?: string[];
   brochureFile?: string;
 
-  // Backend direct fields you mentioned 👇
-  payload?: string; // "9000 Kg"
-  engine?: string; // engine spec string
-  torque?: string; // e.g. "300 Nm"
-  clutchDia?: string; // e.g. "280 mm"
-  tyre?: string; // e.g. "8.25R16"
-  drivercomfort?: string; // e.g. "8/10" or text
-  monitoringFeatures?: string[]; // array
+  // Backend direct fields
+  payload?: string;
+  engine?: string;
+  torque?: string;
+  clutchDia?: string;
+  tyre?: string;
+  drivercomfort?: string;
+  monitoringFeatures?: string[];
 
   // Legacy/nested specs (fallbacks)
   specifications?: {
@@ -202,6 +202,9 @@ export default function ProductComparison() {
     fetchProducts();
   }, [productIds]);
 
+  const isTwo = products.length === 2;
+  const isSingle = products.length === 1;
+
   const toggleFavorite = (productId: string) => {
     setFavoriteProducts((prev) =>
       prev.includes(productId)
@@ -211,16 +214,17 @@ export default function ProductComparison() {
   };
 
   const shareComparison = async () => {
+    const title = isTwo
+      ? "Product Comparison - Vikramshila Automobiles"
+      : `${products[0]?.title} — Overview | Vikramshila Automobiles`;
+
+    const text = isTwo
+      ? `Compare ${products[0]?.title} vs ${products[1]?.title}`
+      : `View ${products[0]?.title} details, TCO & profit`;
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: "Product Comparison - Vikramshila Automobiles",
-          text:
-            products.length === 2
-              ? `Compare ${products[0]?.title} vs ${products[1]?.title}`
-              : `Compare ${products[0]?.title}`,
-          url: window.location.href,
-        });
+        await navigator.share({ title, text, url: window.location.href });
       } catch {
         navigator.clipboard.writeText(window.location.href);
       }
@@ -252,7 +256,7 @@ export default function ProductComparison() {
         <div className="flex justify-center items-center py-20">
           <div className="flex flex-col items-center gap-4">
             <div className="h-12 w-12 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-400">Loading comparison...</p>
+            <p className="text-gray-400">Loading...</p>
           </div>
         </div>
         <Footer />
@@ -269,9 +273,9 @@ export default function ProductComparison() {
             <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <X className="w-8 h-8 text-red-400" />
             </div>
-            <h1 className="text-3xl font-bold mb-4">Invalid Comparison</h1>
+            <h1 className="text-3xl font-bold mb-4">Invalid Selection</h1>
             <p className="text-gray-400 mb-8">
-              Please select 1 or 2 products to compare. You currently have{" "}
+              Please select 1 or 2 products. You currently have{" "}
               {products.length} selected.
             </p>
             <Link
@@ -390,30 +394,32 @@ export default function ProductComparison() {
         >
           <div className="flex items-center gap-2">
             {value1 || "N/A"}
-            {winner === "product1" && (
+            {showWinner && winner === "product1" && (
               <Award className="w-4 h-4 text-yellow-500" />
             )}
           </div>
         </td>
-        <td
-          className={`py-4 px-4 ${
-            winner === "product2"
-              ? "text-green-400 font-semibold"
-              : "text-white"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {value2 || "N/A"}
-            {winner === "product2" && (
-              <Award className="w-4 h-4 text-yellow-500" />
-            )}
-          </div>
-        </td>
+        {isTwo && (
+          <td
+            className={`py-4 px-4 ${
+              winner === "product2"
+                ? "text-green-400 font-semibold"
+                : "text-white"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {value2 || "N/A"}
+              {showWinner && winner === "product2" && (
+                <Award className="w-4 h-4 text-yellow-500" />
+              )}
+            </div>
+          </td>
+        )}
       </tr>
     );
   };
 
-  // ---------------- Pairwise scoring (uses clutchDia & drivercomfort) ----------------
+  // ---------------- Pairwise scoring (only when 2 products) ----------------
   type MetricScoreLog = { label: string; winner?: 0 | 1; weight: number };
   function pairwiseScore(pA: Product, pB?: Product) {
     const logs: MetricScoreLog[] = [];
@@ -467,7 +473,6 @@ export default function ProductComparison() {
       pB?.payload ?? pB?.specifications?.payload
     );
 
-    // Keep if your backend sometimes also gives numeric "power" in specs
     const powerA = parseNumberFromSpec(pA.specifications?.power);
     const powerB = parseNumberFromSpec(pB?.specifications?.power);
 
@@ -538,44 +543,48 @@ export default function ProductComparison() {
     return { scores: [sA, sB] as [number, number], logs };
   }
 
-  const recommendation =
-    products.length === 2
-      ? pairwiseScore(product1, product2)
-      : { scores: [0, 0] as [number, number], logs: [] };
+  const recommendation = isTwo
+    ? pairwiseScore(products[0], products[1])
+    : { scores: [0, 0] as [number, number], logs: [] };
   const [scoreA, scoreB] = recommendation.scores;
-  const winnerIndex =
-    products.length === 2
-      ? scoreA > scoreB
-        ? 0
-        : scoreB > scoreA
-        ? 1
-        : -1
-      : 0;
+  const winnerIndex = isTwo
+    ? scoreA > scoreB
+      ? 0
+      : scoreB > scoreA
+      ? 1
+      : -1
+    : 0;
 
-  const topReasons =
-    products.length === 2
-      ? recommendation.logs
-          .filter((l) => l.winner !== undefined)
-          .sort((a, b) => b.weight - a.weight)
-          .slice(0, 3)
-      : [];
+  const topReasons = isTwo
+    ? recommendation.logs
+        .filter((l) => l.winner !== undefined)
+        .sort((a, b) => b.weight - a.weight)
+        .slice(0, 3)
+    : [];
+
+  const pageTitle = isTwo
+    ? `Compare ${products[0].title} vs ${products[1].title} | Vikramshila Automobiles`
+    : `${products[0].title} — Overview | Vikramshila Automobiles`;
+
+  const pageDesc = isTwo
+    ? `Detailed comparison between ${products[0].title} and ${products[1].title}. Compare specifications, features, prices, TCO, and Profit.`
+    : `Detailed overview for ${products[0].title} with price, key specs, TCO and Profit.`;
+
+  const heading = isTwo
+    ? "Product Comparison"
+    : `${products[0].title} — Overview`;
+
+  const subheading = isTwo
+    ? "Compare price, TCO, profit and key specs side by side"
+    : "Price, TCO, profit and key specs";
+
+  const keyCardTitle = isTwo ? "Key Comparison" : "Key Specs";
 
   return (
     <div className="bg-black min-h-screen text-white">
       <Helmet>
-        <title>
-          {products.length === 2
-            ? `Compare ${products[0].title} vs ${products[1].title} | Vikramshila Automobiles`
-            : `Compare ${products[0].title} | Vikramshila Automobiles`}
-        </title>
-        <meta
-          name="description"
-          content={
-            products.length === 2
-              ? `Detailed comparison between ${products[0].title} and ${products[1].title}. Compare specifications, features, prices, TCO, and Profit.`
-              : `Detailed view for ${products[0].title} with TCO and Profit.`
-          }
-        />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDesc} />
       </Helmet>
 
       <Header />
@@ -590,7 +599,7 @@ export default function ProductComparison() {
                 className="inline-flex items-center gap-2 text-gray-300 hover:text-white"
               >
                 <ChevronLeft className="w-4 h-4" />
-                Back to Profit Calculator
+                {isTwo ? "Back to Profit Calculator" : "Back"}
               </button>
             </div>
             <div className="flex items-center gap-3">
@@ -623,17 +632,17 @@ export default function ProductComparison() {
       <div className="container mx-auto px-4 py-10">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Product Comparison
+            {heading}
           </h1>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Compare price, TCO, profit and key specs side by side
+            {subheading}
           </p>
         </div>
 
         {/* Product headers */}
         <div
           className={`grid grid-cols-1 ${
-            products.length === 2 ? "lg:grid-cols-2" : ""
+            isTwo ? "lg:grid-cols-2" : ""
           } gap-8 mb-12`}
         >
           {products.map((product, index) => (
@@ -677,15 +686,17 @@ export default function ProductComparison() {
                         Profit set
                       </span>
                     )}
-                    {index === 0 ? (
-                      <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
-                        Product A
-                      </span>
-                    ) : products.length === 2 ? (
-                      <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded">
-                        Product B
-                      </span>
-                    ) : null}
+                    {/* Show A/B badges only when comparing 2 */}
+                    {isTwo &&
+                      (index === 0 ? (
+                        <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
+                          Product A
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded">
+                          Product B
+                        </span>
+                      ))}
                   </CardTitle>
                 </div>
 
@@ -732,11 +743,7 @@ export default function ProductComparison() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div
-                className={`grid ${
-                  products.length === 2 ? "md:grid-cols-2" : ""
-                } gap-6`}
-              >
+              <div className={`grid ${isTwo ? "md:grid-cols-2" : ""} gap-6`}>
                 {products.map((p) => {
                   const t = tcoById[p._id];
                   if (!t) return null;
@@ -796,11 +803,7 @@ export default function ProductComparison() {
               <CardTitle className="text-xl">Profit Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <div
-                className={`grid ${
-                  products.length === 2 ? "md:grid-cols-2" : ""
-                } gap-6`}
-              >
+              <div className={`grid ${isTwo ? "md:grid-cols-2" : ""} gap-6`}>
                 {products.map((p) => {
                   const r = profitById[p._id];
                   if (!r) return null;
@@ -868,10 +871,10 @@ export default function ProductComparison() {
           </Card>
         )}
 
-        {/* Key Comparison (mapped to backend fields) */}
+        {/* Key Comparison / Key Specs */}
         <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 mb-10">
           <CardHeader>
-            <CardTitle className="text-xl text-white">Key Comparison</CardTitle>
+            <CardTitle className="text-xl text-white">{keyCardTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto rounded-lg border border-gray-800">
@@ -881,11 +884,11 @@ export default function ProductComparison() {
                     <th className="text-left py-3 px-4 text-gray-400">
                       Metric
                     </th>
-                    <th className="text-left  text-white py-3 px-4">
+                    <th className="text-left text-white py-3 px-4">
                       {product1.title}
                     </th>
-                    {product2 && (
-                      <th className="text-left py-3 px-4  text-white">
+                    {isTwo && (
+                      <th className="text-left py-3 px-4 text-white">
                         {product2.title}
                       </th>
                     )}
@@ -901,11 +904,11 @@ export default function ProductComparison() {
                         : undefined
                     }
                     value2={
-                      product2 && tcoById[product2._id]?.costPerKm
+                      isTwo && tcoById[product2._id]?.costPerKm
                         ? `₹ ${tcoById[product2._id].costPerKm.toFixed(2)}`
                         : undefined
                     }
-                    showWinner
+                    showWinner={isTwo}
                     winnerType="lower"
                     icon={<TrendingUp className="w-4 h-4 text-emerald-400" />}
                     highlight
@@ -918,12 +921,11 @@ export default function ProductComparison() {
                         : undefined
                     }
                     value2={
-                      product2 &&
-                      tcoById[product2._id]?.fiveYearTco !== undefined
+                      isTwo && tcoById[product2._id]?.fiveYearTco !== undefined
                         ? formatINR(tcoById[product2._id].fiveYearTco)
                         : undefined
                     }
-                    showWinner
+                    showWinner={isTwo}
                     winnerType="lower"
                   />
 
@@ -936,12 +938,12 @@ export default function ProductComparison() {
                         : undefined
                     }
                     value2={
-                      product2 &&
+                      isTwo &&
                       profitById[product2._id]?.monthlyProfit !== undefined
                         ? formatINR(profitById[product2._id].monthlyProfit)
                         : undefined
                     }
-                    showWinner
+                    showWinner={isTwo}
                     winnerType="higher"
                     icon={<TrendingUp className="w-4 h-4 text-amber-400" />}
                     highlight
@@ -954,12 +956,12 @@ export default function ProductComparison() {
                         : undefined
                     }
                     value2={
-                      product2 &&
+                      isTwo &&
                       profitById[product2._id]?.fiveYearProfit !== undefined
                         ? formatINR(profitById[product2._id].fiveYearProfit)
                         : undefined
                     }
-                    showWinner
+                    showWinner={isTwo}
                     winnerType="higher"
                   />
 
@@ -970,11 +972,11 @@ export default function ProductComparison() {
                       product1.payload ?? product1.specifications?.payload
                     }
                     value2={
-                      product2
+                      isTwo
                         ? product2.payload ?? product2.specifications?.payload
                         : undefined
                     }
-                    showWinner
+                    showWinner={isTwo}
                     winnerType="higher"
                     icon={<Truck className="w-4 h-4 text-blue-400" />}
                     highlight
@@ -989,7 +991,7 @@ export default function ProductComparison() {
                     <td className="py-4 px-4">
                       <Chips items={product1.monitoringFeatures ?? []} />
                     </td>
-                    {product2 && (
+                    {isTwo && (
                       <td className="py-4 px-4">
                         <Chips items={product2.monitoringFeatures ?? []} />
                       </td>
@@ -1007,7 +1009,7 @@ export default function ProductComparison() {
                           })`
                         : undefined;
                     const v2 =
-                      r2 !== null && product2
+                      r2 !== null && isTwo
                         ? `${r2.toFixed(1)} / 5 (${
                             product2.reviews?.totalReviews ?? 0
                           })`
@@ -1017,7 +1019,7 @@ export default function ProductComparison() {
                         label="Customer Review"
                         value1={v1}
                         value2={v2}
-                        showWinner
+                        showWinner={isTwo}
                         winnerType="higher"
                         icon={<Star className="w-4 h-4 text-yellow-400" />}
                         highlight
@@ -1030,7 +1032,7 @@ export default function ProductComparison() {
                     label="Engine"
                     value1={product1.engine ?? product1.specifications?.engine}
                     value2={
-                      product2
+                      isTwo
                         ? product2.engine ?? product2.specifications?.engine
                         : undefined
                     }
@@ -1042,28 +1044,28 @@ export default function ProductComparison() {
                     label="Torque"
                     value1={product1.torque ?? product1.specifications?.torque}
                     value2={
-                      product2
+                      isTwo
                         ? product2.torque ?? product2.specifications?.torque
                         : undefined
                     }
-                    showWinner
+                    showWinner={isTwo}
                     winnerType="higher"
                     icon={<Settings className="w-4 h-4 text-fuchsia-400" />}
                   />
 
-                  {/* 8) Clutch Dia (replaces Transmission Quality) */}
+                  {/* 8) Clutch Dia */}
                   <ComparisonRow
                     label="Clutch Dia"
                     value1={
                       product1.clutchDia ?? product1.specifications?.clutchDia
                     }
                     value2={
-                      product2
+                      isTwo
                         ? product2.clutchDia ??
                           product2.specifications?.clutchDia
                         : undefined
                     }
-                    showWinner
+                    showWinner={isTwo}
                     winnerType="higher"
                     icon={<Settings className="w-4 h-4 text-sky-400" />}
                   />
@@ -1077,7 +1079,7 @@ export default function ProductComparison() {
                       product1.specifications?.tyreSize
                     }
                     value2={
-                      product2
+                      isTwo
                         ? product2.tyre ??
                           product2.specifications?.tyre ??
                           product2.specifications?.tyreSize
@@ -1086,25 +1088,29 @@ export default function ProductComparison() {
                     icon={<Truck className="w-4 h-4 text-teal-400" />}
                   />
 
-                  {/* 10) Driver Comfort (text; enable winner logic if numeric) */}
+                  {/* 10) Driver Comfort */}
                   <ComparisonRow
                     label="Driver Comfort"
                     value1={product1.drivercomfort}
-                    value2={product2 ? product2.drivercomfort : undefined}
+                    value2={isTwo ? product2.drivercomfort : undefined}
                     icon={<Heart className="w-4 h-4 text-rose-400" />}
                   />
                 </tbody>
               </table>
             </div>
-            <div className="text-xs text-gray-500 mt-3 flex items-center gap-2">
-              <Award className="w-4 h-4 text-yellow-500" /> Better value
-              highlighted
-            </div>
+
+            {/* Legend only when comparing */}
+            {isTwo && (
+              <div className="text-xs text-gray-500 mt-3 flex items-center gap-2">
+                <Award className="w-4 h-4 text-yellow-500" /> Better value
+                highlighted
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Best Recommendation */}
-        {products.length === 2 && winnerIndex !== -1 && (
+        {/* Best Recommendation (only for 2 products) */}
+        {isTwo && winnerIndex !== -1 && (
           <Card className="border border-gray-700 bg-gradient-to-r from-gray-900 to-gray-800 mb-10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -1174,11 +1180,14 @@ export default function ProductComparison() {
         <div className="mt-16">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-4">
-              Ready to Make Your Decision?
+              {isTwo
+                ? "Ready to Make Your Decision?"
+                : "What would you like to do next?"}
             </h2>
             <p className="text-gray-400">
-              Get detailed information, go back to refine, or proceed to review
-              & submit
+              {isTwo
+                ? "Get detailed information, go back to refine, or proceed to review & submit"
+                : "View details or proceed to review & submit"}
             </p>
           </div>
 
@@ -1194,7 +1203,7 @@ export default function ProductComparison() {
               </Button>
             ))}
 
-            {products.length === 2 && winnerIndex !== -1 && (
+            {isTwo && winnerIndex !== -1 && (
               <Button
                 onClick={() => proceedToReview(products[winnerIndex])}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-green-500/25 flex items-center justify-center gap-2"
@@ -1208,7 +1217,8 @@ export default function ProductComparison() {
               variant="outline"
               className="border-gray-600 text-black px-6 py-4 rounded-lg transition-all duration-300 hover:bg-gray-800 flex items-center justify-center gap-2"
             >
-              <Download className="w-5 h-5" /> Download PDF
+              <Download className="w-5 h-5" />{" "}
+              {isTwo ? "Download Comparison" : "Download Summary"}
             </Button>
           </div>
         </div>

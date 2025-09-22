@@ -23,8 +23,8 @@ type ApiProduct = {
   newLaunch?: number | string;
 };
 
-const STEP_MS = 3000; // 3s per slide
-const FIRST_DELAY_MS = 3000; // ensure hero shows for 3s first
+const STEP_MS = 3000;
+const FIRST_DELAY_MS = 3000;
 
 export default function LaunchSection() {
   const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
@@ -36,7 +36,7 @@ export default function LaunchSection() {
   const hoverRef = useRef(false);
   const timerRef = useRef<number | null>(null);
 
-  // fetch products
+  // Fetch products
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -66,7 +66,6 @@ export default function LaunchSection() {
     [allProducts]
   );
 
-  // Build slides: hero + products
   const slides: Array<{ kind: "hero" } | { kind: "product"; p: ApiProduct }> =
     useMemo(
       () => [
@@ -76,18 +75,14 @@ export default function LaunchSection() {
       [newLaunches]
     );
 
-  // Always reset to hero when slides change (prevents starting on a product)
   useEffect(() => {
     setIndex(0);
   }, [slides.length]);
 
-  // Autoplay: start only after first paint, then every 3s
+  // Autoplay with pause on hover
   useEffect(() => {
     if (slides.length <= 1) return;
-
-    // first delay (keep hero visible)
     const first = window.setTimeout(() => {
-      // then steady interval
       timerRef.current = window.setInterval(() => {
         if (!hoverRef.current) {
           setIndex((i) => (i + 1) % slides.length);
@@ -138,48 +133,36 @@ export default function LaunchSection() {
   };
 
   return (
-    <section className="w-full bg-[#333333] py-20">
-      {/* Slider wrapper: clip + isolate so nothing peeks */}
+    <section className="w-full bg-[#333333] py-12 sm:py-20">
       <div
-        className="container mx-auto px-6 relative isolate overflow-hidden"
+        className="container mx-auto px-4 sm:px-6 relative isolate overflow-hidden"
         onMouseEnter={() => (hoverRef.current = true)}
         onMouseLeave={() => (hoverRef.current = false)}
       >
-        {/* TRACK: flex with full-width slides */}
+        {/* Slides */}
         <div
           className="flex transition-transform duration-500 will-change-transform"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          {/* Slide 1 — YOUR HERO (unchanged) */}
+          {/* Hero Slide */}
           <div className="w-full shrink-0">
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-16">
-              {/* Vehicle Image */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 sm:gap-16">
               <div className="flex-1 flex justify-center">
                 <img
                   src={aceProImg}
                   alt="Ace Pro Vehicle"
-                  className="max-w-sm lg:max-w-lg object-contain"
+                  className="w-full max-w-[220px] sm:max-w-sm md:max-w-md lg:max-w-lg object-contain"
                 />
               </div>
-
-              {/* Content */}
-              <div className="flex-1 text-center lg:text-left">
-                {/* Optional pill (kept because in your screenshot) */}
-                {/* <div className="inline-flex items-center bg-white text-blue-600 font-semibold rounded-sm px-3 py-1 mb-4 shadow">
-                  Newdasd Launch
-                </div> */}
-
-                {/* Logo */}
-                <div className="mb-8">
+              <div className="flex-1 text-center md:text-left mt-6 md:mt-0">
+                <div className="mb-6 sm:mb-8">
                   <img
                     src={aceLogo}
                     alt="Ace Pro Logo"
-                    className="h-24 lg:h-32 object-contain"
+                    className="h-14 sm:h-20 md:h-24 lg:h-32 object-contain mx-auto md:mx-0"
                   />
                 </div>
-
-                {/* Tagline */}
-                <p className="text-white text-2xl lg:text-3xl font-semibold leading-snug mb-10">
+                <p className="text-white text-lg sm:text-xl md:text-3xl font-semibold leading-snug">
                   Step into the future of last-mile delivery with the{" "}
                   <span className="font-bold">Ace Pro</span>
                 </p>
@@ -187,10 +170,10 @@ export default function LaunchSection() {
             </div>
           </div>
 
-          {/* Slides 2+ — API products (same two-column layout, no description) */}
+          {/* Product Slides */}
           {(loading && slides.length === 1) || error ? (
             <div className="w-full shrink-0">
-              <div className="w-full h-[360px] grid place-items-center text-gray-200">
+              <div className="w-full h-[220px] sm:h-[320px] grid place-items-center text-gray-200 text-sm sm:text-base">
                 {loading ? "Loading launches…" : error}
               </div>
             </div>
@@ -199,10 +182,9 @@ export default function LaunchSection() {
               const img = p.images?.[0];
               return (
                 <div key={p._id} className="w-full shrink-0">
-                  <div className="flex flex-col lg:flex-row items-center justify-center gap-16">
-                    {/* Image */}
+                  <div className="flex flex-col md:flex-row items-center justify-center gap-8 sm:gap-16">
                     <div className="flex-1 flex justify-center">
-                      <div className="w-full max-w-lg aspect-[4/3] bg-black/30 rounded-xl flex items-center justify-center overflow-hidden">
+                      <div className="w-full max-w-[260px] sm:max-w-md md:max-w-lg aspect-[4/3] bg-black/30 rounded-xl flex items-center justify-center overflow-hidden">
                         {img ? (
                           <img
                             src={img}
@@ -214,18 +196,14 @@ export default function LaunchSection() {
                         )}
                       </div>
                     </div>
-
-                    {/* Content */}
-                    <div className="flex-1 text-center lg:text-left text-white">
-                      <span className="inline-flex items-center text-xs bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full mb-4">
+                    <div className="flex-1 text-center md:text-left text-white mt-6 md:mt-0">
+                      <span className="inline-flex items-center text-xs bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full mb-3 sm:mb-4">
                         New Launch
                       </span>
-
-                      <h3 className="text-2xl lg:text-3xl font-semibold mb-6">
+                      <h3 className="text-lg sm:text-2xl md:text-3xl font-semibold mb-4 sm:mb-6">
                         {p.title}
                       </h3>
-
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 items-stretch mb-8">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
                         <Spec label="GVW" value={p.gvw} />
                         <Spec label="Fuel Tank" value={p.fuelTankCapacity} />
                         <Spec label="Payload" value={p.payload} />
@@ -233,8 +211,7 @@ export default function LaunchSection() {
                         <Spec label="Engine" value={p.engine} />
                         <Spec label="Category" value={p.category || "—"} />
                       </div>
-
-                      <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+                      <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center md:justify-start">
                         <Link
                           to={`/products/${p._id}`}
                           className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 transition-colors text-white px-5 py-2.5 rounded-lg"
@@ -248,13 +225,12 @@ export default function LaunchSection() {
                           >
                             {downloadingId === p._id
                               ? "Downloading…"
-                              : "Download Brochure (PDF)"}
+                              : "Download Brochure"}
                           </button>
                         ) : (
                           <button
                             disabled
                             className="inline-flex items-center justify-center border border-gray-700 text-gray-500 px-5 py-2.5 rounded-lg cursor-not-allowed"
-                            title="Brochure not available"
                           >
                             Brochure Unavailable
                           </button>
@@ -268,31 +244,30 @@ export default function LaunchSection() {
           )}
         </div>
 
-        {/* Controls + dots */}
+        {/* Controls + Dots */}
         {slides.length > 1 && (
           <>
             <button
-              onClick={() => goTo(index - 1)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 grid place-items-center"
+              onClick={prev}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 sm:w-10 sm:h-10 grid place-items-center"
               aria-label="Previous"
             >
               ‹
             </button>
             <button
-              onClick={() => goTo(index + 1)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 grid place-items-center"
+              onClick={next}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 sm:w-10 sm:h-10 grid place-items-center"
               aria-label="Next"
             >
               ›
             </button>
-
-            <div className="mt-6 flex justify-center gap-2">
+            <div className="mt-4 sm:mt-6 flex justify-center gap-2">
               {slides.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => goTo(i)}
-                  className={`h-2 w-2 rounded-full transition-all ${
-                    i === index ? "bg-white w-6" : "bg-gray-500"
+                  className={`h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full transition-all ${
+                    i === index ? "bg-white w-5 sm:w-6" : "bg-gray-500"
                   }`}
                   aria-label={`Go to slide ${i + 1}`}
                 />
@@ -307,11 +282,11 @@ export default function LaunchSection() {
 
 function Spec({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="bg-black/40 border border-white/10 rounded-xl p-4 h-full">
-      <div className="text-[11px] md:text-xs text-gray-300 leading-none mb-1">
+    <div className="bg-black/40 border border-white/10 rounded-xl p-3 sm:p-4 h-full">
+      <div className="text-[10px] sm:text-[11px] md:text-xs text-gray-300 leading-none mb-1">
         {label}
       </div>
-      <div className="text-sm md:text-base font-semibold text-white whitespace-normal break-words [overflow-wrap:anywhere] [word-break:break-word] leading-snug">
+      <div className="text-sm sm:text-base font-semibold text-white whitespace-normal break-words [overflow-wrap:anywhere] leading-snug">
         {value || "—"}
       </div>
     </div>

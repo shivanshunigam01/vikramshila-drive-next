@@ -81,8 +81,8 @@ export default function ProductDisplay() {
             return (
               <Card
                 key={p._id}
-                className="bg-black border border-gray-800 rounded-2xl overflow-hidden group relative
-             w-[280px] md:w-[300px]"
+                className="bg-black border border-gray-800 rounded-2xl overflow-hidden group relative 
+             w-full max-w-sm mx-auto"
               >
                 {/* Image wrapper (uniform height & ratio) */}
                 <CardHeader className="p-0 overflow-hidden">
@@ -101,35 +101,41 @@ export default function ProductDisplay() {
                 </CardHeader>
 
                 {/* Content */}
-                <CardContent className="p-4 flex flex-col bg-black text-white">
-                  {/* Show product title instead of category */}
-                  <CardTitle className="text-lg font-semibold mb-3 text-white">
+                <CardContent className="p-3 sm:p-4 flex flex-col bg-black text-white">
+                  {/* Title */}
+                  <CardTitle className="text-base sm:text-lg font-semibold mb-3 text-white">
                     {p.title || "Untitled Product"}
                   </CardTitle>
 
                   {/* 3 spec columns */}
-                  <div className="grid grid-cols-3 gap-4 text-center text-sm text-gray-300 mb-4">
+                  <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center text-xs sm:text-sm text-gray-300 mb-4">
                     <div>
                       <p className="font-bold text-white">{p.gvw || "—"}</p>
-                      <p className="text-xs text-gray-400">Tonnage (GVW)</p>
+                      <p className="text-[10px] sm:text-xs text-gray-400">
+                        Tonnage
+                      </p>
                     </div>
                     <div>
                       <p className="font-bold text-white">
                         {p.fuelTankCapacity || "—"}
                       </p>
-                      <p className="text-xs text-gray-400">Fuel Tank</p>
+                      <p className="text-[10px] sm:text-xs text-gray-400">
+                        Fuel Tank
+                      </p>
                     </div>
                     <div>
                       <p className="font-bold text-white">{p.payload || "—"}</p>
-                      <p className="text-xs text-gray-400">Payload</p>
+                      <p className="text-[10px] sm:text-xs text-gray-400">
+                        Payload
+                      </p>
                     </div>
                   </div>
 
                   {/* Buttons */}
-                  <div className="flex gap-3 mt-auto">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto">
                     <Link
                       to={`/products/${p._id}`}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-center"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-center text-sm sm:text-base"
                     >
                       Explore {p.category || "Product"}
                     </Link>
@@ -137,7 +143,7 @@ export default function ProductDisplay() {
                     {p.brochureFile ? (
                       <button
                         onClick={() => handleDownload(p)}
-                        className="flex items-center justify-center w-11 h-11 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
+                        className="flex items-center justify-center w-full sm:w-11 h-10 sm:h-11 rounded-md sm:rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white text-sm"
                         title="Download brochure"
                       >
                         {downloadingId === p._id ? "…" : "PDF"}
@@ -145,7 +151,7 @@ export default function ProductDisplay() {
                     ) : (
                       <button
                         disabled
-                        className="flex items-center justify-center w-11 h-11 rounded-full border border-gray-700 text-gray-600 cursor-not-allowed"
+                        className="flex items-center justify-center w-full sm:w-11 h-10 sm:h-11 rounded-md sm:rounded-full border border-gray-700 text-gray-600 cursor-not-allowed text-sm"
                         title="Brochure not available"
                       >
                         PDF

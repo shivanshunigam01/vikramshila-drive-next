@@ -185,6 +185,7 @@ export default function Header() {
                 </Link>
 
                 {/* AUTH AREA (click-to-open dropdowns) */}
+                {/* AUTH AREA (click-to-open dropdowns) */}
                 {!auth.loggedIn ? (
                   <div className="relative" ref={loginMenuRef}>
                     <Button
@@ -326,53 +327,100 @@ export default function Header() {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
+
+              {/* ✅ UPDATED MOBILE MENU */}
               <SheetContent
                 side="right"
-                className="w-[280px] bg-black text-white"
+                className="w-[300px] bg-black text-white p-0"
               >
-                <div className="flex flex-col mt-6 space-y-4">
-                  {nav.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
+                <div className="mt-2 h-[calc(100vh-1rem)] overflow-y-auto px-4 py-6 space-y-4">
+                  {/* Nav items */}
+                  <div className="space-y-2">
+                    {nav.map((item) => (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={({ isActive }) =>
+                          `block px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            isActive
+                              ? "bg-blue-600 text-white"
+                              : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                          }`
+                        }
+                      >
+                        {item.label}
+                      </NavLink>
+                    ))}
+                  </div>
+
+                  <div className="my-2 h-px bg-white/10" />
+
+                  {/* Quick actions */}
+                  <div className="space-y-2">
+                    <Link
+                      to="/truck-finder"
                       onClick={() => setMobileMenuOpen(false)}
-                      className={({ isActive }) =>
-                        `px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                          isActive
-                            ? "bg-blue-600 text-white"
-                            : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                        }`
-                      }
+                      className="block w-full text-center bg-white text-black hover:bg-gray-200 text-sm px-4 py-2 rounded-lg shadow"
                     >
-                      {item.label}
-                    </NavLink>
-                  ))}
+                      Book Your Vehicle
+                    </Link>
 
-                  <a
-                    href="tel:18002097979"
-                    className="flex items-center gap-2 text-sm text-gray-300"
-                  >
-                    <Phone className="h-4 w-4" /> 1800 209 7979
-                  </a>
-                  <a
-                    href="tel:+918406991610"
-                    className="flex items-center gap-2 text-sm text-gray-300"
-                  >
-                    <Phone className="h-4 w-4" /> +91 8406991610
-                  </a>
-                  <a
-                    href="https://wa.me/8406991610"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 text-sm text-green-400"
-                  >
-                    <MessageCircle className="h-4 w-4" /> WhatsApp
-                  </a>
+                    <Link
+                      to="/book-service"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg"
+                    >
+                      Book Your Service
+                    </Link>
 
+                    <Button
+                      onClick={() => {
+                        openEnquiryDialog("Enquire Now");
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Enquire Now
+                    </Button>
+                  </div>
+
+                  <div className="my-2 h-px bg-white/10" />
+
+                  {/* Contact */}
+                  <div className="space-y-2 text-sm">
+                    <a
+                      href="tel:18002097979"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors"
+                    >
+                      <Phone className="h-4 w-4" /> 1800 209 7979
+                    </a>
+                    <a
+                      href="tel:+918406991610"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors"
+                    >
+                      <Phone className="h-4 w-4" /> +91 8406991610
+                    </a>
+                    <a
+                      href="https://wa.me/918406991610"
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 text-green-400 hover:text-green-500 transition-colors"
+                    >
+                      <MessageCircle className="h-4 w-4" /> WhatsApp
+                    </a>
+                  </div>
+
+                  <div className="my-2 h-px bg-white/10" />
+
+                  {/* Auth actions */}
                   {!auth.loggedIn ? (
-                    <>
+                    <div className="space-y-2">
                       <Button
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm"
+                        className="w-full bg-blue-600 text-white hover:bg-blue-700 text-sm"
                         onClick={() => {
                           setAuthModalOpen(true);
                           setMobileMenuOpen(false);
@@ -382,23 +430,24 @@ export default function Header() {
                       </Button>
                       <Button
                         variant="outline"
-                        className="text-sm"
-                        onClick={() =>
-                          window.open(ADMIN_URL, "_blank", "noopener")
-                        }
+                        className="w-full text-sm"
+                        onClick={() => {
+                          window.open(ADMIN_URL, "_blank", "noopener");
+                          setMobileMenuOpen(false);
+                        }}
                       >
                         Login as Admin
                       </Button>
-                    </>
+                    </div>
                   ) : (
-                    <>
+                    <div className="space-y-3">
                       <div className="flex items-center gap-2 px-2 py-1 text-sm text-gray-300">
                         <UserCircle2 className="h-4 w-4" />
                         <span className="truncate">{displayName}</span>
                       </div>
                       <Button
                         variant="destructive"
-                        className="text-sm"
+                        className="w-full text-sm"
                         onClick={() => {
                           handleLogout();
                           setMobileMenuOpen(false);
@@ -406,22 +455,8 @@ export default function Header() {
                       >
                         Logout
                       </Button>
-                    </>
+                    </div>
                   )}
-
-                  <Button className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2 rounded-lg shadow">
-                    Book Now
-                  </Button>
-
-                  <Button
-                    onClick={() => {
-                      openEnquiryDialog("Enquire Now");
-                      setMobileMenuOpen(false);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white mt-2"
-                  >
-                    Enquire Now
-                  </Button>
                 </div>
               </SheetContent>
             </Sheet>

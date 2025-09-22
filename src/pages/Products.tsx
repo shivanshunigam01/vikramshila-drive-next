@@ -527,10 +527,11 @@ export default function Products() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-10">
-        <div className="flex gap-8">
+      <div className="container mx-auto px-4 py-8 sm:py-10">
+        {/* Main layout: stack on mobile, side-by-side on md+ */}
+        <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
           {/* Sidebar Filters */}
-          <div className="w-80 md:w-96 bg-black rounded-lg border border-gray-800 p-6 flex flex-col">
+          <div className="w-full md:w-80 lg:w-96 bg-black rounded-lg border border-gray-800 p-5 sm:p-6 flex flex-col">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -625,6 +626,7 @@ export default function Products() {
                     <option value="20-25L">20 - 25 Lakhs</option>
                     <option value="25-30L">25 - 30 Lakhs</option>
                     <option value="30L+">30 Lakhs +</option>
+                  {/* </option> */}
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     ▼
@@ -670,27 +672,27 @@ export default function Products() {
 
           {/* Products Grid */}
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+              <h1 className="text-xl sm:text-2xl font-bold">
                 {isFiltered ? "Filtered Results" : "All Vehicles"}
               </h1>
-              <p className="text-gray-400">
+              <p className="text-gray-400 text-sm sm:text-base">
                 {filteredProducts.length} vehicle
                 {filteredProducts.length !== 1 ? "s" : ""} found
               </p>
             </div>
 
             {loading ? (
-              <div className="flex justify-center items-center py-20">
+              <div className="flex justify-center items-center py-16 sm:py-20">
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                   <span className="text-gray-400">Loading vehicles...</span>
                 </div>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-20 bg-gray-900 rounded-lg border border-gray-800">
+              <div className="text-center py-16 sm:py-20 bg-gray-900 rounded-lg border border-gray-800">
                 <div className="max-w-md mx-auto">
-                  <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <Search className="w-14 h-14 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-4" />
                   <h3 className="text-lg font-medium mb-2">
                     No vehicles found
                   </h3>
@@ -723,11 +725,11 @@ export default function Products() {
                 </div>
               </div>
             ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                 {filteredProducts.map((v) => (
                   <Card
                     key={v._id}
-                    className="bg-black border border-gray-800 rounded-lg overflow-hidden group relative w-[280px] md:w-[300px]"
+                    className="bg-black border border-gray-800 rounded-lg overflow-hidden group relative w-full"
                   >
                     <div className="flex items-center justify-end space-x-2 px-3 pt-3">
                       <input
@@ -758,28 +760,28 @@ export default function Products() {
                     </CardHeader>
 
                     <CardContent className="p-4 flex flex-col bg-black text-white">
-                      <CardTitle className="text-lg font-semibold mb-3 text-white">
+                      <CardTitle className="text-base sm:text-lg font-semibold mb-3 text-white">
                         {v.title}
                       </CardTitle>
 
-                      <div className="grid grid-cols-3 gap-4 text-center text-sm text-gray-300 mb-4">
+                      <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center text-xs sm:text-sm text-gray-300 mb-4">
                         <div>
                           <p className="font-bold text-white">{v.gvw}</p>
-                          <p className="text-xs text-gray-400">Tonnage (GVW)</p>
+                          <p className="text-[11px] sm:text-xs text-gray-400">Tonnage (GVW)</p>
                         </div>
                         <div>
                           <p className="font-bold text-white">
                             {v.fuelTankCapacity}
                           </p>
-                          <p className="text-xs text-gray-400">Fuel Tank</p>
+                          <p className="text-[11px] sm:text-xs text-gray-400">Fuel Tank</p>
                         </div>
                         <div>
                           <p className="font-bold text-white">{v.payload}</p>
-                          <p className="text-xs text-gray-400">Payload</p>
+                          <p className="text-[11px] sm:text-xs text-gray-400">Payload</p>
                         </div>
                       </div>
 
-                      <div className="flex gap-3 mt-auto">
+                      <div className="flex flex-col xs:flex-row sm:flex-row gap-3 mt-auto">
                         <Link
                           to={`/products/${v._id}`}
                           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-center"
@@ -791,7 +793,7 @@ export default function Products() {
                             onClick={() =>
                               handleDownloadBrochure(v._id, v.brochureFile)
                             }
-                            className="flex items-center justify-center w-11 h-11 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
+                            className="flex items-center justify-center w-full sm:w-11 h-11 rounded-md sm:rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
                           >
                             {downloadingId === v._id ? "…" : "PDF"}
                           </button>
@@ -808,49 +810,80 @@ export default function Products() {
 
       {/* Sticky Conditional Buttons */}
       {selected.length > 0 && (
-        <div className="z-50">
-          {selected.length === 1 && (
-            <Button
-              onClick={openCalculator}
-              className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
-                bg-blue-600 hover:bg-blue-700 text-white 
-                px-4 py-2 rounded-l-lg shadow-lg 
-                [writing-mode:vertical-rl] rotate-180 
-                flex justify-center items-center w-12 h-40"
-            >
-              Choose this Vehicle
-            </Button>
-          )}
+        <>
+          {/* Desktop / Tablet: keep your vertical rail button */}
+          <div className="z-50 hidden md:block">
+            {selected.length === 1 && (
+              <Button
+                onClick={openCalculator}
+                className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
+                  bg-blue-600 hover:bg-blue-700 text-white 
+                  px-4 py-2 rounded-l-lg shadow-lg 
+                  [writing-mode:vertical-rl] rotate-180 
+                  flex justify-center items-center w-12 h-40"
+              >
+                Choose this Vehicle
+              </Button>
+            )}
 
-          {selected.length === 2 && (
-            <Button
-              onClick={handleCompareProducts}
-              className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
-                bg-green-600 hover:bg-green-700 text-white 
-                px-4 py-2 rounded-l-lg shadow-lg 
-                [writing-mode:vertical-rl] rotate-180 
-                flex justify-center items-center w-12 h-40"
-            >
-              Compare Products
-            </Button>
-          )}
+            {selected.length === 2 && (
+              <Button
+                onClick={handleCompareProducts}
+                className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
+                  bg-green-600 hover:bg-green-700 text-white 
+                  px-4 py-2 rounded-l-lg shadow-lg 
+                  [writing-mode:vertical-rl] rotate-180 
+                  flex justify-center items-center w-12 h-40"
+              >
+                Compare Products
+              </Button>
+            )}
 
-          {selected.length > 2 && (
-            <div
-              className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
-                bg-red-600 text-white px-4 py-2 rounded-l-lg shadow-lg 
-                text-sm [writing-mode:vertical-rl] rotate-180 
-                flex justify-center items-center w-12 h-48 whitespace-nowrap"
-            >
-              Only 2 Products Allowed
+            {selected.length > 2 && (
+              <div
+                className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
+                  bg-red-600 text-white px-4 py-2 rounded-l-lg shadow-lg 
+                  text-sm [writing-mode:vertical-rl] rotate-180 
+                  flex justify-center items-center w-12 h-48 whitespace-nowrap"
+              >
+                Only 2 Products Allowed
+              </div>
+            )}
+          </div>
+
+          {/* Mobile: bottom safe-area bar */}
+          <div className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-zinc-900/95 backdrop-blur border-t border-white/10 px-4 py-3 flex items-center justify-between gap-3 [padding-bottom:calc(env(safe-area-inset-bottom)+12px)]">
+            <div className="text-xs text-gray-300">
+              {selected.length} selected
             </div>
-          )}
-        </div>
+            {selected.length === 1 && (
+              <Button
+                onClick={openCalculator}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+              >
+                Choose Vehicle
+              </Button>
+            )}
+            {selected.length === 2 && (
+              <Button
+                onClick={handleCompareProducts}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+              >
+                Compare
+              </Button>
+            )}
+            {selected.length > 2 && (
+              <div className="text-xs text-red-300">
+                Only 2 products allowed
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* Finance Calculator Modal */}
       <Dialog open={showCalculator} onOpenChange={setShowCalculator}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-black text-white">
+        <DialogContent className="max-w-[95vw] sm:max-w-6xl max-h-[90vh] overflow-y-auto bg-black text-white">
           <DialogHeader>
             <DialogTitle>Finance Calculator</DialogTitle>
           </DialogHeader>

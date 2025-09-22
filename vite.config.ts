@@ -3,22 +3,36 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  server: {
-    host: "0.0.0.0", // listen on all interfaces (IPv4/IPv6)
-    port: 8080,
-    allowedHosts: [
-      "www.vikramshilaautomobiles.com"
-    ],
-  },
-  plugins: [
-    react(),
-    mode === "development" && componentTagger(),
-  ].filter(Boolean),
+  plugins: [react(), mode === "development" && componentTagger()].filter(
+    Boolean
+  ),
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    alias: { "@": path.resolve(__dirname, "./src") },
+  },
+  server: {
+    host: true, // listen on all interfaces
+    port: 8080,
+    strictPort: true,
+    // ✅ Allow local dev hosts, plus your prod domain
+    allowedHosts: [
+      "localhost",
+      "127.0.0.1",
+      "0.0.0.0",
+      "www.vikramshilaautomobiles.com",
+    ],
+    // ✅ Make HMR use the same host/port the browser is on
+    hmr: {
+      protocol: "ws",
+      host: "localhost", // or your LAN IP if you open from phone
+      port: 8080,
+      // If you ever serve the dev UI over HTTPS/proxy, use:
+      // protocol: "wss",
+      // clientPort: 443,
     },
+    // If you prefer proxying the backend instead of full URLs:
+    // proxy: {
+    //   "/api": { target: "http://localhost:5000", changeOrigin: true },
+    // },
   },
 }));

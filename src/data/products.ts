@@ -575,9 +575,30 @@ export const offers = [
 ];
 
 // ---------------- Videos ----------------
-export const videos: { id: string; title: string }[] = [
-  { id: "Gx8eYwL5jCU", title: "Dealer Introduction" },
-  { id: "5qap5aO4i9A", title: "Customer Testimonial" },
-  { id: "hY7m5jjJ9mM", title: "Service Tour" },
-  { id: "aqz-KE-bpKQ", title: "Product Walkthrough" },
+// src/data/products.ts
+export const videos = [
+  {
+    id: "qe8_2zsaPIw",
+    title: "Tata Motors Commercial Vehicles | Bharat Mobility 2025",
+  },
+  {
+    id: "wkKVoUALgyo",
+    title: "Auto Expo 2025: Tata Prima LNG Truck Walkaround",
+  },
+  {
+    id: "N6qYSmtBvQY",
+    title: "Tata Intra V70 2024 Walkaround Review",
+  },
+  {
+    id: "aWNvoJ_ONZM",
+    title: "2023 New Tata LPT 712 BS6 Phase 2 Truck Review",
+  },
+  {
+    id: "WoiEPd6KJD0",
+    title: "TATA launches the Ultimate Lineup of Commercial Pickups",
+  },
+  {
+    id: "Mxic7ja6pSE",
+    title: "Review of Tata Motors' Commercial Vehicle After-Sales Services",
+  },
 ];

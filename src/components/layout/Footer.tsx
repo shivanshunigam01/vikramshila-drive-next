@@ -1,19 +1,20 @@
-import {
-  Facebook,
-  Instagram,
-  Youtube,
-  Mail,
-  Phone,
-  MessageCircle,
-  MapPin,
-} from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  MessageCircle,
+  Facebook,
+  Instagram,
+  Youtube,
+} from "lucide-react";
+import { subscribeNewsletter } from "@/services/newsletterService";
+
 
 export default function Footer() {
-  // 👉 Place / URLs
   const PLACE_QUERY = "Vikramshila Automobiles, Bhagalpur";
   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     PLACE_QUERY
@@ -22,11 +23,9 @@ export default function Footer() {
     PLACE_QUERY
   )}&hl=en&z=14&output=embed`;
 
-  // 👉 Newsletter state/handlers (ONLY CHANGE)
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
-  const API_URL = import.meta.env.VITE_API_URL || "";
 
   const isValidEmail = (v: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(v.trim());
@@ -46,29 +45,13 @@ export default function Footer() {
 
     setSubmitting(true);
     try {
-      if (API_URL) {
-        const res = await fetch(`${API_URL}/newsletter/subscribe`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: value }),
-        });
-        if (!res.ok) throw new Error("Subscribe failed");
-      } else {
-        const k = "newsletter_emails";
-        const current = JSON.parse(localStorage.getItem(k) || "[]");
-        if (!current.includes(value)) current.push(value);
-        localStorage.setItem(k, JSON.stringify(current));
-      }
-
-      toast({
-        title: "Subscribed!",
-        description: `Thanks! You'll receive updates on ${value}. — Team Vikramshila`,
-      });
+      const res = await subscribeNewsletter(value);
+      toast({ title: "Subscribed!", description: res.message });
       setEmail("");
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: "Could not subscribe",
-        description: "Something went wrong. Please try again shortly.",
+        description: err.message || "Something went wrong",
         variant: "destructive",
       });
     } finally {
@@ -82,10 +65,7 @@ export default function Footer() {
         {/* Branches / Map */}
         <div>
           <h3 className="text-lg font-semibold mb-3">Our Branches</h3>
-
-          {/* Clickable map */}
           <div className="relative aspect-video rounded overflow-hidden shadow-elegant group">
-            {/* The iframe renders the map visually */}
             <iframe
               title={PLACE_QUERY}
               src={mapsEmbedUrl}
@@ -93,9 +73,8 @@ export default function Footer() {
               height="100%"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="w-full h-full pointer-events-none" // ensure our overlay handles clicks
+              className="w-full h-full pointer-events-none"
             />
-            {/* Full-size overlay link so any click goes to Google Maps */}
             <a
               aria-label={`Open ${PLACE_QUERY} in Google Maps`}
               href={mapsSearchUrl}
@@ -103,8 +82,6 @@ export default function Footer() {
               rel="noreferrer"
               className="absolute inset-0"
             />
-
-            {/* Small CTA pill */}
             <a
               href={mapsSearchUrl}
               target="_blank"
@@ -144,7 +121,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Newsletter (ONLY SECTION CHANGED) */}
+        {/* Newsletter */}
         <div>
           <h3 className="text-lg font-semibold mb-3">Newsletter</h3>
           <p className="text-primary-foreground/90 text-sm mb-3">
