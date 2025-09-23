@@ -181,12 +181,14 @@ export interface FetchCibilPayload {
   pan: string;
 }
 
+/* =========================
+   Fetch/Download Experian PDF
+========================= */
 export async function downloadCibilReport(
   payload: Pick<FetchCibilPayload, "name" | "mobile" | "pan">,
   userId?: string
 ): Promise<void> {
   try {
-    // call YOUR backend (keeps Surepass token hidden)
     const { data } = await axios.post(`${API}/payment/experian-pdf`, {
       ...payload,
       consent: "Y",
@@ -198,10 +200,10 @@ export async function downloadCibilReport(
 
     const reportLink: string = data.credit_report_link;
 
-    // Open in a new tab
+    // Open in new tab
     window.open(reportLink, "_blank", "noopener,noreferrer");
 
-    // Optional: force download too
+    // Optional: force download
     const a = document.createElement("a");
     a.href = reportLink;
     a.download = `cibil-report-${userId || "report"}.pdf`;
