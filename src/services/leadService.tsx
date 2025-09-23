@@ -171,9 +171,8 @@ export async function fetchCibil(payload: FetchCibilPayload): Promise<{
 }
 
 const SUREPASS_BASE = "https://kyc-api.surepass.io/api/v1";
+
 const SUREPASS_TOKEN = import.meta.env.VITE_SUREPASS_TOKEN;
-
-
 
 export interface FetchCibilPayload {
   name: string;
@@ -182,32 +181,27 @@ export interface FetchCibilPayload {
   pan: string;
 }
 
-/**
- * Fetch & Download CIBIL Report PDF
- */
 export async function downloadCibilReport(
-  payload: FetchCibilPayload,
+  payload: Pick<FetchCibilPayload, "name" | "mobile" | "pan">,
   userId?: string
 ): Promise<void> {
   try {
-    const { data } = await axios.post(
-      `${SUREPASS_BASE}/credit-report-experian/fetch-report-pdf`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${SUREPASS_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    // call YOUR backend (keeps Surepass token hidden)
+    const { data } = await axios.post(`${API}/payment/experian-pdf`, {
+      ...payload,
+      consent: "Y",
+    });
 
-    const reportLink = data?.data?.credit_report_link;
-    if (!reportLink) throw new Error("No report link found in response");
+    if (!data?.ok || !data?.credit_report_link) {
+      throw new Error(data?.error || "No report link found in response");
+    }
 
-    // Open in browser tab
+    const reportLink: string = data.credit_report_link;
+
+    // Open in a new tab
     window.open(reportLink, "_blank", "noopener,noreferrer");
 
-    // Auto download
+    // Optional: force download too
     const a = document.createElement("a");
     a.href = reportLink;
     a.download = `cibil-report-${userId || "report"}.pdf`;
@@ -217,7 +211,8 @@ export async function downloadCibilReport(
   } catch (e: any) {
     throw new Error(
       e?.response?.data?.error ||
-        "Failed to fetch/download CIBIL Report PDF from Surepass"
+        e?.message ||
+        "Failed to fetch/download Experian PDF"
     );
   }
 }
