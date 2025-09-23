@@ -170,33 +170,54 @@ export async function fetchCibil(payload: FetchCibilPayload): Promise<{
   });
 }
 
-export async function downloadCibilReport(cibilData: any, userData: any) {
+const SUREPASS_BASE = "https://kyc-api.surepass.io/api/v1";
+const SUREPASS_TOKEN = import.meta.env.VITE_SUREPASS_TOKEN;
+
+
+
+export interface FetchCibilPayload {
+  name: string;
+  consent: "Y" | "N";
+  mobile: string;
+  pan: string;
+}
+
+/**
+ * Fetch & Download CIBIL Report PDF
+ */
+export async function downloadCibilReport(
+  payload: FetchCibilPayload,
+  userId?: string
+): Promise<void> {
   try {
-    const resp = await fetch(`${API}/credit/download-cibil-report`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cibilData, userData }),
-    });
+    const { data } = await axios.post(
+      `${SUREPASS_BASE}/credit-report-experian/fetch-report-pdf`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${SUREPASS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    if (!resp.ok) {
-      throw new Error("Failed to generate CIBIL PDF");
-    }
+    const reportLink = data?.data?.credit_report_link;
+    if (!reportLink) throw new Error("No report link found in response");
 
-    const blob = await resp.blob();
-    const url = window.URL.createObjectURL(blob);
+    // Open in browser tab
+    window.open(reportLink, "_blank", "noopener,noreferrer");
 
-    // Create a temporary link and trigger download
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "cibil-report.pdf";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Cleanup
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Download failed:", err);
-    throw err;
+    // Auto download
+    const a = document.createElement("a");
+    a.href = reportLink;
+    a.download = `cibil-report-${userId || "report"}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (e: any) {
+    throw new Error(
+      e?.response?.data?.error ||
+        "Failed to fetch/download CIBIL Report PDF from Surepass"
+    );
   }
 }

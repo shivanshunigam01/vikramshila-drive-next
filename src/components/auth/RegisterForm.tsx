@@ -20,6 +20,7 @@ export default function RegisterForm({
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
   });
 
@@ -34,6 +35,7 @@ export default function RegisterForm({
       const payload = {
         name: formData.name,
         email: formData.email,
+        phone: formData.phone,
         password: formData.password,
       };
 
@@ -85,6 +87,19 @@ export default function RegisterForm({
           placeholder="Enter your email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          required
+          className="text-black"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="phone">Phone Number</Label>
+        <Input
+          id="phone"
+          type="tel"
+          placeholder="Enter your phone number"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           required
           className="text-black"
         />

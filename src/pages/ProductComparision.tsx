@@ -152,18 +152,36 @@ function parseNumberFromSpec(spec?: string): number | null {
   return isNaN(n) ? null : n;
 }
 
+/** High-contrast chips with better visibility */
 function Chips({ items }: { items: string[] }) {
-  if (!items?.length) return <span className="text-gray-400">—</span>;
+  if (!items?.length)
+    return (
+      <span className="inline-flex items-center text-xs text-gray-400">—</span>
+    );
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((it) => (
         <span
           key={it}
-          className="text-xs bg-gray-800 border border-gray-700 px-2 py-1 rounded-full"
+          className="text-xs rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-200 px-2.5 py-1"
         >
           {it}
         </span>
       ))}
+    </div>
+  );
+}
+
+/** Compact rating chip used in headers */
+function RatingChip({ rating, count }: { rating?: number; count?: number }) {
+  const has = typeof rating === "number";
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-amber-200">
+      <Star className="w-3.5 h-3.5 fill-current" />
+      <span className="text-xs font-medium">
+        {has ? rating!.toFixed(1) : "N/A"}
+      </span>
+      <span className="text-[11px] opacity-80">({count ?? 0})</span>
     </div>
   );
 }
@@ -355,6 +373,7 @@ export default function ProductComparison() {
     });
   };
 
+  /** Row for the comparison table with improved contrast and font hierarchy */
   const ComparisonRow = ({
     label,
     value1,
@@ -373,44 +392,48 @@ export default function ProductComparison() {
     icon?: React.ReactNode;
   }) => {
     const winner = showWinner ? getWinner(value1, value2, winnerType) : null;
+    const baseRow =
+      "border-b border-white/10 hover:bg-white/5 transition-colors";
     return (
-      <tr
-        className={`border-b border-gray-800 hover:bg-gray-900/50 transition-colors ${
-          highlight ? "bg-gray-900/30" : ""
-        }`}
-      >
-        <td className="py-4 px-4 font-medium text-gray-300">
+      <tr className={`${baseRow} ${highlight ? "bg-white/[0.04]" : ""}`}>
+        <td className="py-3.5 px-4">
           <div className="flex items-center gap-2">
             {icon}
-            {label}
+            <span className="text-[12px] sm:text-xs uppercase tracking-wide text-white/80">
+              {label}
+            </span>
           </div>
         </td>
         <td
-          className={`py-4 px-4 ${
+          className={`py-3.5 px-4 align-middle ${
             winner === "product1"
-              ? "text-green-400 font-semibold"
+              ? "text-emerald-300 font-semibold"
               : "text-white"
           }`}
         >
-          <div className="flex items-center gap-2">
-            {value1 || "N/A"}
+          <div className="inline-flex items-center gap-2">
+            <span className="text-sm sm:text-base">
+              {value1 ?? <span className="text-white/50">N/A</span>}
+            </span>
             {showWinner && winner === "product1" && (
-              <Award className="w-4 h-4 text-yellow-500" />
+              <Award className="w-4 h-4 text-yellow-400" />
             )}
           </div>
         </td>
         {isTwo && (
           <td
-            className={`py-4 px-4 ${
+            className={`py-3.5 px-4 align-middle ${
               winner === "product2"
-                ? "text-green-400 font-semibold"
+                ? "text-emerald-300 font-semibold"
                 : "text-white"
             }`}
           >
-            <div className="flex items-center gap-2">
-              {value2 || "N/A"}
+            <div className="inline-flex items-center gap-2">
+              <span className="text-sm sm:text-base">
+                {value2 ?? <span className="text-white/50">N/A</span>}
+              </span>
               {showWinner && winner === "product2" && (
-                <Award className="w-4 h-4 text-yellow-500" />
+                <Award className="w-4 h-4 text-yellow-400" />
               )}
             </div>
           </td>
@@ -497,7 +520,7 @@ export default function ProductComparison() {
     const ratingA = pA.reviews?.avgRating ?? null;
     const ratingB = pB?.reviews?.avgRating ?? null;
 
-    // Weights
+    // Weights (unchanged; visibility is handled in UI)
     award(
       "TCO: Cost/km",
       tA?.costPerKm ?? null,
@@ -573,11 +596,9 @@ export default function ProductComparison() {
   const heading = isTwo
     ? "Product Comparison"
     : `${products[0].title} — Overview`;
-
   const subheading = isTwo
     ? "Compare price, TCO, profit and key specs side by side"
     : "Price, TCO, profit and key specs";
-
   const keyCardTitle = isTwo ? "Key Comparison" : "Key Specs";
 
   return (
@@ -609,18 +630,15 @@ export default function ProductComparison() {
                     comparisonMode === "detailed" ? "simplified" : "detailed"
                   )
                 }
-                variant="outline"
-                size="sm"
-                className="border-gray-600 text-black hover:text-white"
+                className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
               >
                 <Filter className="w-4 h-4 mr-2" />
                 {comparisonMode === "detailed" ? "Simplified" : "Detailed"}
               </Button>
+
               <Button
                 onClick={shareComparison}
-                variant="outline"
-                size="sm"
-                className="border-gray-600 text-black hover:text-white"
+                className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
               >
                 <Share2 className="w-4 h-4 mr-2" /> Share
               </Button>
@@ -676,17 +694,6 @@ export default function ProductComparison() {
                 <div className="flex items-center justify-between mb-3">
                   <CardTitle className="text-xl font-bold flex items-center gap-2 text-white">
                     {product.title}
-                    {tcoById[product._id] && (
-                      <span className="text-[10px] uppercase tracking-wide bg-green-600/20 text-green-400 border border-green-600/40 px-2 py-1 rounded">
-                        TCO set
-                      </span>
-                    )}
-                    {profitById[product._id] && (
-                      <span className="text-[10px] uppercase tracking-wide bg-amber-600/20 text-amber-400 border border-amber-600/40 px-2 py-1 rounded">
-                        Profit set
-                      </span>
-                    )}
-                    {/* Show A/B badges only when comparing 2 */}
                     {isTwo &&
                       (index === 0 ? (
                         <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
@@ -698,6 +705,12 @@ export default function ProductComparison() {
                         </span>
                       ))}
                   </CardTitle>
+
+                  {/* Visible Rating Chip */}
+                  <RatingChip
+                    rating={product.reviews?.avgRating}
+                    count={product.reviews?.totalReviews}
+                  />
                 </div>
 
                 <p className="text-gray-400 text-sm mb-4 line-clamp-2">
@@ -709,7 +722,7 @@ export default function ProductComparison() {
                   <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
                     {product.price}
                   </div>
-                  <div className="text-sm text-gray-400 bg-gray-800 px-3 py-1 rounded-full">
+                  <div className="text-sm text-gray-200 bg-white/10 border border-white/10 px-3 py-1 rounded-full">
                     {product.category}
                   </div>
                 </div>
@@ -877,19 +890,24 @@ export default function ProductComparison() {
             <CardTitle className="text-xl text-white">{keyCardTitle}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto rounded-lg border border-gray-800">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-900/60">
+            {/* table with improved contrast + font hierarchy */}
+            <div className="overflow-x-auto rounded-lg border border-white/10">
+              <table className="w-full">
+                <thead className="bg-white/[0.06]">
                   <tr>
-                    <th className="text-left py-3 px-4 text-gray-400">
+                    <th className="text-left py-3 px-4 text-[12px] sm:text-xs uppercase tracking-wide text-white/80">
                       Metric
                     </th>
-                    <th className="text-left text-white py-3 px-4">
-                      {product1.title}
+                    <th className="text-left py-3 px-4">
+                      <span className="text-sm sm:text-base font-semibold text-white">
+                        {product1.title}
+                      </span>
                     </th>
                     {isTwo && (
-                      <th className="text-left py-3 px-4 text-white">
-                        {product2.title}
+                      <th className="text-left py-3 px-4">
+                        <span className="text-sm sm:text-base font-semibold text-white">
+                          {product2.title}
+                        </span>
                       </th>
                     )}
                   </tr>
@@ -982,18 +1000,32 @@ export default function ProductComparison() {
                     highlight
                   />
 
-                  {/* 4) Monitoring Features (from backend) */}
-                  <tr className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors">
-                    <td className="py-4 px-4 text-gray-300 flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-cyan-400" />
-                      Monitoring Features
+                  {/* 4) Monitoring Features with improved visibility */}
+                  <tr className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2">
+                        <Eye className="w-4 h-4 text-cyan-400" />
+                        <span className="text-[12px] sm:text-xs uppercase tracking-wide text-white/80">
+                          Monitoring Features
+                        </span>
+                      </div>
                     </td>
-                    <td className="py-4 px-4">
-                      <Chips items={product1.monitoringFeatures ?? []} />
+                    <td className="py-3.5 px-4 align-middle">
+                      <div className="flex items-center gap-2">
+                        <Chips items={product1.monitoringFeatures ?? []} />
+                        <span className="text-[11px] text-cyan-200/80 bg-cyan-500/10 border border-cyan-500/30 rounded px-2 py-0.5">
+                          {(product1.monitoringFeatures ?? []).length}
+                        </span>
+                      </div>
                     </td>
                     {isTwo && (
-                      <td className="py-4 px-4">
-                        <Chips items={product2.monitoringFeatures ?? []} />
+                      <td className="py-3.5 px-4 align-middle">
+                        <div className="flex items-center gap-2">
+                          <Chips items={product2.monitoringFeatures ?? []} />
+                          <span className="text-[11px] text-cyan-200/80 bg-cyan-500/10 border border-cyan-500/30 rounded px-2 py-0.5">
+                            {(product2.monitoringFeatures ?? []).length}
+                          </span>
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -1102,7 +1134,7 @@ export default function ProductComparison() {
             {/* Legend only when comparing */}
             {isTwo && (
               <div className="text-xs text-gray-500 mt-3 flex items-center gap-2">
-                <Award className="w-4 h-4 text-yellow-500" /> Better value
+                <Award className="w-4 h-4 text-yellow-400" /> Better value
                 highlighted
               </div>
             )}
@@ -1113,11 +1145,9 @@ export default function ProductComparison() {
         {isTwo && winnerIndex !== -1 && (
           <Card className="border border-gray-700 bg-gradient-to-r from-gray-900 to-gray-800 mb-10">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <ThumbsUp className="w-5 h-5 text-white" />
-                <span className="text-white">
-                  Best Recommendation for Your Inputs
-                </span>
+              <CardTitle className="flex items-center gap-2 text-xl text-white">
+                <ThumbsUp className="w-5 h-5" />
+                <span>Best Recommendation for Your Inputs</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1214,10 +1244,10 @@ export default function ProductComparison() {
 
             <Button
               onClick={downloadComparison}
-              variant="outline"
-              className="border-gray-600 text-black px-6 py-4 rounded-lg transition-all duration-300 hover:bg-gray-800 flex items-center justify-center gap-2"
+              className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium px-6 py-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-slate-300/60 flex items-center justify-center gap-2"
+              aria-label={isTwo ? "Download Comparison" : "Download Summary"}
             >
-              <Download className="w-5 h-5" />{" "}
+              <Download className="w-5 h-5" />
               {isTwo ? "Download Comparison" : "Download Summary"}
             </Button>
           </div>
@@ -1232,7 +1262,7 @@ export default function ProductComparison() {
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-gray-400">{k}</span>
+      <span className="text-white/80 text-xs uppercase tracking-wide">{k}</span>
       <span className="text-white font-medium">{v}</span>
     </div>
   );

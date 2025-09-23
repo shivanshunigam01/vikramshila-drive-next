@@ -67,11 +67,11 @@ export default function LoginForm({ onLogin, onCancel }: LoginFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Username */}
       <div className="space-y-2">
-        <Label htmlFor="username">Username</Label>
+        <Label htmlFor="username">Email</Label>
         <Input
           id="username"
           type="text"
-          placeholder="Enter username"
+          placeholder="Enter Email"
           value={formData.username}
           onChange={(e) =>
             setFormData({ ...formData, username: e.target.value })

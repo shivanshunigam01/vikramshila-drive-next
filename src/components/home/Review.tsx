@@ -1,3 +1,4 @@
+// src/pages/ReviewQuote.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
@@ -5,8 +6,11 @@ import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, ChangeEvent, useMemo, useEffect } from "react";
-import { createLead, downloadCibilReport } from "@/services/leadService";
-import { fetchCibil } from "@/services/leadService";
+import {
+  createLead,
+  downloadCibilReport,
+  fetchCibil,
+} from "@/services/leadService";
 import { toast } from "sonner";
 
 /* ---------- Types ---------- */
@@ -19,7 +23,6 @@ interface Product {
   images?: string[];
   brochureFile?: string;
 }
-
 interface FinanceData {
   vehiclePrice: number;
   downPaymentPercentage: number;
@@ -29,11 +32,919 @@ interface FinanceData {
   loanAmount: number;
   estimatedEMI: number;
 }
-
 interface LocationState {
   product: Product;
   financeData: FinanceData;
 }
+
+type IndiaRegions = {
+  states: string[];
+  districtsByState: Record<string, string[]>;
+};
+
+/* ---------- Inline India Regions (no fetch) ---------- */
+const INDIA_REGIONS: IndiaRegions = {
+  states: [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Andaman and Nicobar Islands",
+    "Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Lakshadweep",
+    "Puducherry",
+  ],
+  districtsByState: {
+    "Andhra Pradesh": [
+      "Alluri Sitharama Raju",
+      "Anakapalli",
+      "Anantapur",
+      "Annamayya",
+      "Bapatla",
+      "Chittoor",
+      "East Godavari",
+      "Eluru",
+      "Guntur",
+      "Kakinada",
+      "Konaseema",
+      "Krishna",
+      "Kurnool",
+      "Manyam",
+      "Nandyal",
+      "NTR",
+      "Palnadu",
+      "Prakasam",
+      "Srikakulam",
+      "Sri Potti Sriramulu Nellore",
+      "Tirupati",
+      "Visakhapatnam",
+      "Vizianagaram",
+      "West Godavari",
+      "YSR Kadapa",
+    ],
+    "Arunachal Pradesh": [
+      "Anjaw",
+      "Changlang",
+      "Dibang Valley",
+      "East Kameng",
+      "East Siang",
+      "Itanagar Capital Complex",
+      "Kra Daadi",
+      "Kurung Kumey",
+      "Lepa Rada",
+      "Lohit",
+      "Longding",
+      "Lower Dibang Valley",
+      "Lower Siang",
+      "Lower Subansiri",
+      "Namsai",
+      "Pakke-Kessang",
+      "Papum Pare",
+      "Shi Yomi",
+      "Siang",
+      "Tawang",
+      "Tirap",
+      "Upper Dibang Valley",
+      "Upper Siang",
+      "Upper Subansiri",
+      "West Kameng",
+      "West Siang",
+    ],
+    Assam: [
+      "Baksa",
+      "Barpeta",
+      "Biswanath",
+      "Bongaigaon",
+      "Cachar",
+      "Charaideo",
+      "Chirang",
+      "Darrang",
+      "Dhemaji",
+      "Dhubri",
+      "Dibrugarh",
+      "Dima Hasao",
+      "Goalpara",
+      "Golaghat",
+      "Hailakandi",
+      "Hojai",
+      "Jorhat",
+      "Kamrup",
+      "Kamrup Metropolitan",
+      "Karbi Anglong",
+      "Karimganj",
+      "Kokrajhar",
+      "Lakhimpur",
+      "Majuli",
+      "Morigaon",
+      "Nagaon",
+      "Nalbari",
+      "Sivasagar",
+      "Sonitpur",
+      "South Salmara-Mankachar",
+      "Tinsukia",
+      "Udalguri",
+      "West Karbi Anglong",
+    ],
+    Bihar: [
+      "Araria",
+      "Arwal",
+      "Aurangabad",
+      "Banka",
+      "Begusarai",
+      "Bhagalpur",
+      "Bhojpur",
+      "Buxar",
+      "Darbhanga",
+      "East Champaran",
+      "Gaya",
+      "Gopalganj",
+      "Jamui",
+      "Jehanabad",
+      "Kaimur",
+      "Katihar",
+      "Khagaria",
+      "Kishanganj",
+      "Lakhisarai",
+      "Madhepura",
+      "Madhubani",
+      "Munger",
+      "Muzaffarpur",
+      "Nalanda",
+      "Nawada",
+      "Patna",
+      "Purnia",
+      "Rohtas",
+      "Saharsa",
+      "Samastipur",
+      "Saran",
+      "Sheikhpura",
+      "Sheohar",
+      "Sitamarhi",
+      "Siwan",
+      "Supaul",
+      "Vaishali",
+      "West Champaran",
+    ],
+    Chhattisgarh: [
+      "Balod",
+      "Baloda Bazar",
+      "Balrampur",
+      "Bastar",
+      "Bemetara",
+      "Bijapur",
+      "Bilaspur",
+      "Dantewada",
+      "Dhamtari",
+      "Durg",
+      "Gariaband",
+      "Gaurela-Pendra-Marwahi",
+      "Janjgir–Champa",
+      "Jashpur",
+      "Kabirdham",
+      "Kanker",
+      "Kondagaon",
+      "Korba",
+      "Koriya",
+      "Mahasamund",
+      "Mungeli",
+      "Narayanpur",
+      "Raigarh",
+      "Raipur",
+      "Rajnandgaon",
+      "Sukma",
+      "Surajpur",
+      "Surguja",
+    ],
+    Goa: ["North Goa", "South Goa"],
+    Gujarat: [
+      "Ahmedabad",
+      "Amreli",
+      "Anand",
+      "Aravalli",
+      "Banaskantha",
+      "Bharuch",
+      "Bhavnagar",
+      "Botad",
+      "Chhota Udaipur",
+      "Dahod",
+      "Dang",
+      "Devbhoomi Dwarka",
+      "Gandhinagar",
+      "Gir Somnath",
+      "Jamnagar",
+      "Junagadh",
+      "Kheda",
+      "Kutch",
+      "Mahisagar",
+      "Mehsana",
+      "Morbi",
+      "Narmada",
+      "Navsari",
+      "Panchmahal",
+      "Patan",
+      "Porbandar",
+      "Rajkot",
+      "Sabarkantha",
+      "Surat",
+      "Surendranagar",
+      "Tapi",
+      "Vadodara",
+      "Valsad",
+    ],
+    Haryana: [
+      "Ambala",
+      "Bhiwani",
+      "Charkhi Dadri",
+      "Faridabad",
+      "Fatehabad",
+      "Gurugram",
+      "Hisar",
+      "Jhajjar",
+      "Jind",
+      "Kaithal",
+      "Karnal",
+      "Kurukshetra",
+      "Mahendragarh",
+      "Nuh",
+      "Palwal",
+      "Panchkula",
+      "Panipat",
+      "Rewari",
+      "Rohtak",
+      "Sirsa",
+      "Sonipat",
+      "Yamunanagar",
+    ],
+    "Himachal Pradesh": [
+      "Bilaspur",
+      "Chamba",
+      "Hamirpur",
+      "Kangra",
+      "Kinnaur",
+      "Kullu",
+      "Lahaul and Spiti",
+      "Mandi",
+      "Shimla",
+      "Sirmaur",
+      "Solan",
+      "Una",
+    ],
+    Jharkhand: [
+      "Bokaro",
+      "Chatra",
+      "Deoghar",
+      "Dhanbad",
+      "Dumka",
+      "East Singhbhum",
+      "Garhwa",
+      "Giridih",
+      "Godda",
+      "Gumla",
+      "Hazaribagh",
+      "Jamtara",
+      "Khunti",
+      "Koderma",
+      "Latehar",
+      "Lohardaga",
+      "Pakur",
+      "Palamu",
+      "Ramgarh",
+      "Ranchi",
+      "Sahibganj",
+      "Seraikela-Kharsawan",
+      "Simdega",
+      "West Singhbhum",
+    ],
+    Karnataka: [
+      "Bagalkote",
+      "Bangalore Rural",
+      "Bengaluru Urban",
+      "Belagavi",
+      "Ballari",
+      "Bidar",
+      "Chamarajanagara",
+      "Chikkaballapura",
+      "Chikkamagaluru",
+      "Chitradurga",
+      "Dakshina Kannada",
+      "Davanagere",
+      "Dharwad",
+      "Gadag",
+      "Hassan",
+      "Haveri",
+      "Kalaburagi",
+      "Kodagu",
+      "Kolar",
+      "Koppal",
+      "Mandya",
+      "Mysuru",
+      "Raichur",
+      "Ramanagara",
+      "Shivamogga",
+      "Tumakuru",
+      "Udupi",
+      "Uttara Kannada",
+      "Vijayanagara",
+      "Vijayapura",
+      "Yadgir",
+    ],
+    Kerala: [
+      "Alappuzha",
+      "Ernakulam",
+      "Idukki",
+      "Kannur",
+      "Kasaragod",
+      "Kollam",
+      "Kottayam",
+      "Kozhikode",
+      "Malappuram",
+      "Palakkad",
+      "Pathanamthitta",
+      "Thiruvananthapuram",
+      "Thrissur",
+      "Wayanad",
+    ],
+    "Madhya Pradesh": [
+      "Agar Malwa",
+      "Alirajpur",
+      "Anuppur",
+      "Ashoknagar",
+      "Balaghat",
+      "Barwani",
+      "Betul",
+      "Bhind",
+      "Bhopal",
+      "Burhanpur",
+      "Chhatarpur",
+      "Chhindwara",
+      "Damoh",
+      "Datia",
+      "Dewas",
+      "Dhar",
+      "Dindori",
+      "Guna",
+      "Gwalior",
+      "Harda",
+      "Hoshangabad",
+      "Indore",
+      "Jabalpur",
+      "Jhabua",
+      "Katni",
+      "Khandwa",
+      "Khargone",
+      "Mandla",
+      "Mandsaur",
+      "Morena",
+      "Narsinghpur",
+      "Neemuch",
+      "Niwari",
+      "Panna",
+      "Raisen",
+      "Rajgarh",
+      "Ratlam",
+      "Rewa",
+      "Sagar",
+      "Satna",
+      "Sehore",
+      "Seoni",
+      "Shahdol",
+      "Shajapur",
+      "Sheopur",
+      "Shivpuri",
+      "Sidhi",
+      "Singrauli",
+      "Tikamgarh",
+      "Ujjain",
+      "Umaria",
+      "Vidisha",
+    ],
+    Maharashtra: [
+      "Ahmednagar",
+      "Akola",
+      "Amravati",
+      "Aurangabad",
+      "Beed",
+      "Bhandara",
+      "Buldhana",
+      "Chandrapur",
+      "Dhule",
+      "Gadchiroli",
+      "Gondia",
+      "Hingoli",
+      "Jalgaon",
+      "Jalna",
+      "Kolhapur",
+      "Latur",
+      "Mumbai",
+      "Mumbai Suburban",
+      "Nagpur",
+      "Nanded",
+      "Nandurbar",
+      "Nashik",
+      "Osmanabad",
+      "Palghar",
+      "Parbhani",
+      "Pune",
+      "Raigad",
+      "Ratnagiri",
+      "Sangli",
+      "Satara",
+      "Sindhudurg",
+      "Solapur",
+      "Thane",
+      "Wardha",
+      "Washim",
+      "Yavatmal",
+    ],
+    Manipur: [
+      "Bishnupur",
+      "Chandel",
+      "Churachandpur",
+      "Imphal East",
+      "Imphal West",
+      "Jiribam",
+      "Kakching",
+      "Kamjong",
+      "Kangpokpi",
+      "Noney",
+      "Pherzawl",
+      "Senapati",
+      "Tamenglong",
+      "Tengnoupal",
+      "Thoubal",
+      "Ukhrul",
+    ],
+    Meghalaya: [
+      "East Garo Hills",
+      "East Jaintia Hills",
+      "East Khasi Hills",
+      "Eastern West Khasi Hills",
+      "North Garo Hills",
+      "Ribhoi",
+      "South Garo Hills",
+      "South West Garo Hills",
+      "South West Khasi Hills",
+      "West Garo Hills",
+      "West Jaintia Hills",
+      "West Khasi Hills",
+    ],
+    Mizoram: [
+      "Aizawl",
+      "Champhai",
+      "Hnahthial",
+      "Khawzawl",
+      "Kolasib",
+      "Lawngtlai",
+      "Lunglei",
+      "Mamit",
+      "Saiha",
+      "Saitual",
+      "Serchhip",
+    ],
+    Nagaland: [
+      "Chumoukedima",
+      "Dimapur",
+      "Kiphire",
+      "Kohima",
+      "Longleng",
+      "Mokokchung",
+      "Mon",
+      "Niuland",
+      "Noklak",
+      "Peren",
+      "Phek",
+      "Tuensang",
+      "Tseminyu",
+      "Wokha",
+      "Zunheboto",
+    ],
+    Odisha: [
+      "Angul",
+      "Balangir",
+      "Baleswar",
+      "Bargarh",
+      "Bhadrak",
+      "Boudh",
+      "Cuttack",
+      "Deogarh",
+      "Dhenkanal",
+      "Gajapati",
+      "Ganjam",
+      "Jagatsinghpur",
+      "Jajpur",
+      "Jharsuguda",
+      "Kalahandi",
+      "Kandhamal",
+      "Kendrapara",
+      "Kendujhar",
+      "Khordha",
+      "Koraput",
+      "Malkangiri",
+      "Mayurbhanj",
+      "Nabarangpur",
+      "Nayagarh",
+      "Nuapada",
+      "Puri",
+      "Rayagada",
+      "Sambalpur",
+      "Subarnapur",
+      "Sundargarh",
+    ],
+    Punjab: [
+      "Amritsar",
+      "Barnala",
+      "Bathinda",
+      "Faridkot",
+      "Fatehgarh Sahib",
+      "Fazilka",
+      "Ferozepur",
+      "Gurdaspur",
+      "Hoshiarpur",
+      "Jalandhar",
+      "Kapurthala",
+      "Ludhiana",
+      "Mansa",
+      "Moga",
+      "Pathankot",
+      "Patiala",
+      "Rupnagar",
+      "Sahibzada Ajit Singh Nagar",
+      "Sangrur",
+      "Shaheed Bhagat Singh Nagar",
+      "Sri Muktsar Sahib",
+      "Tarn Taran",
+    ],
+    Rajasthan: [
+      "Ajmer",
+      "Alwar",
+      "Banswara",
+      "Baran",
+      "Barmer",
+      "Bharatpur",
+      "Bhilwara",
+      "Bikaner",
+      "Bundi",
+      "Chittorgarh",
+      "Churu",
+      "Dausa",
+      "Dholpur",
+      "Dungarpur",
+      "Hanumangarh",
+      "Jaipur",
+      "Jaisalmer",
+      "Jalore",
+      "Jhalawar",
+      "Jhunjhunu",
+      "Jodhpur",
+      "Karauli",
+      "Kota",
+      "Nagaur",
+      "Pali",
+      "Pratapgarh",
+      "Rajsamand",
+      "Sawai Madhopur",
+      "Sikar",
+      "Sirohi",
+      "Sri Ganganagar",
+      "Tonk",
+      "Udaipur",
+    ],
+    Sikkim: ["Gangtok", "Gyalshing", "Mangan", "Namchi", "Pakyong", "Soreng"],
+    "Tamil Nadu": [
+      "Ariyalur",
+      "Chengalpattu",
+      "Chennai",
+      "Coimbatore",
+      "Cuddalore",
+      "Dharmapuri",
+      "Dindigul",
+      "Erode",
+      "Kallakurichi",
+      "Kancheepuram",
+      "Karur",
+      "Krishnagiri",
+      "Madurai",
+      "Mayiladuthurai",
+      "Nagapattinam",
+      "Namakkal",
+      "Nilgiris",
+      "Perambalur",
+      "Pudukkottai",
+      "Ramanathapuram",
+      "Ranipet",
+      "Salem",
+      "Sivagangai",
+      "Tenkasi",
+      "Thanjavur",
+      "Theni",
+      "Thiruvallur",
+      "Thiruvarur",
+      "Thoothukudi",
+      "Tiruchirappalli",
+      "Tirunelveli",
+      "Tirupathur",
+      "Tiruppur",
+      "Tiruvannamalai",
+      "Vellore",
+      "Viluppuram",
+      "Virudhunagar",
+    ],
+    Telangana: [
+      "Adilabad",
+      "Bhadradri Kothagudem",
+      "Hanumakonda",
+      "Hyderabad",
+      "Jagtial",
+      "Jangaon",
+      "Jayashankar Bhupalpally",
+      "Jogulamba Gadwal",
+      "Kamareddy",
+      "Karimnagar",
+      "Khammam",
+      "Komaram Bheem Asifabad",
+      "Mahabubabad",
+      "Mahabubnagar",
+      "Mancherial",
+      "Medak",
+      "Medchal–Malkajgiri",
+      "Mulugu",
+      "Nagarkurnool",
+      "Nalgonda",
+      "Narayanpet",
+      "Nirmal",
+      "Nizamabad",
+      "Peddapalli",
+      "Rajanna Sircilla",
+      "Ranga Reddy",
+      "Sangareddy",
+      "Siddipet",
+      "Suryapet",
+      "Vikarabad",
+      "Wanaparthy",
+      "Warangal",
+      "Yadadri Bhuvanagiri",
+    ],
+    Tripura: [
+      "Dhalai",
+      "Gomati",
+      "Khowai",
+      "North Tripura",
+      "Sepahijala",
+      "South Tripura",
+      "Unakoti",
+      "West Tripura",
+    ],
+    "Uttar Pradesh": [
+      "Agra",
+      "Aligarh",
+      "Ambedkar Nagar",
+      "Amethi",
+      "Amroha",
+      "Auraiya",
+      "Ayodhya",
+      "Azamgarh",
+      "Badaun",
+      "Baghpat",
+      "Bahraich",
+      "Ballia",
+      "Balrampur",
+      "Banda",
+      "Barabanki",
+      "Bareilly",
+      "Basti",
+      "Bhadohi",
+      "Bijnor",
+      "Bulandshahr",
+      "Chandauli",
+      "Chitrakoot",
+      "Deoria",
+      "Etah",
+      "Etawah",
+      "Farrukhabad",
+      "Fatehpur",
+      "Firozabad",
+      "Gautam Buddha Nagar",
+      "Ghaziabad",
+      "Ghazipur",
+      "Gonda",
+      "Gorakhpur",
+      "Hamirpur",
+      "Hapur",
+      "Hardoi",
+      "Hathras",
+      "Jalaun",
+      "Jaunpur",
+      "Jhansi",
+      "Kannauj",
+      "Kanpur Dehat",
+      "Kanpur Nagar",
+      "Kasganj",
+      "Kaushambi",
+      "Kheri",
+      "Kushinagar",
+      "Lalitpur",
+      "Lucknow",
+      "Maharajganj",
+      "Mahoba",
+      "Mainpuri",
+      "Mathura",
+      "Mau",
+      "Meerut",
+      "Mirzapur",
+      "Moradabad",
+      "Muzaffarnagar",
+      "Pilibhit",
+      "Pratapgarh",
+      "Prayagraj",
+      "Raebareli",
+      "Rampur",
+      "Saharanpur",
+      "Sambhal",
+      "Sant Kabir Nagar",
+      "Shahjahanpur",
+      "Shamli",
+      "Shravasti",
+      "Siddharthnagar",
+      "Sitapur",
+      "Sonbhadra",
+      "Sultanpur",
+      "Unnao",
+      "Varanasi",
+    ],
+    Uttarakhand: [
+      "Almora",
+      "Bageshwar",
+      "Chamoli",
+      "Champawat",
+      "Dehradun",
+      "Haridwar",
+      "Nainital",
+      "Pauri Garhwal",
+      "Pithoragarh",
+      "Rudraprayag",
+      "Tehri Garhwal",
+      "Udham Singh Nagar",
+      "Uttarkashi",
+    ],
+    "West Bengal": [
+      "Alipurduar",
+      "Bankura",
+      "Birbhum",
+      "Cooch Behar",
+      "Dakshin Dinajpur",
+      "Darjeeling",
+      "Hooghly",
+      "Howrah",
+      "Jalpaiguri",
+      "Jhargram",
+      "Kalimpong",
+      "Kolkata",
+      "Murshidabad",
+      "Nadia",
+      "North 24 Parganas",
+      "Paschim Bardhaman",
+      "Paschim Medinipur",
+      "Purba Bardhaman",
+      "Purba Medinipur",
+      "Purulia",
+      "South 24 Parganas",
+      "Uttar Dinajpur",
+    ],
+    "Andaman and Nicobar Islands": [
+      "Nicobar",
+      "North and Middle Andaman",
+      "South Andaman",
+    ],
+    Chandigarh: ["Chandigarh"],
+    "Dadra and Nagar Haveli and Daman and Diu": [
+      "Dadra & Nagar Haveli",
+      "Daman",
+      "Diu",
+    ],
+    Delhi: [
+      "Central Delhi",
+      "East Delhi",
+      "New Delhi",
+      "North Delhi",
+      "North East Delhi",
+      "North West Delhi",
+      "Shahdara",
+      "South Delhi",
+      "South East Delhi",
+      "South West Delhi",
+      "West Delhi",
+    ],
+    "Jammu and Kashmir": [
+      "Anantnag",
+      "Bandipora",
+      "Baramulla",
+      "Budgam",
+      "Doda",
+      "Ganderbal",
+      "Jammu",
+      "Kathua",
+      "Kishtwar",
+      "Kulgam",
+      "Kupwara",
+      "Poonch",
+      "Pulwama",
+      "Rajouri",
+      "Ramban",
+      "Reasi",
+      "Samba",
+      "Shopian",
+      "Srinagar",
+      "Udhampur",
+    ],
+    Ladakh: ["Kargil", "Leh"],
+    Lakshadweep: ["Lakshadweep"],
+    Puducherry: ["Karaikal", "Mahe", "Puducherry", "Yanam"],
+  },
+};
+
+/* ---------- Helpers ---------- */
+const norm = (s: string) =>
+  (s || "")
+    .normalize("NFKC")
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+// helpful if something pre-fills a short code like "mp"
+const STATE_ALIASES: Record<string, string> = {
+  ap: "Andhra Pradesh",
+  ar: "Arunachal Pradesh",
+  as: "Assam",
+  br: "Bihar",
+  cg: "Chhattisgarh",
+  ch: "Chandigarh",
+  dd: "Dadra and Nagar Haveli and Daman and Diu",
+  dn: "Dadra and Nagar Haveli and Daman and Diu",
+  dl: "Delhi",
+  ga: "Goa",
+  gj: "Gujarat",
+  hr: "Haryana",
+  hp: "Himachal Pradesh",
+  jk: "Jammu and Kashmir",
+  jh: "Jharkhand",
+  ka: "Karnataka",
+  kl: "Kerala",
+  la: "Ladakh",
+  ld: "Lakshadweep",
+  mp: "Madhya Pradesh",
+  mh: "Maharashtra",
+  mn: "Manipur",
+  ml: "Meghalaya",
+  mz: "Mizoram",
+  nl: "Nagaland",
+  od: "Odisha",
+  or: "Odisha",
+  pb: "Punjab",
+  py: "Puducherry",
+  rj: "Rajasthan",
+  sk: "Sikkim",
+  tn: "Tamil Nadu",
+  tg: "Telangana",
+  tr: "Tripura",
+  uk: "Uttarakhand",
+  ut: "Uttarakhand",
+  up: "Uttar Pradesh",
+  wb: "West Bengal",
+};
+const resolveStateLabel = (value: string, states: string[]) => {
+  const aliased = STATE_ALIASES[norm(value)] || value;
+  const hit = states.find((s) => norm(s) === norm(aliased));
+  return hit || aliased;
+};
 
 /* ---------- Utils ---------- */
 function formatINR(n: number) {
@@ -43,12 +954,10 @@ function formatINR(n: number) {
     maximumFractionDigits: 0,
   });
 }
-
-const MAX_KYC_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_KYC_SIZE = 10 * 1024 * 1024;
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const onlyDigits = (s: string) => s.replace(/\D+/g, "");
 const emailOK = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
-
 function validateImage(file: File | null | undefined, docLabel: string) {
   if (!file) return true;
   if (!ALLOWED_MIME.includes(file.type)) {
@@ -76,8 +985,6 @@ const SOURCE_OPTIONS = [
   "YouTube",
   "Other",
 ];
-
-// TODO: replace with live DSE list from your backend
 const DSE_OPTIONS = [
   { id: "dse_001", name: "Amit Kumar" },
   { id: "dse_002", name: "Pooja Singh" },
@@ -88,8 +995,9 @@ export default function ReviewQuote() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  // KYC state (updated: added full name + consent for bureau)
+  // KYC
   const [fullNameForCibil, setFullNameForCibil] = useState("");
   const [aadharFile, setAadharFile] = useState<File | null>(null);
   const [panCardFile, setPanCardFile] = useState<File | null>(null);
@@ -100,12 +1008,13 @@ export default function ReviewQuote() {
   const [cibilResponse, setCibilResponse] = useState<any>(null);
   const [cibilStatus, setCibilStatus] = useState<string | null>(null);
   const [isFetchingCibil, setIsFetchingCibil] = useState(false);
-  const [kycConsent, setKycConsent] = useState(false); // must be checked to pull bureau
+  const [kycConsent, setKycConsent] = useState(false);
 
-  // Applicant modal state (ALL OPTIONAL)
+  // Applicant (optional)
   const [showApplicantModal, setShowApplicantModal] = useState(false);
   const [financeCustomerName, setFinanceCustomerName] = useState("");
   const [addressLine, setAddressLine] = useState("");
+  const [selectedState, setSelectedState] = useState<string>(""); // store raw value
   const [district, setDistrict] = useState("");
   const [pin, setPin] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -119,12 +1028,30 @@ export default function ReviewQuote() {
   const [dseId, setDseId] = useState<string>("");
   const [dseName, setDseName] = useState<string>("");
 
+  // Options derived from inline JSON
+  const statesList = useMemo(
+    () => [...INDIA_REGIONS.states].sort((a, b) => a.localeCompare(b)),
+    []
+  );
+  const districtOptions = useMemo(() => {
+    if (!selectedState) return [];
+    const label = resolveStateLabel(selectedState, statesList);
+    return INDIA_REGIONS.districtsByState[label] || [];
+  }, [selectedState, statesList]);
+
+  const pinValid = useMemo(() => /^\d{6}$/.test(onlyDigits(pin)), [pin]);
+
   const state = location.state as LocationState;
 
   useEffect(() => {
     const found = DSE_OPTIONS.find((d) => d.id === dseId);
     if (found) setDseName(found.name);
   }, [dseId]);
+
+  // reset district when state changes
+  useEffect(() => {
+    setDistrict("");
+  }, [selectedState]);
 
   if (!state || !state.product || !state.financeData) {
     return (
@@ -158,7 +1085,6 @@ export default function ReviewQuote() {
     }
     setAadharFile(file);
   };
-
   const onPanChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (!validateImage(file, "PAN")) {
@@ -193,10 +1119,13 @@ export default function ReviewQuote() {
       toast.error("PAN must be 10 characters (e.g., ABCDE1234F).");
       return false;
     }
+    if (pin && !/^\d{6}$/.test(onlyDigits(pin))) {
+      toast.error("PIN must be 6 digits.");
+      return false;
+    }
     return true;
   };
 
-  // Is any KYC provided?
   const kycProvided =
     !!aadharNumber ||
     !!panNumber ||
@@ -204,7 +1133,6 @@ export default function ReviewQuote() {
     !!panCardFile ||
     !!(phoneNumber && panNumber);
 
-  /** Build and submit the FormData. Called from BOTH modal buttons. */
   const doSubmit = async () => {
     if (!validateNumbers()) return;
     if (phoneNumber && !/^\d{10}$/.test(onlyDigits(phoneNumber))) {
@@ -216,10 +1144,38 @@ export default function ReviewQuote() {
       return;
     }
 
+    const applicantFilled =
+      financeCustomerName ||
+      addressLine ||
+      selectedState ||
+      district ||
+      pin ||
+      whatsapp ||
+      email ||
+      dseId ||
+      sourceOfEnquiry ||
+      companyGST ||
+      companyPAN;
+
+    if (applicantFilled) {
+      if (!selectedState) {
+        toast.error("Please select State in Applicant Details.");
+        return;
+      }
+      if (!district) {
+        toast.error("Please select District in Applicant Details.");
+        return;
+      }
+      if (!/^\d{6}$/.test(onlyDigits(pin))) {
+        toast.error("PIN must be 6 digits.");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
+
     try {
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
-
       if (aadharFile && !validateImage(aadharFile, "Aadhaar")) return;
       if (panCardFile && !validateImage(panCardFile, "PAN")) return;
 
@@ -251,7 +1207,7 @@ export default function ReviewQuote() {
       if (userData?.email) form.append("userEmail", userData.email);
       if (userData?.phone) form.append("userPhone", userData.phone);
 
-      // ---------- OPTIONAL Applicant Details ----------
+      // Applicant Details (optional)
       const appendIf = (key: string, val?: string) => {
         if (val && String(val).trim() !== "")
           form.append(key, String(val).trim());
@@ -259,6 +1215,11 @@ export default function ReviewQuote() {
 
       appendIf("financeCustomerName", financeCustomerName);
       appendIf("addressLine", addressLine);
+
+      const stateLabel = selectedState
+        ? resolveStateLabel(selectedState, statesList)
+        : "";
+      appendIf("state", stateLabel);
       appendIf("district", district);
       appendIf("pin", onlyDigits(pin));
       appendIf("whatsapp", onlyDigits(whatsapp));
@@ -272,16 +1233,13 @@ export default function ReviewQuote() {
       appendIf("dseId", dseId);
       appendIf("dseName", dseName);
 
-      // Optional KYC numbers (normalized)
+      // KYC
       appendIf("aadharNumber", onlyDigits(aadharNumber));
       appendIf("panNumber", panNumber.toUpperCase());
       appendIf("kycPhone", onlyDigits(phoneNumber));
-
-      // Optional KYC files
       if (aadharFile) form.append("aadharFile", aadharFile);
       if (panCardFile) form.append("panCardFile", panCardFile);
 
-      // KYC/CIBIL meta flags
       form.append("kycProvided", kycProvided ? "true" : "false");
       form.append(
         "kycFields",
@@ -298,14 +1256,10 @@ export default function ReviewQuote() {
         kycProvided ? (kycConsent ? "true" : "false") : "false"
       );
 
-      // Attach CIBIL result if already fetched
       if (cibilScore !== null) form.append("cibilScore", String(cibilScore));
       if (cibilStatus) form.append("cibilStatus", cibilStatus);
-
-      // Name used for CIBIL pull
       appendIf("fullNameForCibil", fullNameForCibil);
 
-      // Optional: reference for charge/provider
       form.append("creditChargeINR", "75");
       form.append("creditProvider", "surepass-experian");
 
@@ -327,13 +1281,6 @@ export default function ReviewQuote() {
       setShowApplicantModal(false);
     }
   };
-
-  console.log(
-    "Razorpay present?",
-    typeof (window as any).Razorpay === "function"
-  );
-  console.log("Key present?", !!import.meta.env.VITE_RAZORPAY_KEY_ID);
-  // console.log("Order id:", order?.id);
 
   return (
     <div className="bg-black min-h-screen text-white">
@@ -513,7 +1460,7 @@ export default function ReviewQuote() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Added: Full Name for CIBIL */}
+              {/* Full Name for CIBIL */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <p className="text-sm text-gray-400 mb-2">
@@ -622,7 +1569,7 @@ export default function ReviewQuote() {
                 </div>
               </div>
 
-              {/* Consent (required if KYC provided or pulling CIBIL) */}
+              {/* Consent */}
               <div className="mt-2">
                 <label className="flex items-start gap-3 text-sm text-gray-300">
                   <input
@@ -674,10 +1621,9 @@ export default function ReviewQuote() {
               Go Back
             </Button>
 
-            {/* Fetch CIBIL Score using new API */}
+            {/* Fetch CIBIL Score */}
             <Button
               onClick={async () => {
-                // Validation
                 if (!fullNameForCibil.trim()) {
                   toast.error("Please enter full name (as per PAN).");
                   return;
@@ -707,7 +1653,7 @@ export default function ReviewQuote() {
                   });
                   setCibilScore(resp.score);
                   setCibilStatus(resp.ok ? "success" : "failed");
-                  setCibilResponse(resp); // or resp.raw if you choose to include it
+                  setCibilResponse(resp);
                 } catch (e: any) {
                   toast.error(e?.message || "Failed to fetch CIBIL score.");
                   setCibilStatus("failed");
@@ -721,7 +1667,6 @@ export default function ReviewQuote() {
               {isFetchingCibil ? "Fetching..." : "Fetch CIBIL Score"}
             </Button>
 
-            {/* OPEN MODAL INSTEAD OF DIRECT SUBMIT */}
             <Button
               onClick={() => setShowApplicantModal(true)}
               disabled={isSubmitting}
@@ -729,7 +1674,7 @@ export default function ReviewQuote() {
             >
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Submitting...
                 </div>
               ) : (
@@ -744,7 +1689,7 @@ export default function ReviewQuote() {
                 <h3 className="font-semibold text-white mb-2">CIBIL Check</h3>
                 {isFetchingCibil ? (
                   <div className="flex items-center justify-center gap-2 text-blue-400">
-                    <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
                     Fetching your CIBIL score...
                   </div>
                 ) : (
@@ -759,22 +1704,35 @@ export default function ReviewQuote() {
                 )}
                 <Button
                   onClick={async () => {
-                    if (!cibilResponse) {
-                      toast.error(
-                        "Please fetch CIBIL before downloading the report."
-                      );
-                      return;
-                    }
+                    if (isDownloading) return; // guard
+                    setIsDownloading(true);
                     try {
-                      await downloadCibilReport(cibilResponse, loggedInUser);
-                      toast.success("CIBIL Report downloaded successfully!");
-                    } catch {
-                      toast.error("Failed to download CIBIL Report.");
+                      await downloadCibilReport({
+                        name: fullNameForCibil.trim(),
+                        consent: "Y",
+                        mobile: phoneNumber,
+                        pan: panNumber.toUpperCase(),
+                      });
+                      toast.success("CIBIL Report Downloaded Sucessfully!");
+                    } catch (err: any) {
+                      toast.error(
+                        err?.message || "Failed to open CIBIL Report."
+                      );
+                    } finally {
+                      setIsDownloading(false);
                     }
                   }}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+                  disabled={isDownloading}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg disabled:opacity-60"
                 >
-                  Download CIBIL Report (PDF)
+                  {isDownloading ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
+                      Downloading…
+                    </span>
+                  ) : (
+                    "Download CIBIL Report (PDF)"
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -802,15 +1760,13 @@ export default function ReviewQuote() {
         </div>
       </div>
 
-      {/* ---------- Modal: Applicant Details (ALL OPTIONAL) ---------- */}
+      {/* Modal: Applicant Details */}
       {showApplicantModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* backdrop */}
           <div
             className="absolute inset-0 bg-black/70"
             onClick={() => setShowApplicantModal(false)}
           />
-          {/* modal card */}
           <div className="relative z-10 w-full max-w-3xl rounded-2xl border border-gray-800 bg-gray-950 shadow-xl">
             <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">
@@ -898,16 +1854,63 @@ export default function ReviewQuote() {
                     className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white text-sm"
                   />
                 </div>
+
                 <div>
-                  <p className="text-sm text-gray-400 mb-2">District</p>
-                  <input
-                    type="text"
+                  <p className="text-sm text-gray-400 mb-2">
+                    State <span className="text-red-500">*</span>
+                  </p>
+                  <select
+                    value={selectedState}
+                    onChange={(e) => {
+                      setSelectedState(e.target.value); // store label directly
+                      setDistrict("");
+                    }}
+                    className={`w-full px-3 py-2 rounded bg-gray-900 border text-white text-sm ${
+                      selectedState ? "border-gray-700" : "border-red-600"
+                    }`}
+                  >
+                    <option value="">Select State</option>
+                    {statesList.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  {!selectedState && (
+                    <p className="mt-1 text-xs text-red-400">
+                      State is required.
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">
+                    District <span className="text-red-500">*</span>
+                  </p>
+                  <select
                     value={district}
                     onChange={(e) => setDistrict(e.target.value)}
-                    placeholder="e.g., Bhagalpur"
-                    className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white text-sm"
-                  />
+                    disabled={!selectedState}
+                    className={`w-full px-3 py-2 rounded bg-gray-900 border text-white text-sm ${
+                      district ? "border-gray-700" : "border-red-600"
+                    } ${!selectedState ? "opacity-60" : ""}`}
+                  >
+                    <option value="">
+                      {selectedState ? "Select District" : "Select State first"}
+                    </option>
+                    {districtOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                  {!district && selectedState && (
+                    <p className="mt-1 text-xs text-red-400">
+                      District is required.
+                    </p>
+                  )}
                 </div>
+
                 <div>
                   <p className="text-sm text-gray-400 mb-2">PIN</p>
                   <input
@@ -919,8 +1922,19 @@ export default function ReviewQuote() {
                     placeholder="6-digit PIN"
                     inputMode="numeric"
                     maxLength={6}
-                    className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white text-sm"
+                    className={`w-full px-3 py-2 rounded bg-gray-900 border text-white text-sm ${
+                      pin
+                        ? pinValid
+                          ? "border-gray-700"
+                          : "border-red-600"
+                        : "border-gray-700"
+                    }`}
                   />
+                  {!pinValid && pin.length > 0 && (
+                    <p className="text-xs text-red-400 mt-1">
+                      PIN must be 6 digits.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -971,21 +1985,25 @@ export default function ReviewQuote() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-400 mb-2">DSE Selection</p>
-                  <select
-                    value={dseId}
-                    onChange={(e) => setDseId(e.target.value)}
-                    className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white text-sm"
-                  >
-                    <option value="">Select DSE (optional)</option>
-                    {DSE_OPTIONS.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
+                {/* DSE Selection: only when Source is "DSE Visit" */}
+                {sourceOfEnquiry === "DSE Visit" && (
+                  <div>
+                    <p className="text-sm text-gray-400 mb-2">DSE Selection</p>
+                    <select
+                      value={dseId}
+                      onChange={(e) => setDseId(e.target.value)}
+                      className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white text-sm"
+                    >
+                      <option value="">Select DSE</option>
+                      {DSE_OPTIONS.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1002,7 +2020,7 @@ export default function ReviewQuote() {
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="border-gray-600 text-gray-200 hover:bg-gray-800"
+                  className="bg-white text-black hover:bg-gray-800"
                   onClick={() => setShowApplicantModal(false)}
                   disabled={isSubmitting}
                 >
