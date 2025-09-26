@@ -116,8 +116,10 @@ export async function fetchCibil(payload: FetchCibilPayload): Promise<{
       return reject(new Error("Razorpay SDK not available on window"));
     }
 
-    const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
-    if (!key) return reject(new Error("VITE_RAZORPAY_KEY_ID missing"));
+    const key = order.key_id as string; // guaranteed to match the order’s mode/account
+
+    if (!key) return reject(new Error("Razorpay key missing"));
+    console.log("Razorpay key used:", key);
 
     const options = {
       key,
