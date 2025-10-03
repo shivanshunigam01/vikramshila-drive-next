@@ -1260,7 +1260,7 @@ export default function ReviewQuote() {
       if (cibilStatus) form.append("cibilStatus", cibilStatus);
       appendIf("fullNameForCibil", fullNameForCibil);
 
-      form.append("creditChargeINR", "75");
+      form.append("creditChargeINR", "79");
       form.append("creditProvider", "surepass-experian");
 
       const result = await createLead(form);
@@ -1580,7 +1580,7 @@ export default function ReviewQuote() {
                   />
                   <span>
                     I consent to share my KYC details and authorize a soft
-                    credit bureau pull. A nominal charge of <b>₹75</b> may
+                    credit bureau pull. A nominal charge of <b>₹79</b> may
                     apply.
                     <span className="block text-xs text-gray-500 mt-1">
                       (Required only if you’ve entered KYC or will fetch CIBIL.)
@@ -1647,9 +1647,9 @@ export default function ReviewQuote() {
                 try {
                   const resp = await fetchCibil({
                     name: fullNameForCibil.trim(),
-                    consent: "Y",
                     mobile: phoneNumber,
                     pan: panNumber.toUpperCase(),
+                    consent: "Y"
                   });
                   setCibilScore(resp.score);
                   setCibilStatus(resp.ok ? "success" : "failed");
@@ -1709,15 +1709,12 @@ export default function ReviewQuote() {
                     try {
                       await downloadCibilReport({
                         name: fullNameForCibil.trim(),
-                        consent: "Y",
                         mobile: phoneNumber,
                         pan: panNumber.toUpperCase(),
                       });
-                      toast.success("CIBIL Report Downloaded Sucessfully!");
+                      toast.success("CIBIL Report Downloaded Successfully!");
                     } catch (err: any) {
-                      toast.error(
-                        err?.message || "Failed to open CIBIL Report."
-                      );
+                      toast.error(err?.message || "Failed to open CIBIL Report.");
                     } finally {
                       setIsDownloading(false);
                     }

@@ -17,6 +17,7 @@ import LaunchSection from "@/components/home/LaunchSection";
 import EnquireNow from "@/components/home/EnquireNow";
 import scrollImage from "@/assets/new-launch.png";
 import FloatingVehicleBanner from "@/components/home/FloatingVehicleBanner";
+import CibilCheckWidget from "@/components/home/CibilCheckWidget";
 
 export default function Index() {
   return (
@@ -52,6 +53,9 @@ export default function Index() {
 
         <div className="sr-fade">
           <FinanceCalculator />
+        </div>
+        <div className="sr-fade">
+          <CibilCheckWidget />
         </div>
         <div className="sr-slide">
           <VideoCarousel />
