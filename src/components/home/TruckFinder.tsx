@@ -57,7 +57,7 @@ export default function TruckFinder() {
       {/* Content */}
       <div className="relative z-10 text-center text-white px-4 max-w-6xl w-full -mt-20">
         <h1 className="text-3xl md:text-4xl font-bold mb-10">
-          Find the Perfect Truck for your needs
+          Find the Perfect Product for your needs
         </h1>
 
         {/* Dropdowns */}
