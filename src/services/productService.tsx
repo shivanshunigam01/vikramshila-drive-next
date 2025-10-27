@@ -8,7 +8,7 @@ export const getProducts = () => {
 };
 
 export const productFind = (payload: any) => {
-  return axios.post(`${API}/products/filter`, payload);
+  return axios.post(`${API}/competition-products/filter`, payload);
 };
 
 export const downloadBrochureService = (id: string) => {

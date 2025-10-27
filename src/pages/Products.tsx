@@ -14,7 +14,6 @@ import { ReactNode, useEffect, useMemo, useState } from "react";
 import { getProducts } from "@/services/product";
 import {
   downloadBrochureService,
-  productFind,
   applicationFind,
 } from "@/services/productService";
 import { useFilter } from "@/contexts/FilterContext";
@@ -26,11 +25,15 @@ import ProfitCalculator, {
   ProfitResult,
 } from "@/components/ProfitCalculator";
 import MyCalculator from "@/components/myCalculator";
+import LoginModal from "@/components/LoginModal";
+import { competitionCompareFilter } from "@/services/competitionService";
 
 interface Product {
+  brand: ReactNode;
   gvw: ReactNode;
   _id: string;
   title: string;
+  model?: string;
   description: string;
   price: string;
   category: string;
@@ -43,6 +46,7 @@ interface Product {
   fuelType?: string;
   payload?: string; // e.g., "2000 Kg"
   priceRange?: string;
+  type?: "Tata" | "Competitor"; // Add this line
 
   // optional backend fields used by TCO
   mileage?: string; // e.g. "6 km/l"
@@ -84,7 +88,19 @@ export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<string[]>([]);
+  const [showCompetitors, setShowCompetitors] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [tataProducts, setTataProducts] = useState<Product[]>([]);
+  const [competitorProducts, setCompetitorProducts] = useState<Product[]>([]);
+  const [selectedTataId, setSelectedTataId] = useState("");
+  const [selectedCompetitorId, setSelectedCompetitorId] = useState("");
 
+  const [compareSelection, setCompareSelection] = useState<string[]>([
+    "",
+    "",
+    "",
+    "",
+  ]);
   const { setFilters, isFiltered, clearFilters } = useFilter();
 
   // Local dropdown states
@@ -176,10 +192,31 @@ export default function Products() {
           filters.priceRange = searchParams.get("priceRange");
           setPriceRange(searchParams.get("priceRange") || "all");
         }
-
+        console.log(
+          "👉 Calling API:",
+          `${import.meta.env.VITE_VITE_API_URL}/competition-products/filter`
+        );
         if (Object.keys(filters).length > 0) {
-          const response = await productFind(filters);
-          setProducts(response.data?.data || []);
+          const response = await competitionCompareFilter(filters);
+
+          const real = (response.data?.real || []).map((p: any) => ({
+            ...p,
+            type: "Tata",
+          }));
+
+          const competitors = (response.data?.competitors || []).map(
+            (p: any) => ({
+              ...p,
+              type: "Competitor",
+            })
+          );
+
+          setTataProducts(real);
+          setCompetitorProducts(competitors);
+          // ✅ Show only Tata or both based on auth state
+          if (showCompetitors) setProducts([...real, ...competitors]);
+          else setProducts(real);
+
           setFilters(filters);
         } else {
           const data = await getProducts();
@@ -195,7 +232,13 @@ export default function Products() {
     };
 
     fetchProductsAsync();
-  }, [location.search]);
+  }, [location.search, showCompetitors]);
+
+  useEffect(() => {
+    if (localStorage.getItem("auth") === "true") {
+      setShowCompetitors(true);
+    }
+  }, []);
 
   // Reopen flow when coming "Back" from Compare (Compare navigates with state)
   useEffect(() => {
@@ -280,8 +323,21 @@ export default function Products() {
         });
         navigate(`/products?${searchParams.toString()}`, { replace: true });
 
-        const response = await productFind(filterParams);
-        setProducts(response.data?.data || []);
+        const response = await competitionCompareFilter(filterParams);
+
+        // ✅ Merge Tata + Competitor products here also
+        const real = (response.data?.real || []).map((p: any) => ({
+          ...p,
+          type: "Tata",
+        }));
+        const competitors = (response.data?.competitors || []).map(
+          (p: any) => ({
+            ...p,
+            type: "Competitor",
+          })
+        );
+
+        setProducts([...real, ...competitors]);
       } else {
         clearFilters();
         navigate("/products", { replace: true });
@@ -305,9 +361,14 @@ export default function Products() {
     navigate("/products", { replace: true });
   };
 
-  const filteredProducts = products.filter((p) =>
-    p.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter((p) => {
+    const name =
+      (typeof p.title === "string" && p.title.trim() !== ""
+        ? p.title
+        : p.model) || "";
+
+    return name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const toggleSelect = (id: string) => {
     setSelected((prev) =>
@@ -527,6 +588,131 @@ export default function Products() {
         </div>
       </div>
 
+      {/* 🔹 Toggle Comparison Mode Bar */}
+      <div className="bg-zinc-900 border-b border-zinc-800 py-4">
+        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center px-4 gap-3">
+          <h2 className="text-lg font-semibold text-white">
+            Vehicle Catalogue
+          </h2>
+          {!showCompetitors ? (
+            <Button
+              onClick={() => setShowLogin(true)}
+              className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium px-4"
+            >
+              Compare with Competitor Products
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                localStorage.removeItem("auth");
+                setShowCompetitors(false);
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white font-medium px-4"
+            >
+              Logout Comparison Mode
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {showCompetitors && (
+        <div className="bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border-b border-zinc-800 py-6">
+          <div className="container mx-auto px-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <Filter className="w-5 h-5 text-blue-500" /> Compare Vehicles
+              Instantly
+            </h3>
+
+            {/* Dropdown Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {compareSelection.map((selectedId, index) => {
+                // Build filtered dropdown list (remove already chosen vehicles)
+                const selectedSet = new Set(compareSelection.filter(Boolean));
+
+                const availableTata = tataProducts.filter(
+                  (p) => !selectedSet.has(p._id) || p._id === selectedId
+                );
+                const availableCompetitors = competitorProducts.filter(
+                  (p) => !selectedSet.has(p._id) || p._id === selectedId
+                );
+
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-col bg-black border border-gray-800 rounded-lg p-3 sm:p-4 shadow-sm hover:border-blue-500 transition-all"
+                  >
+                    <label className="text-sm text-gray-400 mb-2">
+                      Vehicle {index + 1}
+                    </label>
+
+                    <select
+                      value={selectedId}
+                      onChange={(e) => {
+                        const updated = [...compareSelection];
+                        updated[index] = e.target.value;
+                        setCompareSelection(updated);
+                      }}
+                      className="bg-zinc-900 border border-gray-700 text-white rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="">Select Vehicle</option>
+                      <optgroup label="Tata Vehicles">
+                        {availableTata.map((p) => (
+                          <option key={p._id} value={p._id}>
+                            {p.title}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Competitor Vehicles">
+                        {availableCompetitors.map((p) => (
+                          <option key={p._id} value={p._id}>
+                            {p.brand} {p.model}
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Actions */}
+            <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              {/* Summary */}
+              <p className="text-sm text-gray-400">
+                {compareSelection.filter(Boolean).length} of 4 selected
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                {/* Clear Button */}
+                <Button
+                  variant="outline"
+                  onClick={() => setCompareSelection(["", "", "", ""])}
+                  className="border-gray-700 bg-white text-black hover:bg-gray-100 hover:text-black font-medium"
+                >
+                  Clear Selection
+                </Button>
+                <Button
+                  disabled={compareSelection.filter(Boolean).length < 2}
+                  onClick={() => {
+                    const validIds = compareSelection.filter(Boolean);
+                    if (validIds.length >= 2) {
+                      navigate(`/compare/${validIds.join(",")}`);
+                    }
+                  }}
+                  className={`${
+                    compareSelection.filter(Boolean).length >= 2
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-gray-700 cursor-not-allowed"
+                  } text-white px-6`}
+                >
+                  Compare Selected ({compareSelection.filter(Boolean).length})
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8 sm:py-10">
         {/* Main layout: stack on mobile, side-by-side on md+ */}
         <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
@@ -626,7 +812,7 @@ export default function Products() {
                     <option value="20-25L">20 - 25 Lakhs</option>
                     <option value="25-30L">25 - 30 Lakhs</option>
                     <option value="30L+">30 Lakhs +</option>
-                  {/* </option> */}
+                    {/* </option> */}
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     ▼
@@ -731,6 +917,14 @@ export default function Products() {
                     key={v._id}
                     className="bg-black border border-gray-800 rounded-lg overflow-hidden group relative w-full"
                   >
+                    {/* 🔹 Competitor Badge */}
+                    {v.type === "Competitor" && (
+                      <div className="absolute top-2 left-2 bg-red-600 text-[11px] font-semibold px-2 py-1 rounded shadow">
+                        Competitor
+                      </div>
+                    )}
+
+                    {/* 🔹 Compare Checkbox */}
                     <div className="flex items-center justify-end space-x-2 px-3 pt-3">
                       <input
                         type="checkbox"
@@ -749,38 +943,49 @@ export default function Products() {
                       </label>
                     </div>
 
+                    {/* 🔹 Image */}
                     <CardHeader className="p-0 bg-black">
                       <div className="aspect-[4/3] overflow-hidden flex items-center justify-center bg-black">
                         <img
                           src={v.images?.[0]}
-                          alt={v.title}
+                          alt={v.title || v.model || "Vehicle"}
                           className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                     </CardHeader>
 
+                    {/* 🔹 Product Info */}
                     <CardContent className="p-4 flex flex-col bg-black text-white">
                       <CardTitle className="text-base sm:text-lg font-semibold mb-3 text-white">
-                        {v.title}
+                        {v.title || v.model}
                       </CardTitle>
 
                       <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center text-xs sm:text-sm text-gray-300 mb-4">
                         <div>
-                          <p className="font-bold text-white">{v.gvw}</p>
-                          <p className="text-[11px] sm:text-xs text-gray-400">Tonnage (GVW)</p>
+                          <p className="font-bold text-white">{v.gvw || "-"}</p>
+                          <p className="text-[11px] sm:text-xs text-gray-400">
+                            Tonnage (GVW)
+                          </p>
                         </div>
                         <div>
                           <p className="font-bold text-white">
-                            {v.fuelTankCapacity}
+                            {v.fuelTankCapacity || "-"}
                           </p>
-                          <p className="text-[11px] sm:text-xs text-gray-400">Fuel Tank</p>
+                          <p className="text-[11px] sm:text-xs text-gray-400">
+                            Fuel Tank
+                          </p>
                         </div>
                         <div>
-                          <p className="font-bold text-white">{v.payload}</p>
-                          <p className="text-[11px] sm:text-xs text-gray-400">Payload</p>
+                          <p className="font-bold text-white">
+                            {v.payload || "-"}
+                          </p>
+                          <p className="text-[11px] sm:text-xs text-gray-400">
+                            Payload
+                          </p>
                         </div>
                       </div>
 
+                      {/* 🔹 Buttons */}
                       <div className="flex flex-col xs:flex-row sm:flex-row gap-3 mt-auto">
                         <Link
                           to={`/products/${v._id}`}
@@ -788,6 +993,7 @@ export default function Products() {
                         >
                           Know More
                         </Link>
+
                         {v.brochureFile && (
                           <button
                             onClick={() =>
@@ -930,6 +1136,15 @@ export default function Products() {
             onBack={handleProfitBack} // <-- reopen TCO with previous values
           />
         )}
+      {/* 🔹 Login Modal */}
+      <LoginModal
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
+        onSuccess={() => {
+          setShowCompetitors(true);
+          setShowLogin(false);
+        }}
+      />
 
       <Footer />
     </div>
