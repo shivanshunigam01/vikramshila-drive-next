@@ -128,3 +128,10 @@ All colors MUST be HSL.
     background-image: var(--gradient-primary);
   }
 }
+/* Ensure equal card height */
+.card-equal {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}

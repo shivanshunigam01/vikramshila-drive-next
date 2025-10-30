@@ -18,7 +18,7 @@ const nav = [
   { to: "/contact", label: "Contact" },
 ];
 
-const ADMIN_URL = "http://34.68.6.114:8081/";
+const ADMIN_URL = "http://13.216.195.152:8081/";
 
 type AuthState = {
   loggedIn: boolean;

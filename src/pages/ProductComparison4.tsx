@@ -1,11 +1,12 @@
+import { getProductById } from "@/services/product";
+import { getCompetitionProductById } from "@/services/competitionService";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
-import { getProductById } from "@/services/product";
 
 interface Product {
   _id: string;
@@ -38,6 +39,7 @@ function formatINR(n: any) {
 export default function ProductComparison4() {
   const navigate = useNavigate();
   const { productIds } = useParams<{ productIds: string }>();
+  const location = useLocation();
 
   const [real, setReal] = useState<Product[]>([]);
   const [competitors, setCompetitors] = useState<Product[]>([]);
@@ -45,59 +47,44 @@ export default function ProductComparison4() {
   const [invalidIds, setInvalidIds] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchComparison = async () => {
+    const fetchProducts = async () => {
       if (!productIds) return;
-      try {
-        setLoading(true);
-        const ids = productIds.split(",").filter(Boolean);
+      setLoading(true);
 
-        const fetched = await Promise.allSettled(
-          ids.map((id) => getProductById(id))
+      try {
+        const ids = productIds.split(",").filter(Boolean);
+        const idMap =
+          (location.state as { idMap?: { id: string; type: string }[] })
+            ?.idMap || [];
+
+        const results = await Promise.allSettled(
+          ids.map(async (id) => {
+            const type =
+              idMap.find((x) => x.id === id)?.type ||
+              (id.startsWith("68e") ? "Competitor" : "Tata");
+
+            console.log(`🔍 Fetching ${id} as ${type}`);
+            return type === "Competitor"
+              ? await getCompetitionProductById(id)
+              : await getProductById(id);
+          })
         );
 
-        const valid: Product[] = [];
-        const invalid: string[] = [];
+        const valid = results
+          .filter((r) => r.status === "fulfilled" && r.value?._id)
+          .map((r) => (r as PromiseFulfilledResult<any>).value);
 
-        fetched.forEach((res, i) => {
-          if (res.status === "fulfilled" && res.value?._id)
-            valid.push(res.value);
-          else invalid.push(ids[i]);
-        });
-
-        setInvalidIds(invalid);
-
-        // ✅ Smart Tata detection (covers all variations)
-        valid.forEach((v) => {
-          const title = v.title?.toLowerCase() || "";
-          if (
-            !v.brand &&
-            /(ace|intra|yodha|ultra|winger|lpt|starbus)/.test(title)
-          ) {
-            v.brand = "Tata";
-          }
-        });
-
-        const tata = valid.filter((p) => {
-          const brand = p.brand?.toLowerCase() || "";
-          return brand.includes("tata");
-        });
-
-        const comps = valid.filter((p) => {
-          const brand = p.brand?.toLowerCase() || "";
-          return !brand.includes("tata");
-        });
-
-        setReal(tata);
-        setCompetitors(comps);
+        setReal(valid.filter((p) => p.type !== "Competitor"));
+        setCompetitors(valid.filter((p) => p.type === "Competitor"));
       } catch (err) {
-        console.error("Error fetching selected products:", err);
+        console.error("❌ Failed to fetch comparison products:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchComparison();
-  }, [productIds]);
+    fetchProducts();
+  }, [productIds, location.state]);
 
   if (loading) {
     return (

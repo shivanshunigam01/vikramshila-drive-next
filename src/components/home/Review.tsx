@@ -34,9 +34,9 @@ interface FinanceData {
 }
 interface LocationState {
   product: Product;
-  financeData: FinanceData;
+  financeData?: FinanceData; // make optional
+  from?: string; // to detect navigation from comparison
 }
-
 type IndiaRegions = {
   states: string[];
   districtsByState: Record<string, string[]>;
@@ -1053,14 +1053,14 @@ export default function ReviewQuote() {
     setDistrict("");
   }, [selectedState]);
 
-  if (!state || !state.product || !state.financeData) {
+  if (!state || !state.product) {
     return (
-      <div className="bg-black min-h-screen text-white">
+      <div className="bg-black min-h-screen text-white flex flex-col justify-center items-center">
         <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-2xl font-bold mb-4">No Quote Data Found</h1>
+        <div className="text-center p-10">
+          <h1 className="text-2xl font-bold mb-4">No Product Selected</h1>
           <p className="text-gray-400 mb-6">
-            Please select a product and configure finance options first.
+            Please go back and choose a product to review.
           </p>
           <Button
             onClick={() => navigate("/products")}
@@ -1074,7 +1074,19 @@ export default function ReviewQuote() {
     );
   }
 
-  const { product, financeData } = state;
+  // ✅ Provide default financeData when missing (comparison mode)
+  const { product } = state;
+  const financeData =
+    state.financeData ||
+    ({
+      vehiclePrice: Number(product.price?.replace(/[^\d]/g, "")) || 700000,
+      downPaymentPercentage: 20,
+      downPaymentAmount: 140000,
+      tenure: 60,
+      interestRate: 10.5,
+      loanAmount: 560000,
+      estimatedEMI: 12000,
+    } as FinanceData);
 
   const onAadharChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -1649,7 +1661,7 @@ export default function ReviewQuote() {
                     name: fullNameForCibil.trim(),
                     mobile: phoneNumber,
                     pan: panNumber.toUpperCase(),
-                    consent: "Y"
+                    consent: "Y",
                   });
                   setCibilScore(resp.score);
                   setCibilStatus(resp.ok ? "success" : "failed");
@@ -1714,7 +1726,9 @@ export default function ReviewQuote() {
                       });
                       toast.success("CIBIL Report Downloaded Successfully!");
                     } catch (err: any) {
-                      toast.error(err?.message || "Failed to open CIBIL Report.");
+                      toast.error(
+                        err?.message || "Failed to open CIBIL Report."
+                      );
                     } finally {
                       setIsDownloading(false);
                     }

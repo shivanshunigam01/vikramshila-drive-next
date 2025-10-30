@@ -73,7 +73,7 @@ function AppRoutes() {
           <Route path="/ace-ev" element={<AceEvPage />} />
           <Route path="/truck-finder" element={<TruckFinder />} />
           <Route path="/review" element={<Review />} />
-          <Route path="/compare/:productIds" element={<ProductComparison4 />} />
+          <Route path="/compare/:productIds" element={<ProductComparison />} />
           <Route path="/compare4" element={<ProductComparison4 />} />
           <Route path="/thank-you" element={<ThankYou />} />
           <Route

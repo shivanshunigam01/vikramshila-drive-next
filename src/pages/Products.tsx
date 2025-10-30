@@ -469,6 +469,28 @@ export default function Products() {
     setShowProfit(true);
   };
 
+  function getCompanyHeading(p?: Product) {
+    if (!p) return "";
+    // Tata (your API marks them as type: "Tata")
+    if (p.type === "Tata") return "Tata Product";
+
+    // Competitors: try brand first, else first word of title/model
+    const brandText =
+      typeof p.brand === "string"
+        ? p.brand
+        : (p.brand as any)?.toString?.() || "";
+
+    const firstWord = (s?: string) =>
+      (typeof s === "string" ? s : "").trim().split(/\s+/)[0] || "";
+
+    const company =
+      brandText.trim() ||
+      firstWord(p.title) ||
+      firstWord(p.model) ||
+      "Competitor";
+
+    return company;
+  }
   function makeProfitSeedsFromTco(
     productsList: Product[],
     tcoResults: TcoResult[]
@@ -626,7 +648,6 @@ export default function Products() {
             {/* Dropdown Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {compareSelection.map((selectedId, index) => {
-                // Build filtered dropdown list (remove already chosen vehicles)
                 const selectedSet = new Set(compareSelection.filter(Boolean));
 
                 const availableTata = tataProducts.filter(
@@ -636,13 +657,25 @@ export default function Products() {
                   (p) => !selectedSet.has(p._id) || p._id === selectedId
                 );
 
+                // find the currently selected product (from either list)
+                const selectedProduct = [
+                  ...tataProducts,
+                  ...competitorProducts,
+                ].find((p) => p._id === selectedId);
+
+                // dynamic heading
+                const headingLabel = selectedId
+                  ? getCompanyHeading(selectedProduct)
+                  : `Vehicle ${index + 1}`;
+
                 return (
                   <div
                     key={index}
                     className="flex flex-col bg-black border border-gray-800 rounded-lg p-3 sm:p-4 shadow-sm hover:border-blue-500 transition-all"
                   >
+                    {/* 🔹 this is the ONLY visible change */}
                     <label className="text-sm text-gray-400 mb-2">
-                      Vehicle {index + 1}
+                      {headingLabel}
                     </label>
 
                     <select
@@ -665,7 +698,9 @@ export default function Products() {
                       <optgroup label="Competitor Vehicles">
                         {availableCompetitors.map((p) => (
                           <option key={p._id} value={p._id}>
-                            {p.brand} {p.model}
+                            {/* keep full name in the dropdown options */}
+                            {typeof p.brand === "string" ? p.brand : ""}{" "}
+                            {p.model}
                           </option>
                         ))}
                       </optgroup>
@@ -696,7 +731,24 @@ export default function Products() {
                   onClick={() => {
                     const validIds = compareSelection.filter(Boolean);
                     if (validIds.length >= 2) {
-                      navigate(`/compare/${validIds.join(",")}`);
+                      // Collect selected product objects (from both Tata + Competitors)
+                      const selectedProducts = [
+                        ...tataProducts,
+                        ...competitorProducts,
+                      ].filter((p) => validIds.includes(p._id));
+
+                      // Build a clean id:type map for every selected product
+                      const idMap = selectedProducts.map((p) => ({
+                        id: p._id,
+                        type: p.type === "Competitor" ? "Competitor" : "Tata",
+                      }));
+
+                      console.log("🧭 Navigating with:", idMap);
+
+                      // Pass along both the IDs (for URL) and id:type map (for logic)
+                      navigate(`/compare/${validIds.join(",")}`, {
+                        state: { idMap },
+                      });
                     }
                   }}
                   className={`${
