@@ -37,8 +37,6 @@ export default function LoginForm({ onLogin, onCancel }: LoginFormProps) {
         // Save token & user in localStorage (or context)
         localStorage.setItem("admin_token", token);
         localStorage.setItem("user", JSON.stringify(user));
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        localStorage.setItem("token", response.data.token);
         window.location.reload();
 
         // setTimeout(() => {
