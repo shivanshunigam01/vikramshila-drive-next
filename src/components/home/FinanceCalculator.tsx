@@ -39,9 +39,16 @@ export default function FinanceCalculator({
     return Math.round(e);
   }, [principal, roi, tenure]);
 
-  const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
-
+  let user: any = null;
+  try {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
+      user = JSON.parse(storedUser);
+    }
+  } catch (err) {
+    console.error("Error parsing user from localStorage:", err);
+    user = null;
+  }
   const waText = encodeURIComponent(
     `Hello Vikramshila Automobiles, I'm interested in finance options.
 Price: ${formatINR(price)},

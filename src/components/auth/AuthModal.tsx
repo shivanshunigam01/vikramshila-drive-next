@@ -114,7 +114,13 @@ export default function AuthModal({
           ) : activeForm === "login" ? (
             <LoginForm
               onLogin={() => {
+                // 🔥 Trigger global re-render for Header
+                window.dispatchEvent(new Event("storage"));
+
+                // Also run your parent callback
                 onLoginSuccess();
+
+                // Close modal
                 setActiveForm(null);
               }}
               onCancel={() => setActiveForm(null)}
@@ -122,6 +128,8 @@ export default function AuthModal({
           ) : (
             <RegisterForm
               onRegister={() => {
+                // 🔥 Notify Header immediately
+                window.dispatchEvent(new Event("storage"));
                 onLoginSuccess();
                 setActiveForm(null);
               }}
