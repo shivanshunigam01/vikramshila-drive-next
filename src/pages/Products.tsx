@@ -470,27 +470,32 @@ export default function Products() {
   };
 
   function getCompanyHeading(p?: Product) {
-    if (!p) return "";
-    // Tata (your API marks them as type: "Tata")
-    if (p.type === "Tata") return "Tata Product";
+    if (!p) return "Select Vehicle";
 
-    // Competitors: try brand first, else first word of title/model
+    // ✅ For Tata Vehicles
+    if (p.type === "Tata") {
+      return p.brand && typeof p.brand === "string" ? p.brand : "Tata Motors";
+    }
+
+    // ✅ For Competitor Vehicles
     const brandText =
       typeof p.brand === "string"
-        ? p.brand
+        ? p.brand.trim()
         : (p.brand as any)?.toString?.() || "";
 
+    // if brand name not found, fallback to first part of title or model
     const firstWord = (s?: string) =>
       (typeof s === "string" ? s : "").trim().split(/\s+/)[0] || "";
 
-    const company =
-      brandText.trim() ||
+    const brandName =
+      brandText ||
       firstWord(p.title) ||
       firstWord(p.model) ||
-      "Competitor";
+      "Competitor Brand";
 
-    return company;
+    return brandName;
   }
+
   function makeProfitSeedsFromTco(
     productsList: Product[],
     tcoResults: TcoResult[]
