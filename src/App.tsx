@@ -34,6 +34,8 @@ import Shipping from "./pages/Shipping";
 import Privacy from "./pages/Privacy";
 import { loadRazorpay } from "./lib/loadRazorpay";
 import ProductComparison4 from "./pages/ProductComparison4";
+import Blogs from "./components/home/blogs";
+import FAQPage from "./components/home/Faq";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +70,8 @@ function AppRoutes() {
           <Route path="/videos" element={<VideosPage />} />
           <Route path="/new-launches" element={<NewLaunches />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/faq" element={<FAQPage />} />
           <Route path="/book-service" element={<BookService />} />
           <Route path="/finance-documents" element={<FinanceDocuments />} />
           <Route path="/ace-ev" element={<AceEvPage />} />

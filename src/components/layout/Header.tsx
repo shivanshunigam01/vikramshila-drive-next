@@ -16,6 +16,8 @@ const nav = [
   { to: "/services", label: "Services" },
   { to: "/new-launches", label: "New Launches" },
   { to: "/contact", label: "Contact" },
+  { to: "/blogs", label: "Blogs" },
+  { to: "/faq", label: "FAQ" },
 ];
 
 const ADMIN_URL = "http://13.216.195.152:8081/";
