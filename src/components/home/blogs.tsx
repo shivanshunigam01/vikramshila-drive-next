@@ -18,7 +18,7 @@ const blogs: Blog[] = [
     excerpt:
       "2000 kg payload, biggest 10.2 ft body & best mileage makes Intra V70 the no.1 choice for serious business…",
     image:
-      "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=80&w=1200&auto=format&fit=crop",
+      "https://res.cloudinary.com/dsadzuh5q/image/upload/v1756887778/products/1756887777950-Tata_Intra_%20V70_2000Kg_Payload_%20Gold.png",
     content: `
       <h2 class='text-2xl font-bold mb-4'>Tata Intra V70 – Ultimate Pickup for Profit</h2>
       <p class='mb-3'>Tata Intra V70 is designed for customers who want <strong>maximum payload, bigger body and better mileage</strong>.</p>
@@ -40,7 +40,7 @@ const blogs: Blog[] = [
     excerpt:
       "900 kg payload, legendary reliability and low maintenance cost make Ace Gold Diesel a favourite…",
     image:
-      "https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1200&auto=format&fit=crop",
+      "https://res.cloudinary.com/dsadzuh5q/image/upload/v1756898971/products/1756898971321-ACE%20GOLD%20Diesel%20HT%2B%20-%2002_4.png",
     content: `
       <h2 class='text-2xl font-bold mb-4'>Why Tata Ace Gold Diesel Still Rules the Market</h2>
       <p class='mb-3'>Ace Gold Diesel is known as <strong>Chhota Hathi</strong> — India's no.1 mini truck.</p>
@@ -62,7 +62,7 @@ const blogs: Blog[] = [
     excerpt:
       "High mileage CNG, 10-seat comfort and low running cost make Magic Mantra ideal for rural routes…",
     image:
-      "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1200&auto=format&fit=crop",
+      "https://res.cloudinary.com/dsadzuh5q/image/upload/v1757243715/products/1757243715023-Magic_Mantra.png",
     content: `
       <h2 class='text-2xl font-bold mb-4'>Magic Mantra – Best for Village to Town Connectivity</h2>
       <p class='mb-3'>Magic Mantra is an <strong>employment generation vehicle</strong>.</p>
@@ -85,7 +85,7 @@ const blogs: Blog[] = [
     excerpt:
       "High ground clearance, strong chassis & powerful diesel engine make Yodha unbeatable…",
     image:
-      "https://images.unsplash.com/photo-1586864387634-7b29b86a90b8?q=80&w=1200&auto=format&fit=crop",
+      "https://res.cloudinary.com/dsadzuh5q/image/upload/v1756905230/products/1756905229907-Yodha%202.png",
     content: `
       <h2 class='text-2xl font-bold mb-4'>Yodha – Built Tough for Heavy Duty Jobs</h2>
       <p class='mb-3'>Yodha is trusted by contractors, farmers & fleet owners.</p>
@@ -105,7 +105,7 @@ const blogs: Blog[] = [
     excerpt:
       "Driving habits, tyre pressure and load affect mileage. Here are 7 proven tips…",
     image:
-      "https://images.unsplash.com/photo-1609521263047-f8f205293f24?q=80&w=1200&auto=format&fit=crop",
+      "https://res.cloudinary.com/dsadzuh5q/image/upload/v1757263271/products/1757263271143-1757010297057-LPT_1212.png",
     content: `
       <h2 class='text-2xl font-bold mb-4'>7 Proven Ways to Improve Mileage</h2>
 
@@ -149,7 +149,7 @@ const blogs: Blog[] = [
     excerpt:
       "CNG network expansion & ultra-low running cost is transforming Bihar’s CV sector…",
     image:
-      "https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?q=80&w=1200&auto=format&fit=crop",
+      "https://4.imimg.com/data4/VN/TP/MY-25299022/tata-ace-cng-bs4-1000x1000.jpg",
     content: `
       <h2 class='text-2xl font-bold mb-4'>CNG – The New Backbone of Transport</h2>
 
