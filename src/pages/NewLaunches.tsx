@@ -11,10 +11,7 @@ import launchBanner from "../assets/fleet-care_new_banner.jpg";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
-import {
-  getProducts,
-  downloadBrochureService,
-} from "@/services/productService";
+import { getProducts } from "@/services/productService";
 
 // ---------- helpers ----------
 function formatINR(n: number) {
@@ -42,7 +39,7 @@ function extractEnginePower(engine?: string): string | undefined {
   if (PS) return `${PS} PS`;
   return engine;
 }
-
+const API_URL = import.meta.env.VITE_API_URL;
 // ---------- API type ----------
 type ApiProduct = {
   brochureFile?: any;
@@ -111,36 +108,15 @@ export default function NewLaunchesPage() {
     [allProducts, searchTerm]
   );
 
-  const handleDownload = async (p: ApiProduct) => {
-    if (!p._id || !p.brochureFile) return;
-    try {
-      setDownloadingId(p._id);
-      const res = await downloadBrochureService(p._id);
-      const blob = new Blob([res.data], { type: res.headers["content-type"] });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-
-      let filename = "brochure.pdf";
-      const cd = res.headers["content-disposition"];
-      if (cd) {
-        const m = cd.match(/filename="?(.+?)"?$/);
-        if (m && m[1]) filename = m[1];
-      } else if (p.brochureFile?.originalName) {
-        filename = p.brochureFile.originalName;
-      }
-
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Brochure download failed:", err);
-      alert("Brochure download failed. Please try again.");
-    } finally {
-      setDownloadingId(null);
+  const handleDownload = (p: ApiProduct) => {
+    if (!p._id || !p.brochureFile) {
+      alert("Brochure not available");
+      return;
     }
+
+    const brochureUrl = `${API_URL}/products/${p._id}/brochure`;
+
+    window.open(brochureUrl, "_blank");
   };
 
   return (
