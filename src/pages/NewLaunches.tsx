@@ -12,6 +12,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 import { getProducts } from "@/services/productService";
+import { Helmet } from "react-helmet-async";
 
 // ---------- helpers ----------
 function formatINR(n: number) {
@@ -121,6 +122,34 @@ export default function NewLaunchesPage() {
 
   return (
     <div className="bg-black text-white font-sans">
+      <Helmet>
+        <title>
+          New Launches | Tata Motors Commercial Vehicles | Vikramshila
+          Automobiles
+        </title>
+        <meta
+          name="description"
+          content="Discover newly launched Tata Motors commercial vehicles including latest Intra, Ace Gold, Yodha, Magic and buses at Vikramshila Automobiles. Be the first to know about offers, features & bookings."
+        />
+        <link
+          rel="canonical"
+          href="https://vikramshilaautomobiles.com/new-launches"
+        />
+        <meta
+          property="og:title"
+          content="New Tata Motors Launches | Vikramshila Automobiles"
+        />
+        <meta
+          property="og:description"
+          content="Explore latest commercial vehicle launches from Tata Motors with features, payload, mileage & finance options."
+        />
+        <meta
+          property="og:url"
+          content="https://vikramshilaautomobiles.com/new-launches"
+        />
+        <meta property="og:image" content="/og-banner.jpg" />
+      </Helmet>
+
       <Header />
 
       {/* Breadcrumb */}

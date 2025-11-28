@@ -82,12 +82,66 @@ export default function VehicleDetails() {
   return (
     <div className="bg-black text-white min-h-screen">
       <Helmet>
-        <title>{`${product.title} | Vikramshila Automobiles`}</title>
+        <title>
+          {product.title} Price, Specs & EMI in Bihar | Vikramshila Automobiles
+        </title>
         <meta
           name="description"
-          content={`${product.title} specifications, price and brochure.`}
+          content={
+            product.metaDescription ||
+            `${product.title} on-road price, payload, GVW, mileage, applications, EMI options and brochure at Vikramshila Automobiles, authorized Tata Motors dealer in Bihar.`
+          }
         />
-        <link rel="canonical" href={`/products/${product._id}`} />
+        <link
+          rel="canonical"
+          href={`https://vikramshilaautomobiles.com/products/${product._id}`}
+        />
+
+        {/* OG */}
+        <meta
+          property="og:title"
+          content={`${product.title} | Tata Motors Commercial Vehicle`}
+        />
+        <meta
+          property="og:description"
+          content={`Explore ${product.title} specs, price, payload and finance options at Vikramshila Automobiles.`}
+        />
+        <meta
+          property="og:url"
+          content={`https://vikramshilaautomobiles.com/products/${product._id}`}
+        />
+        <meta
+          property="og:image"
+          content={product.images?.[0] || "/og-banner.jpg"}
+        />
+
+        {/* Product / Vehicle structured data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.title,
+            image: product.images || [],
+            description:
+              product.metaDescription ||
+              product.description ||
+              `${product.title} Tata Motors commercial vehicle.`,
+            brand: {
+              "@type": "Brand",
+              name: "Tata Motors",
+            },
+            category: product.category || "Commercial Vehicle",
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "INR",
+              price: product.price
+                ? String(product.price).replace(/[^\d.]/g, "")
+                : "0",
+              availability: "https://schema.org/InStock",
+              url: `https://vikramshilaautomobiles.com/products/${product._id}`,
+            },
+          })}
+        </script>
       </Helmet>
 
       <Header />

@@ -48,26 +48,17 @@ export default function Contact() {
   return (
     <div>
       <Helmet>
-        <title>Contact Us | Vikramshila Automobiles</title>
+        <title>
+          Contact Us | Vikramshila Automobiles | Tata Motors Dealer Bihar
+        </title>
         <meta
           name="description"
-          content="Reach Vikramshila Automobiles for sales, test drives, finance and service support. Call, WhatsApp or submit the enquiry form."
+          content="Contact Vikramshila Automobiles for Tata Motors commercial vehicle enquiries, test drives, finance, fleet deals and service support in Bihar."
         />
-        <link rel="canonical" href="/contact" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "Vikramshila Automobiles Pvt. Ltd.",
-            contactPoint: [
-              {
-                "@type": "ContactPoint",
-                telephone: "+91-8406991610",
-                contactType: "customer service",
-              },
-            ],
-          })}
-        </script>
+        <link
+          rel="canonical"
+          href="https://vikramshilaautomobiles.com/contact"
+        />
       </Helmet>
 
       <Header />

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+>
+  <!-- HOME -->
+  <url>
+    <loc>https://vikramshilaautomobiles.com/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- KEY STATIC PAGES -->
+  <url>
+    <loc>https://vikramshilaautomobiles.com/products</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://vikramshilaautomobiles.com/new-launches</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://vikramshilaautomobiles.com/faq</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://vikramshilaautomobiles.com/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- IF YOU HAVE ABOUT PAGE -->
+  <url>
+    <loc>https://vikramshilaautomobiles.com/about</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- PRODUCT DETAILS URLs (EXAMPLES) -->
+  <!-- Ideally generate this dynamically on backend or at build time -->
+  <!--
+  <url>
+    <loc>https://vikramshilaautomobiles.com/products/68baffabaab18682d32c677c</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  -->
+</urlset>

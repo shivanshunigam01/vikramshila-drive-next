@@ -23,12 +23,39 @@ export default function Index() {
   return (
     <div>
       <Helmet>
-        <title>Vikramshila Automobiles | Tata Commercial Vehicles Dealer</title>
+        <title>
+          Vikramshila Automobiles | Tata Motors Commercial Vehicle Dealer in
+          Bihar
+        </title>
         <meta
           name="description"
-          content="Explore Tata commercial vehicles, book test drives, finance, offers at Vikramshila Automobiles."
+          content="Official Tata Motors commercial vehicle dealership in Bihar. Explore Tata Intra, Ace Gold, Yodha, Magic, Winger and full bus range. Book test drive, check EMI offers & apply for finance at Vikramshila Automobiles."
         />
-        <link rel="canonical" href="/" />
+        <link rel="canonical" href="https://vikramshilaautomobiles.com/" />
+
+        {/* OG + Twitter */}
+        <meta
+          property="og:title"
+          content="Vikramshila Automobiles | Tata Motors Commercial Vehicle Dealer in Bihar"
+        />
+        <meta
+          property="og:description"
+          content="Explore Tata Motors commercial vehicles, compare models & book test drive with Vikramshila Automobiles."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://vikramshilaautomobiles.com/" />
+        <meta property="og:image" content="/og-banner.jpg" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content="Vikramshila Automobiles | Tata Motors Dealer"
+        />
+        <meta
+          name="twitter:description"
+          content="Tata Motors commercial vehicles dealer in Bihar. Intra, Ace Gold, Yodha, buses & more."
+        />
+        <meta name="twitter:image" content="/og-banner.jpg" />
       </Helmet>
       <Header />
 

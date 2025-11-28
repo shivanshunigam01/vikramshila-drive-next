@@ -569,12 +569,48 @@ export default function Products() {
   return (
     <div className="bg-black min-h-screen text-white relative">
       <Helmet>
-        <title>Products | Vikramshila Automobiles</title>
+        <title>
+          Tata Commercial Vehicles | SCV, LCV, ICV, Buses | Vikramshila
+          Automobiles
+        </title>
         <meta
           name="description"
-          content="Explore Tata commercial vehicles: SCV, Pickup, LCV, ICV, MCV, Winger & Buses."
+          content="Browse Tata Motors commercial vehicles including Intra, Ace Gold, Yodha, Magic, Winger, LCV, ICV, MCV and buses at Vikramshila Automobiles. Compare payload, mileage, GVW, applications & EMI."
         />
-        <link rel="canonical" href="/products" />
+        <link
+          rel="canonical"
+          href="https://vikramshilaautomobiles.com/products"
+        />
+
+        {/* OG */}
+        <meta
+          property="og:title"
+          content="Tata Commercial Vehicle Range | Vikramshila Automobiles"
+        />
+        <meta
+          property="og:description"
+          content="Compare Tata Motors commercial vehicles by payload, mileage and application. Book test drive & EMI offers."
+        />
+        <meta
+          property="og:url"
+          content="https://vikramshilaautomobiles.com/products"
+        />
+        <meta property="og:image" content="/og-banner.jpg" />
+
+        {/* Structured data: CollectionPage + ItemList (simple version) */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Tata Motors Commercial Vehicle Range | Vikramshila Automobiles",
+            url: "https://vikramshilaautomobiles.com/products",
+            isPartOf: {
+              "@type": "WebSite",
+              name: "Vikramshila Automobiles",
+              url: "https://vikramshilaautomobiles.com",
+            },
+          })}
+        </script>
       </Helmet>
 
       <Header />

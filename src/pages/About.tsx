@@ -9,26 +9,13 @@ export default function About() {
     <div>
       <Helmet>
         <title>
-          About Vikramshila Automobiles | Tata Commercial Vehicle Dealer
+          About Vikramshila Automobiles | Tata Motors Commercial Vehicle Dealer
         </title>
         <meta
           name="description"
-          content="Learn about Vikramshila Automobiles, your trusted Tata Motors Commercial Vehicles dealership. Our mission, vision, values, facilities, and customer-first approach."
+          content="Vikramshila Automobiles is an authorized Tata Motors commercial vehicle dealership serving Bhagalpur, Banka and Khagaria with SCV, LCV, ICV, MCV and bus range, finance and after-sales support."
         />
-        <link rel="canonical" href="/about" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "Vikramshila Automobiles Pvt. Ltd.",
-            url: "https://vikramshilaautomobiles.com",
-            logo: "/images/tata-logo.svg",
-            sameAs: [
-              "https://facebook.com/vikramshila",
-              "https://instagram.com/vikramshila",
-            ],
-          })}
-        </script>
+        <link rel="canonical" href="https://vikramshilaautomobiles.com/about" />
       </Helmet>
 
       <Header />

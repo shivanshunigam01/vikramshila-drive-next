@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
-
+import { Helmet } from "react-helmet-async";
 type FAQ = {
   category: string;
   question: string;
@@ -232,6 +232,32 @@ export default function FAQPage() {
 
   return (
     <div className="bg-black text-white font-sans">
+      <Helmet>
+        <title>
+          Frequently Asked Questions | Tata Commercial Vehicles | Vikramshila
+          Automobiles
+        </title>
+        <meta
+          name="description"
+          content="Get answers to common questions about Tata Motors commercial vehicles, finance, EMI, warranty, service and vehicle selection at Vikramshila Automobiles."
+        />
+        <link rel="canonical" href="https://vikramshilaautomobiles.com/faq" />
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((f: any) => ({
+              "@type": "Question",
+              name: f.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: f.answer,
+              },
+            })),
+          })}
+        </script>
+      </Helmet>
       <Header />
 
       {/* Breadcrumb */}
