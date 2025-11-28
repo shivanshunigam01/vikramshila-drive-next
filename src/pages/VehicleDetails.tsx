@@ -21,7 +21,7 @@ export default function VehicleDetails() {
   >("overview");
 
   const navigate = useNavigate();
-
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     if (id) {
       getProductById(id)
@@ -31,41 +31,16 @@ export default function VehicleDetails() {
     }
   }, [id]);
 
-  const handleDownloadBrochure = async () => {
+  const handleDownloadBrochure = () => {
     if (!product?._id) {
       alert("Brochure not available");
       return;
     }
-    setDownloading(true);
-    try {
-      const response = await downloadBrochureService(product._id);
-      const blob = new Blob([response.data], {
-        type: response.headers["content-type"],
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
 
-      let filename = "brochure.pdf";
-      const contentDisposition = response.headers["content-disposition"];
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?(.+)"?/);
-        if (match && match[1]) filename = match[1];
-      } else if (product.brochureFile?.originalName) {
-        filename = product.brochureFile.originalName;
-      }
+    const API_URL = import.meta.env.VITE_API_URL;
+    const url = `${API_URL}/products/${product._id}/brochure`;
 
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (err: any) {
-      console.error("Download failed:", err);
-      alert(`Download failed: ${err.message}`);
-    } finally {
-      setDownloading(false);
-    }
+    window.open(url, "_blank");
   };
 
   const handleViewBrochure = () => {
@@ -73,7 +48,8 @@ export default function VehicleDetails() {
       alert("Brochure not available");
       return;
     }
-    window.open(`/api/products/${product._id}/brochure`, "_blank");
+
+    window.open(`${API_URL}/products/${product._id}/brochure`, "_blank");
   };
 
   if (loading) {

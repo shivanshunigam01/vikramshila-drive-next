@@ -194,7 +194,7 @@ export default function Products() {
         }
         console.log(
           "👉 Calling API:",
-          `${import.meta.env.VITE_VITE_API_URL}/competition-products/filter`
+          `${import.meta.env.VITE_API_URL}/competition-products/filter`
         );
         if (Object.keys(filters).length > 0) {
           const response = await competitionCompareFilter(filters);
@@ -547,45 +547,22 @@ export default function Products() {
 
   const clearSelection = () => setSelected([]);
 
-  const handleDownloadBrochure = async (
-    productId: string,
-    brochureFile?: any
-  ) => {
-    if (!productId || !brochureFile) {
+  const handleDownloadBrochure = (productId: string) => {
+    if (!productId) {
       alert("Brochure not available");
       return;
     }
 
-    setDownloadingId(productId);
+    const API_URL = import.meta.env.VITE_API_URL;
+
+    // 🔥 Direct download exactly like ProductDetails page
+    const brochureUrl = `${API_URL}/products/${productId}/brochure`;
+
     try {
-      const response = await downloadBrochureService(productId);
-      const blob = new Blob([response.data], {
-        type: response.headers["content-type"],
-      });
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-
-      let filename = "brochure.pdf";
-      const contentDisposition = response.headers["content-disposition"];
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?(.+)"?/);
-        if (match && match[1]) filename = match[1];
-      } else if (brochureFile?.originalName) {
-        filename = brochureFile.originalName;
-      }
-
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (err: any) {
-      console.error("Download failed:", err);
-      alert(`Download failed: ${err.message}`);
-    } finally {
-      setDownloadingId(null);
+      window.open(brochureUrl, "_blank");
+    } catch (err) {
+      console.error("Brochure download failed:", err);
+      alert("Unable to download brochure");
     }
   };
 
@@ -1053,9 +1030,7 @@ export default function Products() {
 
                         {v.brochureFile && (
                           <button
-                            onClick={() =>
-                              handleDownloadBrochure(v._id, v.brochureFile)
-                            }
+                            onClick={() => handleDownloadBrochure(v._id)}
                             className="flex items-center justify-center w-full sm:w-11 h-11 rounded-md sm:rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
                           >
                             {downloadingId === v._id ? "…" : "PDF"}
@@ -1080,10 +1055,10 @@ export default function Products() {
               <Button
                 onClick={openCalculator}
                 className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
-                  bg-blue-600 hover:bg-blue-700 text-white 
-                  px-4 py-2 rounded-l-lg shadow-lg 
-                  [writing-mode:vertical-rl] rotate-180 
-                  flex justify-center items-center w-12 h-40"
+                    bg-blue-600 hover:bg-blue-700 text-white 
+                    px-4 py-2 rounded-l-lg shadow-lg 
+                    [writing-mode:vertical-rl] rotate-180 
+                    flex justify-center items-center w-12 h-40"
               >
                 Choose this Vehicle
               </Button>
@@ -1093,10 +1068,10 @@ export default function Products() {
               <Button
                 onClick={handleCompareProducts}
                 className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
-                  bg-green-600 hover:bg-green-700 text-white 
-                  px-4 py-2 rounded-l-lg shadow-lg 
-                  [writing-mode:vertical-rl] rotate-180 
-                  flex justify-center items-center w-12 h-40"
+                    bg-green-600 hover:bg-green-700 text-white 
+                    px-4 py-2 rounded-l-lg shadow-lg 
+                    [writing-mode:vertical-rl] rotate-180 
+                    flex justify-center items-center w-12 h-40"
               >
                 Compare Products
               </Button>
@@ -1105,9 +1080,9 @@ export default function Products() {
             {selected.length > 2 && (
               <div
                 className="fixed top-1/2 right-0 -translate-y-1/2 z-40 
-                  bg-red-600 text-white px-4 py-2 rounded-l-lg shadow-lg 
-                  text-sm [writing-mode:vertical-rl] rotate-180 
-                  flex justify-center items-center w-12 h-48 whitespace-nowrap"
+                    bg-red-600 text-white px-4 py-2 rounded-l-lg shadow-lg 
+                    text-sm [writing-mode:vertical-rl] rotate-180 
+                    flex justify-center items-center w-12 h-48 whitespace-nowrap"
               >
                 Only 2 Products Allowed
               </div>

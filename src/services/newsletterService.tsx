@@ -1,5 +1,5 @@
 // services/newsletterService.ts
-const API_URL = import.meta.env.VITE_VITE_API_URL || "";
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 export const subscribeNewsletter = async (email: string) => {
   const trimmedEmail = email.trim();

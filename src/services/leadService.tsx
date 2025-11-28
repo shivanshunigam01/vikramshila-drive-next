@@ -2,7 +2,7 @@
 import axios from "axios";
 
 import { loadRazorpay } from "@/lib/loadRazorpay";
-const API = import.meta.env.VITE_VITE_API_URL;
+const API = import.meta.env.VITE_API_URL;
 
 export const createLead = async (payload: FormData | Record<string, any>) => {
   try {
