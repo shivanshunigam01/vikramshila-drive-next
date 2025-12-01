@@ -135,3 +135,11 @@ All colors MUST be HSL.
   justify-content: space-between;
   height: 100%;
 }
+html {
+  scrollbar-gutter: stable;
+}
+
+body,
+html {
+  overflow-x: hidden !important;
+}

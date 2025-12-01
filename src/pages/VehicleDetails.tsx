@@ -87,6 +87,15 @@ export default function VehicleDetails() {
         </title>
         <meta
           name="description"
+          content={`${product.title} price in Bihar. Payload ${product.payload}, GVW ${product.gvw}, mileage, applications, EMI & brochure download at Vikramshila Automobiles – Authorized Tata Motors CV Dealer.`}
+        />
+
+        <meta
+          name="keywords"
+          content={`tata ${product.title} price bihar, tata ${product.title} on road price, tata ${product.title} mileage, tata ${product.title} gvw payload, tata motors ${product.category} bihar`}
+        />
+        <meta
+          name="description"
           content={
             product.metaDescription ||
             `${product.title} on-road price, payload, GVW, mileage, applications, EMI options and brochure at Vikramshila Automobiles, authorized Tata Motors dealer in Bihar.`

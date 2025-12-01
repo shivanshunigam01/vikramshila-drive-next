@@ -192,10 +192,7 @@ export default function Products() {
           filters.priceRange = searchParams.get("priceRange");
           setPriceRange(searchParams.get("priceRange") || "all");
         }
-        console.log(
-          "👉 Calling API:",
-          `${import.meta.env.VITE_API_URL}/competition-products/filter`
-        );
+
         if (Object.keys(filters).length > 0) {
           const response = await competitionCompareFilter(filters);
 
@@ -298,6 +295,7 @@ export default function Products() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products]);
+
   const handleApplyFilters = async () => {
     setLoading(true);
     try {
@@ -369,6 +367,34 @@ export default function Products() {
 
     return name.toLowerCase().includes(searchTerm.toLowerCase());
   });
+
+  // ✅ SEO: schema for collection of vehicles
+  const collectionSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Tata Motors Commercial Vehicle Range | Vikramshila Automobiles",
+      url: "https://vikramshilaautomobiles.com/products",
+      isPartOf: {
+        "@type": "WebSite",
+        name: "Vikramshila Automobiles",
+        url: "https://vikramshilaautomobiles.com",
+      },
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement: filteredProducts.slice(0, 50).map((p, index) => ({
+          "@type": "Product",
+          position: index + 1,
+          name:
+            typeof p.title === "string"
+              ? p.title
+              : String(p.model ?? "Tata Commercial Vehicle"),
+          url: `https://vikramshilaautomobiles.com/products/${p._id}`,
+        })),
+      },
+    }),
+    [filteredProducts]
+  );
 
   const toggleSelect = (id: string) => {
     setSelected((prev) =>
@@ -568,48 +594,45 @@ export default function Products() {
 
   return (
     <div className="bg-black min-h-screen text-white relative">
+      {/* ✅ SEO HEAD META FOR PRODUCT LIST PAGE */}
       <Helmet>
         <title>
-          Tata Commercial Vehicles | SCV, LCV, ICV, Buses | Vikramshila
+          Tata Commercial Vehicles | SCV, LCV, ICV, Pickups, Buses | Vikramshila
           Automobiles
         </title>
+
         <meta
           name="description"
-          content="Browse Tata Motors commercial vehicles including Intra, Ace Gold, Yodha, Magic, Winger, LCV, ICV, MCV and buses at Vikramshila Automobiles. Compare payload, mileage, GVW, applications & EMI."
+          content="Browse Tata Motors commercial vehicles including Tata Intra V70, Intra V50, Ace Gold, Yodha Pickup, Magic, Winger, LCV, ICV, MCV and Buses. Compare payload, mileage, GVW, applications & EMI options for Bihar routes."
         />
+
+        <meta
+          name="keywords"
+          content="tata commercial vehicles bihar, tata intra v70 price bihar, tata intra v50 payload, tata ace gold price bhagalpur, tata yodha pickup price patna, tata lcv trucks bihar, tata icv trucks bihar, tata buses bhagalpur, tata magic mantra bihar, vikramshila automobiles dealer"
+        />
+
         <link
           rel="canonical"
           href="https://vikramshilaautomobiles.com/products"
         />
 
-        {/* OG */}
         <meta
           property="og:title"
-          content="Tata Commercial Vehicle Range | Vikramshila Automobiles"
+          content="Tata Motors Commercial Vehicle Range | Vikramshila Automobiles"
         />
         <meta
           property="og:description"
-          content="Compare Tata Motors commercial vehicles by payload, mileage and application. Book test drive & EMI offers."
+          content="Explore Tata Motors SCV, LCV, ICV, Pickups & Buses at Vikramshila Automobiles. Compare payload, mileage, body size and EMI options for your business in Bihar."
         />
+        <meta property="og:image" content="/og-banner.jpg" />
         <meta
           property="og:url"
           content="https://vikramshilaautomobiles.com/products"
         />
-        <meta property="og:image" content="/og-banner.jpg" />
 
-        {/* Structured data: CollectionPage + ItemList (simple version) */}
+        {/* ✅ Structured data using dynamic collectionSchema */}
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
-            name: "Tata Motors Commercial Vehicle Range | Vikramshila Automobiles",
-            url: "https://vikramshilaautomobiles.com/products",
-            isPartOf: {
-              "@type": "WebSite",
-              name: "Vikramshila Automobiles",
-              url: "https://vikramshilaautomobiles.com",
-            },
-          })}
+          {JSON.stringify(collectionSchema)}
         </script>
       </Helmet>
 
@@ -632,7 +655,7 @@ export default function Products() {
       <div className="bg-zinc-900 border-b border-zinc-800 py-4">
         <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center px-4 gap-3">
           <h2 className="text-lg font-semibold text-white">
-            Vehicle Catalogue
+            Tata Commercial Vehicle Catalogue
           </h2>
           {!showCompetitors ? (
             <Button
@@ -792,7 +815,9 @@ export default function Products() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Filter className="w-5 h-5 text-blue-500" />
-                  <h2 className="text-base font-semibold">Filters</h2>
+                  <h2 className="text-base font-semibold">
+                    Filter Tata Vehicles
+                  </h2>
                 </div>
                 <button
                   onClick={handleResetFilters}
@@ -807,7 +832,7 @@ export default function Products() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search vehicles"
+                  placeholder="Search vehicles (e.g. Intra, Ace, Yodha)"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 border border-gray-700 rounded-md bg-black text-white placeholder-gray-400 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -859,11 +884,13 @@ export default function Products() {
                     className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
                   >
                     <option value="All">Choose Payload</option>
-                    <option value="500-750">500 - 750 Kg</option>
+                    <option value="500-750">500 - 750 Kg (Ace Gold)</option>
                     <option value="750-1500">750 - 1500 Kg</option>
-                    <option value="1500-3000">1500 - 3000 Kg</option>
+                    <option value="1500-3000">
+                      1500 - 3000 Kg (Intra / Yodha)
+                    </option>
                     <option value="3000-6000">3000 - 6000 Kg</option>
-                    <option value="6000+">6000 Kg +</option>
+                    <option value="6000+">6000 Kg + (ICV / Buses)</option>
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     ▼
@@ -882,7 +909,6 @@ export default function Products() {
                     <option value="20-25L">20 - 25 Lakhs</option>
                     <option value="25-30L">25 - 30 Lakhs</option>
                     <option value="30L+">30 Lakhs +</option>
-                    {/* </option> */}
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     ▼
@@ -930,7 +956,7 @@ export default function Products() {
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
               <h1 className="text-xl sm:text-2xl font-bold">
-                {isFiltered ? "Filtered Results" : "All Vehicles"}
+                Tata Commercial Vehicles in Bihar
               </h1>
               <p className="text-gray-400 text-sm sm:text-base">
                 {filteredProducts.length} vehicle
@@ -981,102 +1007,147 @@ export default function Products() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                {filteredProducts.map((v) => (
-                  <Card
-                    key={v._id}
-                    className="bg-black border border-gray-800 rounded-lg overflow-hidden group relative w-full"
-                  >
-                    {/* 🔹 Competitor Badge */}
-                    {v.type === "Competitor" && (
-                      <div className="absolute top-2 left-2 bg-red-600 text-[11px] font-semibold px-2 py-1 rounded shadow">
-                        Competitor
-                      </div>
-                    )}
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                  {filteredProducts.map((v) => (
+                    <Card
+                      key={v._id}
+                      className="bg-black border border-gray-800 rounded-lg overflow-hidden group relative w-full"
+                    >
+                      {/* 🔹 Competitor Badge */}
+                      {v.type === "Competitor" && (
+                        <div className="absolute top-2 left-2 bg-red-600 text-[11px] font-semibold px-2 py-1 rounded shadow">
+                          Competitor
+                        </div>
+                      )}
 
-                    {/* 🔹 Compare Checkbox */}
-                    <div className="flex items-center justify-end space-x-2 px-3 pt-3">
-                      <input
-                        type="checkbox"
-                        checked={selected.includes(v._id)}
-                        onChange={() => toggleSelect(v._id)}
-                        className="w-5 h-5 accent-blue-600 cursor-pointer"
-                        disabled={
-                          !selected.includes(v._id) && selected.length >= 2
-                        }
-                      />
-                      <label
-                        htmlFor={`compare-${v._id}`}
-                        className="text-white cursor-pointer"
-                      >
-                        <span className="text-xs">Compare</span>
-                      </label>
-                    </div>
-
-                    {/* 🔹 Image */}
-                    <CardHeader className="p-0 bg-black">
-                      <div className="aspect-[4/3] overflow-hidden flex items-center justify-center bg-black">
-                        <img
-                          src={v.images?.[0]}
-                          alt={v.title || v.model || "Vehicle"}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      {/* 🔹 Compare Checkbox */}
+                      <div className="flex items-center justify-end space-x-2 px-3 pt-3">
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(v._id)}
+                          onChange={() => toggleSelect(v._id)}
+                          className="w-5 h-5 accent-blue-600 cursor-pointer"
+                          disabled={
+                            !selected.includes(v._id) && selected.length >= 2
+                          }
                         />
-                      </div>
-                    </CardHeader>
-
-                    {/* 🔹 Product Info */}
-                    <CardContent className="p-4 flex flex-col bg-black text-white">
-                      <CardTitle className="text-base sm:text-lg font-semibold mb-3 text-white">
-                        {v.title || v.model}
-                      </CardTitle>
-
-                      <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center text-xs sm:text-sm text-gray-300 mb-4">
-                        <div>
-                          <p className="font-bold text-white">{v.gvw || "-"}</p>
-                          <p className="text-[11px] sm:text-xs text-gray-400">
-                            Tonnage (GVW)
-                          </p>
-                        </div>
-                        <div>
-                          <p className="font-bold text-white">
-                            {v.fuelTankCapacity || "-"}
-                          </p>
-                          <p className="text-[11px] sm:text-xs text-gray-400">
-                            Fuel Tank
-                          </p>
-                        </div>
-                        <div>
-                          <p className="font-bold text-white">
-                            {v.payload || "-"}
-                          </p>
-                          <p className="text-[11px] sm:text-xs text-gray-400">
-                            Payload
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* 🔹 Buttons */}
-                      <div className="flex flex-col xs:flex-row sm:flex-row gap-3 mt-auto">
-                        <Link
-                          to={`/products/${v._id}`}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-center"
+                        <label
+                          htmlFor={`compare-${v._id}`}
+                          className="text-white cursor-pointer"
                         >
-                          Know More
-                        </Link>
-
-                        {v.brochureFile && (
-                          <button
-                            onClick={() => handleDownloadBrochure(v._id)}
-                            className="flex items-center justify-center w-full sm:w-11 h-11 rounded-md sm:rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
-                          >
-                            {downloadingId === v._id ? "…" : "PDF"}
-                          </button>
-                        )}
+                          <span className="text-xs">Compare</span>
+                        </label>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+
+                      {/* 🔹 Image */}
+                      <CardHeader className="p-0 bg-black">
+                        <div className="aspect-[4/3] overflow-hidden flex items-center justify-center bg-black">
+                          <img
+                            src={v.images?.[0]}
+                            alt={v.title || v.model || "Vehicle"}
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      </CardHeader>
+
+                      {/* 🔹 Product Info */}
+                      <CardContent className="p-4 flex flex-col bg-black text-white">
+                        <CardTitle className="text-base sm:text-lg font-semibold mb-3 text-white">
+                          {v.title || v.model}
+                        </CardTitle>
+
+                        <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center text-xs sm:text-sm text-gray-300 mb-4">
+                          <div>
+                            <p className="font-bold text-white">
+                              {v.gvw || "-"}
+                            </p>
+                            <p className="text-[11px] sm:text-xs text-gray-400">
+                              Tonnage (GVW)
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-bold text-white">
+                              {v.fuelTankCapacity || "-"}
+                            </p>
+                            <p className="text-[11px] sm:text-xs text-gray-400">
+                              Fuel Tank
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-bold text-white">
+                              {v.payload || "-"}
+                            </p>
+                            <p className="text-[11px] sm:text-xs text-gray-400">
+                              Payload
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* 🔹 Buttons */}
+                        <div className="flex flex-col xs:flex-row sm:flex-row gap-3 mt-auto">
+                          <Link
+                            to={`/products/${v._id}`}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-center"
+                          >
+                            Know More
+                          </Link>
+
+                          {v.brochureFile && (
+                            <button
+                              onClick={() => handleDownloadBrochure(v._id)}
+                              className="flex items-center justify-center w-full sm:w-11 h-11 rounded-md sm:rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
+                            >
+                              {downloadingId === v._id ? "…" : "PDF"}
+                            </button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* ✅ SEO CONTENT BLOCK FOR KEYWORDS */}
+                <section className="mt-16 text-gray-300 text-sm leading-relaxed space-y-4">
+                  <h2 className="text-xl font-semibold text-white">
+                    Tata SCV, LCV, ICV, Pickups & Buses for Every Business in
+                    Bihar
+                  </h2>
+
+                  <p>
+                    Vikramshila Automobiles is an authorized Tata Motors
+                    commercial vehicle dealer in Bihar offering the complete
+                    range of <strong>SCV, LCV, ICV, pickups and buses</strong>.
+                    From last-mile cargo vehicles like{" "}
+                    <strong>Tata Ace Gold</strong> and{" "}
+                    <strong>Tata Intra V30 / V50 / V70</strong> to high capacity
+                    trucks and school / staff buses, we help you select the
+                    right vehicle as per route, load and business type.
+                  </p>
+
+                  <p>
+                    If you are looking for{" "}
+                    <strong>
+                      ICV trucks in Bihar, LCV trucks for rural routes
+                    </strong>
+                    , pickups for e-commerce / agriculture, or{" "}
+                    <strong>Tata Magic / Winger</strong> for passenger
+                    operations, our team can guide you with on-road price, EMI,
+                    mileage, GVW, body size and application suitability.
+                  </p>
+
+                  <p>
+                    We serve customers across{" "}
+                    <strong>
+                      Bhagalpur, Banka, Khagaria, Munger, Begusarai
+                    </strong>{" "}
+                    and nearby districts with finance, insurance, body building
+                    support and after-sales service. Fill the enquiry form or
+                    click on any vehicle to know detailed specifications,
+                    brochure and EMI calculation.
+                  </p>
+                </section>
+              </>
             )}
           </div>
         </div>

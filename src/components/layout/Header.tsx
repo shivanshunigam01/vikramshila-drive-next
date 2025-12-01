@@ -20,7 +20,7 @@ const nav = [
   { to: "/faq", label: "FAQ" },
 ];
 
-const ADMIN_URL = "http://13.216.195.152:8081/";
+const ADMIN_URL = "https://admin.vikramshilaautomobiles.com/";
 
 type AuthState = {
   loggedIn: boolean;
