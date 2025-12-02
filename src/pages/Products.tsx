@@ -562,7 +562,7 @@ export default function Products() {
   }
 
   const handleProfitDone = (profitResults: ProfitResult[]) => {
-    // Proceed to Compare with both TCO + Profit results
+    // Proceed to Compare with both TCO + asdasdProfit results
     const productIds = selected.join(",");
     navigate(`/compare/${productIds}`, {
       state: { tcoResults: lastTcoResults, profitResults },
