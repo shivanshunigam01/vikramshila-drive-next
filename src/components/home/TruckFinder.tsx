@@ -9,10 +9,11 @@ export default function TruckFinder() {
   const [fuelType, setFuelType] = useState("all");
   const [payload, setPayload] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
+  const [vehicleType, setVehicleType] = useState("all");
   const [applications, setApplications] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  // ✅ Fetch Applications from API
+  //  Fetch Applications from API
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -28,22 +29,34 @@ export default function TruckFinder() {
 
     fetchApplications();
   }, []);
-  // ✅ Handle Find Now
   const handleFindNow = async () => {
-    const filterParams: Record<string, string> = {
+    //  MAP VEHICLE TYPE → CATEGORY (BACKEND FIELD)
+    let category = "all";
+
+    if (vehicleType === "bus") {
+      category = "SCV Passenger";
+    }
+
+    if (vehicleType === "cargo") {
+      category = "SCV Cargo";
+    }
+
+    const filterParams = {
       ...(application !== "all" && { application }),
+      ...(category !== "all" && { category }), //  CORRECT BACKEND KEY
       ...(fuelType !== "all" && { fuelType }),
       ...(payload !== "all" && { payload }),
       ...(priceRange !== "all" && { priceRange }),
     };
 
-    // Option A: navigate and let Products page fetch with GET /products/filter
-    const searchParams = new URLSearchParams(filterParams);
-    navigate(`/products?${searchParams.toString()}`);
+    console.log(" FILTER PAYLOAD SENT:", filterParams); // DEBUG
 
-    // Option B: or fetch right here (if you render results on the same page)
-    // const { data } = await axios.get(`/api/products/filter`, { params: filterParams });
-    // setResults(data.data);
+    try {
+      await productFind(filterParams); //  BACKEND FILTER API
+      navigate(`/products?${new URLSearchParams(filterParams).toString()}`);
+    } catch (err) {
+      console.error("min-w-[320px] FRONTEND FILTER ERROR:", err);
+    }
   };
 
   return (
@@ -61,9 +74,9 @@ export default function TruckFinder() {
         </h1>
 
         {/* Dropdowns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-x-20 gap-y-6 mb-8 justify-center">
           {/* Application Dropdown (from API) */}
-          <div className="relative">
+          <div className="relative min-w-[220px]">
             <select
               value={application}
               onChange={(e) => setApplication(e.target.value)}
@@ -83,8 +96,29 @@ export default function TruckFinder() {
             </span>
           </div>
 
+          {/*  Vehicle Type Dropdown */}
+          <div className="relative min-w-[220px]">
+            <select
+              value={vehicleType}
+              onChange={(e) => setVehicleType(e.target.value)}
+              className="appearance-none w-full bg-transparent border border-white px-4 py-3 rounded text-white focus:outline-none pr-10"
+            >
+              <option value="all" className="bg-white text-black">
+                Choose Vehicle Type
+              </option>
+              <option value="bus" className="bg-white text-black">
+                Bus
+              </option>
+              <option value="cargo" className="bg-white text-black">
+                Cargo
+              </option>
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white">
+              ▼
+            </span>
+          </div>
           {/* Fuel Type Dropdown */}
-          <div className="relative">
+          <div className="relative min-w-[220px]">
             <select
               value={fuelType}
               onChange={(e) => setFuelType(e.target.value)}
@@ -115,7 +149,7 @@ export default function TruckFinder() {
           </div>
 
           {/* Payload Dropdown (same options as Products page) */}
-          <div className="relative">
+          <div className="relative min-w-[220px]">
             <select
               value={payload}
               onChange={(e) => setPayload(e.target.value)}
@@ -146,7 +180,7 @@ export default function TruckFinder() {
           </div>
 
           {/* Price Range Dropdown */}
-          <div className="relative">
+          <div className="relative min-w-[220px]">
             <select
               value={priceRange}
               onChange={(e) => setPriceRange(e.target.value)}

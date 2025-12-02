@@ -25,7 +25,6 @@ import ProfitCalculator, {
   ProfitResult,
 } from "@/components/ProfitCalculator";
 import MyCalculator from "@/components/myCalculator";
-import LoginModal from "@/components/LoginModal";
 import { competitionCompareFilter } from "@/services/competitionService";
 
 interface Product {
@@ -60,6 +59,7 @@ interface FilterState {
   fuelType: string;
   payload: string;
   priceRange: string;
+  category: string;
 }
 
 function numOnly(v?: string | number) {
@@ -85,7 +85,6 @@ export default function Products() {
   const location = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<string[]>([]);
   const [showCompetitors, setShowCompetitors] = useState(false);
@@ -104,11 +103,12 @@ export default function Products() {
   const { setFilters, isFiltered, clearFilters } = useFilter();
 
   // Local dropdown states
+  const [authOpen, setAuthOpen] = useState(false);
   const [application, setApplication] = useState("all");
   const [fuelType, setFuelType] = useState("all");
   const [payload, setPayload] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
-
+  const [category, setCategory] = useState("all");
   // Selection / modals
   const [selected, setSelected] = useState<string[]>([]);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -124,6 +124,11 @@ export default function Products() {
     null
   );
 
+  const products = useMemo(() => {
+    return showCompetitors
+      ? [...tataProducts, ...competitorProducts]
+      : tataProducts;
+  }, [showCompetitors, tataProducts, competitorProducts]);
   // Profit modal (opens after TCO)
   const [showProfit, setShowProfit] = useState(false);
   const [profitInitialInputs, setProfitInitialInputs] = useState<
@@ -164,73 +169,66 @@ export default function Products() {
         const searchParams = new URLSearchParams(location.search);
         const filters: any = {};
 
-        if (
-          searchParams.get("application") &&
-          searchParams.get("application") !== "all"
-        ) {
+        if (searchParams.get("category")) {
+          const urlCategory = searchParams.get("category");
+
+          if (urlCategory === "SCV Passenger") {
+            filters.category = "SCV Passenger";
+            setCategory("bus");
+          } else if (urlCategory === "SCV Cargo") {
+            filters.category = "SCV Cargo";
+            setCategory("cargo");
+          }
+        }
+
+        if (searchParams.get("application"))
           filters.application = searchParams.get("application");
-          setApplication(searchParams.get("application") || "all");
-        }
-        if (
-          searchParams.get("fuelType") &&
-          searchParams.get("fuelType") !== "all"
-        ) {
+        if (searchParams.get("fuelType"))
           filters.fuelType = searchParams.get("fuelType");
-          setFuelType(searchParams.get("fuelType") || "all");
-        }
-        if (
-          searchParams.get("payload") &&
-          searchParams.get("payload") !== "all"
-        ) {
+        if (searchParams.get("payload"))
           filters.payload = searchParams.get("payload");
-          setPayload(searchParams.get("payload") || "all");
-        }
-        if (
-          searchParams.get("priceRange") &&
-          searchParams.get("priceRange") !== "all"
-        ) {
+        if (searchParams.get("priceRange"))
           filters.priceRange = searchParams.get("priceRange");
-          setPriceRange(searchParams.get("priceRange") || "all");
-        }
 
         if (Object.keys(filters).length > 0) {
           const response = await competitionCompareFilter(filters);
+          const payload = response?.data?.data || response?.data || {};
 
-          const real = (response.data?.real || []).map((p: any) => ({
+          const real = (payload.real || []).map((p: any) => ({
             ...p,
             type: "Tata",
           }));
 
-          const competitors = (response.data?.competitors || []).map(
-            (p: any) => ({
-              ...p,
-              type: "Competitor",
-            })
-          );
+          const competitors = (payload.competitors || []).map((p: any) => ({
+            ...p,
+            type: "Competitor",
+          }));
 
           setTataProducts(real);
           setCompetitorProducts(competitors);
-          // ✅ Show only Tata or both based on auth state
-          if (showCompetitors) setProducts([...real, ...competitors]);
-          else setProducts(real);
-
           setFilters(filters);
         } else {
-          const data = await getProducts();
-          setProducts(data);
-          clearFilters();
+          const res = await getProducts();
+          setTataProducts(res.data?.data?.real || []);
+          setCompetitorProducts([]);
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
-        setProducts([]);
+        setTataProducts([]);
+        setCompetitorProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProductsAsync();
-  }, [location.search, showCompetitors]);
+  }, [location.search]);
 
+  useEffect(() => {
+    console.log("✅ TOTAL PRODUCTS SHOWN:", products.length);
+    console.log("✅ TATA:", tataProducts.length);
+    console.log("✅ COMP:", competitorProducts.length);
+  }, [products, tataProducts, competitorProducts]);
   useEffect(() => {
     if (localStorage.getItem("auth") === "true") {
       setShowCompetitors(true);
@@ -295,56 +293,54 @@ export default function Products() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products]);
+  debugger;
 
   const handleApplyFilters = async () => {
     setLoading(true);
+
     try {
-      if (
-        application !== "all" ||
-        fuelType !== "all" ||
-        payload !== "all" ||
-        priceRange !== "all"
-      ) {
-        const filterParams: FilterState = {
-          application,
-          fuelType,
-          payload,
-          priceRange,
-        };
+      const filterParams: any = {};
 
-        setFilters(filterParams);
-        const searchParams = new URLSearchParams({
-          application: String(application),
-          fuelType: String(fuelType),
-          payload: String(payload),
-          priceRange: String(priceRange),
-        });
-        navigate(`/products?${searchParams.toString()}`, { replace: true });
+      if (application !== "all") filterParams.application = application;
+      if (fuelType !== "all") filterParams.fuelType = fuelType;
+      if (payload !== "all") filterParams.payload = payload;
+      if (priceRange !== "all") filterParams.priceRange = priceRange;
 
-        const response = await competitionCompareFilter(filterParams);
+      // ✅ CATEGORY MAPPING (UI → API)
+      if (category === "bus") filterParams.category = "SCV Passenger";
+      if (category === "cargo") filterParams.category = "SCV Cargo";
 
-        // ✅ Merge Tata + Competitor products here also
-        const real = (response.data?.real || []).map((p: any) => ({
-          ...p,
-          type: "Tata",
-        }));
-        const competitors = (response.data?.competitors || []).map(
-          (p: any) => ({
-            ...p,
-            type: "Competitor",
-          })
-        );
+      // ✅ Update URL
+      const searchParams = new URLSearchParams(filterParams).toString();
+      navigate(`/products?${searchParams}`, { replace: true });
 
-        setProducts([...real, ...competitors]);
-      } else {
-        clearFilters();
-        navigate("/products", { replace: true });
-        const data = await getProducts();
-        setProducts(data);
-      }
+      // ✅ API CALL
+      const response = await competitionCompareFilter(filterParams);
+
+      // ✅ RENAME payload → apiData (THIS FIXES YOUR ERROR)
+      const apiData = response?.data?.data || response?.data || {};
+
+      const real = (apiData.real || []).map((p: any) => ({
+        ...p,
+        type: "Tata",
+      }));
+
+      const competitors = (apiData.competitors || []).map((p: any) => ({
+        ...p,
+        type: "Competitor",
+      }));
+
+      setTataProducts(real);
+      setCompetitorProducts(competitors);
+      setFilters(filterParams);
+
+      console.log("✅ FILTER APPLIED:", filterParams);
+      console.log("✅ TATA:", real.length);
+      console.log("✅ COMP:", competitors.length);
     } catch (err) {
-      console.error("Failed to apply filters:", err);
-      setProducts([]);
+      console.error("❌ Failed to apply filters:", err);
+      setTataProducts([]);
+      setCompetitorProducts([]);
     } finally {
       setLoading(false);
     }
@@ -355,7 +351,9 @@ export default function Products() {
     setFuelType("all");
     setPayload("all");
     setPriceRange("all");
+    setCategory("all");
     setSearchTerm("");
+    clearFilters();
     navigate("/products", { replace: true });
   };
 
@@ -573,22 +571,33 @@ export default function Products() {
 
   const clearSelection = () => setSelected([]);
 
-  const handleDownloadBrochure = (productId: string) => {
-    if (!productId) {
+  const handleSecureDownloadBrochure = async (productId?: string) => {
+    const id = productId;
+
+    if (!id) {
       alert("Brochure not available");
       return;
     }
 
-    const API_URL = import.meta.env.VITE_API_URL;
+    const isLoggedIn = !!localStorage.getItem("user");
 
-    // 🔥 Direct download exactly like ProductDetails page
-    const brochureUrl = `${API_URL}/products/${productId}/brochure`;
+    // ✅ ONLY THIS FOR LOGIN OPEN
+    if (!isLoggedIn) {
+      window.dispatchEvent(new Event("OPEN_AUTH_MODAL"));
+      return;
+    }
 
     try {
+      setDownloadingId(id);
+
+      const API_URL = import.meta.env.VITE_API_URL;
+      const brochureUrl = `${API_URL}/products/${id}/brochure`;
+
       window.open(brochureUrl, "_blank");
     } catch (err) {
-      console.error("Brochure download failed:", err);
-      alert("Unable to download brochure");
+      console.error("Download failed", err);
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -865,10 +874,10 @@ export default function Products() {
                     onChange={(e) => setFuelType(e.target.value)}
                     className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
                   >
-                    <option value="All">Choose Fuel Type</option>
-                    <option value="cng">CNG</option>
-                    <option value="diesel">Diesel</option>
-                    <option value="petrol">Petrol</option>
+                    <option value="all">Choose Fuel Type</option>
+                    <option value="CNG">CNG</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Petrol">Petrol</option>
                     <option value="cng_petrol">CNG+Petrol</option>
                     <option value="electric">Electric</option>
                   </select>
@@ -883,7 +892,7 @@ export default function Products() {
                     onChange={(e) => setPayload(e.target.value)}
                     className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
                   >
-                    <option value="All">Choose Payload</option>
+                    <option value="all">Choose Payload</option>
                     <option value="500-750">500 - 750 Kg (Ace Gold)</option>
                     <option value="750-1500">750 - 1500 Kg</option>
                     <option value="1500-3000">
@@ -896,6 +905,22 @@ export default function Products() {
                     ▼
                   </span>
                 </div>
+                {/* ✅ CATEGORY FILTER */}
+                <div className="relative">
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
+                  >
+                    <option value="all">Choose Category</option>
+                    <option value="bus">Bus</option>
+                    <option value="cargo">Cargo</option>
+                  </select>
+
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    ▼
+                  </span>
+                </div>
 
                 <div className="relative">
                   <select
@@ -903,12 +928,12 @@ export default function Products() {
                     onChange={(e) => setPriceRange(e.target.value)}
                     className="appearance-none w-full bg-black border border-gray-700 px-3 py-2 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
                   >
-                    <option value="All">Vehicle Price Range</option>
-                    <option value="5-15L">5 - 15 Lakhs</option>
-                    <option value="15-20L">15 - 20 Lakhs</option>
-                    <option value="20-25L">20 - 25 Lakhs</option>
-                    <option value="25-30L">25 - 30 Lakhs</option>
-                    <option value="30L+">30 Lakhs +</option>
+                    <option value="all">Vehicle Price Range</option>
+                    <option value="500000-1500000">₹5 - ₹15 Lakhs</option>
+                    <option value="1500000-2000000">₹15 - ₹20 Lakhs</option>
+                    <option value="2000000-2500000">₹20 - ₹25 Lakhs</option>
+                    <option value="2500000-3000000">₹25 - ₹30 Lakhs</option>
+                    <option value="3000000+">₹30 Lakhs +</option>
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     ▼
@@ -1095,7 +1120,9 @@ export default function Products() {
 
                           {v.brochureFile && (
                             <button
-                              onClick={() => handleDownloadBrochure(v._id)}
+                              onClick={() =>
+                                handleSecureDownloadBrochure(v._id)
+                              }
                               className="flex items-center justify-center w-full sm:w-11 h-11 rounded-md sm:rounded-full border border-blue-500 text-blue-500 hover:bg-blue-600 hover:text-white"
                             >
                               {downloadingId === v._id ? "…" : "PDF"}
@@ -1275,15 +1302,6 @@ export default function Products() {
             onBack={handleProfitBack} // <-- reopen TCO with previous values
           />
         )}
-      {/* 🔹 Login Modal */}
-      <LoginModal
-        open={showLogin}
-        onClose={() => setShowLogin(false)}
-        onSuccess={() => {
-          setShowCompetitors(true);
-          setShowLogin(false);
-        }}
-      />
 
       <Footer />
     </div>

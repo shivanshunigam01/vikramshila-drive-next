@@ -48,32 +48,14 @@ function AppRoutes() {
   }, []);
   // Check login status whenever route changes
   useEffect(() => {
-    const protectedRoutes = [
-      "/products",
-      "/products/", // covers /products/:id
-      "/compare",
-      "/compare4",
-    ];
+    const openAuth = () => setAuthOpen(true);
 
-    const current = location.pathname;
+    window.addEventListener("OPEN_AUTH_MODAL", openAuth);
 
-    // check if the current path starts with any protected route
-    const isProtected = protectedRoutes.some((route) =>
-      current.startsWith(route)
-    );
-
-    if (!isProtected) {
-      setAuthOpen(false);
-      return;
-    }
-
-    const token =
-      localStorage.getItem("user") ||
-      document.cookie.split("; ").find((row) => row.startsWith("user="));
-
-    setAuthOpen(!token); // 🔥 SHOW MODAL ONLY ON PROTECTED ROUTES
-  }, [location]);
-
+    return () => {
+      window.removeEventListener("OPEN_AUTH_MODAL", openAuth);
+    };
+  }, []);
   return (
     <>
       <FilterProvider>
