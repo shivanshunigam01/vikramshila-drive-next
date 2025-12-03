@@ -26,6 +26,7 @@ import ProfitCalculator, {
 } from "@/components/ProfitCalculator";
 import MyCalculator from "@/components/myCalculator";
 import { competitionCompareFilter } from "@/services/competitionService";
+import AuthModal from "@/components/auth/AuthModal";
 
 interface Product {
   brand: ReactNode;
@@ -88,7 +89,6 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<string[]>([]);
   const [showCompetitors, setShowCompetitors] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [tataProducts, setTataProducts] = useState<Product[]>([]);
   const [competitorProducts, setCompetitorProducts] = useState<Product[]>([]);
   const [selectedTataId, setSelectedTataId] = useState("");
@@ -114,6 +114,7 @@ export default function Products() {
   const [showCalculator, setShowCalculator] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // TCO modal (opens after Finance)
   const [showTco, setShowTco] = useState(false);
@@ -165,55 +166,83 @@ export default function Products() {
   useEffect(() => {
     const fetchProductsAsync = async () => {
       setLoading(true);
+
       try {
         const searchParams = new URLSearchParams(location.search);
         const filters: any = {};
 
-        if (searchParams.get("category")) {
-          const urlCategory = searchParams.get("category");
-
-          if (urlCategory === "SCV Passenger") {
-            filters.category = "SCV Passenger";
-            setCategory("bus");
-          } else if (urlCategory === "SCV Cargo") {
-            filters.category = "SCV Cargo";
-            setCategory("cargo");
-          }
-        }
+        const hasAnyFilter =
+          searchParams.get("application") ||
+          searchParams.get("fuelType") ||
+          searchParams.get("payload") ||
+          searchParams.get("priceRange") ||
+          searchParams.get("category");
 
         if (searchParams.get("application"))
           filters.application = searchParams.get("application");
+
         if (searchParams.get("fuelType"))
           filters.fuelType = searchParams.get("fuelType");
+
         if (searchParams.get("payload"))
           filters.payload = searchParams.get("payload");
+
         if (searchParams.get("priceRange"))
           filters.priceRange = searchParams.get("priceRange");
 
-        if (Object.keys(filters).length > 0) {
+        if (searchParams.get("category"))
+          filters.category = searchParams.get("category");
+
+        // ✅ ✅ FILTER FLOW
+        if (hasAnyFilter) {
           const response = await competitionCompareFilter(filters);
-          const payload = response?.data?.data || response?.data || {};
 
-          const real = (payload.real || []).map((p: any) => ({
-            ...p,
-            type: "Tata",
-          }));
+          const apiData = response?.data?.data || response?.data || {};
 
-          const competitors = (payload.competitors || []).map((p: any) => ({
-            ...p,
-            type: "Competitor",
-          }));
+          const real = Array.isArray(apiData.real)
+            ? apiData.real
+            : Array.isArray(apiData)
+            ? apiData
+            : [];
 
-          setTataProducts(real);
-          setCompetitorProducts(competitors);
-          setFilters(filters);
-        } else {
+          const competitors = Array.isArray(apiData.competitors)
+            ? apiData.competitors
+            : [];
+
+          setTataProducts(
+            real.map((p: any) => ({
+              ...p,
+              type: "Tata",
+            }))
+          );
+
+          setCompetitorProducts(
+            competitors.map((p: any) => ({
+              ...p,
+              type: "Competitor",
+            }))
+          );
+        }
+
+        // ✅ ✅ DEFAULT FLOW (getProducts)
+        else {
           const res = await getProducts();
-          setTataProducts(res.data?.data?.real || []);
+
+          console.log("✅ FINAL PRODUCT ARRAY:", res.length);
+
+          const real = Array.isArray(res) ? res : [];
+
+          setTataProducts(
+            real.map((p: any) => ({
+              ...p,
+              type: "Tata",
+            }))
+          );
+
           setCompetitorProducts([]);
         }
       } catch (err) {
-        console.error("Failed to fetch products:", err);
+        console.error("❌ Failed to fetch products:", err);
         setTataProducts([]);
         setCompetitorProducts([]);
       } finally {
@@ -230,7 +259,7 @@ export default function Products() {
     console.log("✅ COMP:", competitorProducts.length);
   }, [products, tataProducts, competitorProducts]);
   useEffect(() => {
-    if (localStorage.getItem("auth") === "true") {
+    if (localStorage.getItem("user")) {
       setShowCompetitors(true);
     }
   }, []);
@@ -293,7 +322,7 @@ export default function Products() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products]);
-  debugger;
+  //   debugger;
 
   const handleApplyFilters = async () => {
     setLoading(true);
@@ -668,7 +697,20 @@ export default function Products() {
           </h2>
           {!showCompetitors ? (
             <Button
-              onClick={() => setShowLogin(true)}
+              onClick={() => {
+                console.log("✅ Compare Button Clicked");
+
+                const isLoggedIn = !!localStorage.getItem("user");
+                console.log("✅ isLoggedIn:", isLoggedIn);
+
+                if (!isLoggedIn) {
+                  console.log("🔐 Opening Login Modal");
+                  setShowAuthModal(true);
+                } else {
+                  console.log("🟢 Opening Comparison Mode");
+                  setShowCompetitors(true);
+                }
+              }}
               className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium px-4"
             >
               Compare with Competitor Products
@@ -676,7 +718,8 @@ export default function Products() {
           ) : (
             <Button
               onClick={() => {
-                localStorage.removeItem("auth");
+                console.log("🔴 Logging Out Comparison Mode");
+                localStorage.removeItem("user"); // ✅ LOGOUT CORRECT KEY
                 setShowCompetitors(false);
               }}
               className="bg-red-600 hover:bg-red-700 text-white font-medium px-4"
@@ -727,30 +770,82 @@ export default function Products() {
                     <label className="text-sm text-gray-400 mb-2">
                       {headingLabel}
                     </label>
-
                     <select
                       value={selectedId}
                       onChange={(e) => {
                         const updated = [...compareSelection];
                         updated[index] = e.target.value;
                         setCompareSelection(updated);
+
+                        // ✅ AUTO TRIGGER FILTER WHEN AT LEAST 1 VEHICLE SELECTED
+                        const activeIds = updated.filter(Boolean);
+
+                        if (activeIds.length >= 1) {
+                          const selectedProducts = [
+                            ...tataProducts,
+                            ...competitorProducts,
+                          ].filter((p) => activeIds.includes(p._id));
+
+                          const selectedPayload = selectedProducts[0]?.payload;
+                          const selectedFuel = selectedProducts[0]?.fuelType;
+                          const selectedCategory =
+                            selectedProducts[0]?.category;
+
+                          const autoFilter: any = {};
+
+                          if (selectedPayload)
+                            autoFilter.payload = selectedPayload;
+                          if (selectedFuel) autoFilter.fuelType = selectedFuel;
+                          if (selectedCategory)
+                            autoFilter.category = selectedCategory;
+
+                          console.log("✅ AUTO COMPARE FILTER:", autoFilter);
+
+                          competitionCompareFilter(autoFilter).then(
+                            (response) => {
+                              const apiData =
+                                response?.data?.data || response?.data || {};
+
+                              const real = (apiData.real || []).map(
+                                (p: any) => ({
+                                  ...p,
+                                  type: "Tata",
+                                })
+                              );
+
+                              const competitors = (
+                                apiData.competitors || []
+                              ).map((p: any) => ({
+                                ...p,
+                                type: "Competitor",
+                              }));
+
+                              setTataProducts(real);
+                              setCompetitorProducts(competitors);
+                            }
+                          );
+                        }
                       }}
-                      className="bg-zinc-900 border border-gray-700 text-white rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="bg-zinc-900 border border-gray-700 text-white rounded-md px-3 py-2 text-sm"
                     >
+                      {/* ✅ DEFAULT PLACEHOLDER */}
                       <option value="">Select Vehicle</option>
+
+                      {/* ✅ TATA VEHICLES GROUP */}
                       <optgroup label="Tata Vehicles">
                         {availableTata.map((p) => (
                           <option key={p._id} value={p._id}>
-                            {p.title}
+                            {p.title || p.model}
                           </option>
                         ))}
                       </optgroup>
+
+                      {/* ✅ COMPETITOR VEHICLES GROUP */}
                       <optgroup label="Competitor Vehicles">
                         {availableCompetitors.map((p) => (
                           <option key={p._id} value={p._id}>
-                            {/* keep full name in the dropdown options */}
                             {typeof p.brand === "string" ? p.brand : ""}{" "}
-                            {p.model}
+                            {p.title || p.model}
                           </option>
                         ))}
                       </optgroup>
@@ -1302,7 +1397,15 @@ export default function Products() {
             onBack={handleProfitBack} // <-- reopen TCO with previous values
           />
         )}
-
+      <AuthModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLoginSuccess={() => {
+          setShowAuthModal(false);
+          // refresh login state in page
+          window.dispatchEvent(new Event("storage"));
+        }}
+      />
       <Footer />
     </div>
   );
