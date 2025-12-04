@@ -78,6 +78,29 @@ type PassengerInput = {
   residualPct: number; // %
 };
 
+// ---- LS HELPERS ----
+const LS_PROFIT_KEY = "profit_calc_v1";
+
+function saveProfitToLS(data: any) {
+  try {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LS_PROFIT_KEY, JSON.stringify(data));
+    }
+  } catch {}
+}
+
+function loadProfitFromLS() {
+  try {
+    if (typeof window !== "undefined") {
+      const v = localStorage.getItem(LS_PROFIT_KEY);
+      return v ? JSON.parse(v) : null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default function ProfitCalculator({
   open,
   onOpenChange,
@@ -168,21 +191,55 @@ export default function ProfitCalculator({
     }
     return seedPassenger(p);
   };
+  function seedAll(products: ProductLite[], initialInputs?: ProfitInput[]) {
+    const saved = loadProfitFromLS();
+
+    const productIds = products.map((p) => p._id);
+
+    // Restore if same product set
+    if (
+      saved &&
+      Array.isArray(saved.freight) &&
+      Array.isArray(saved.passenger) &&
+      JSON.stringify(saved.productIds) === JSON.stringify(productIds)
+    ) {
+      return {
+        freight: saved.freight,
+        passenger: saved.passenger,
+        tab: saved.tab ?? "0",
+      };
+    }
+
+    // Otherwise fresh from initialInputs or seeds
+    const freight = products.map((p, i) => freightFromInitial(i, p));
+    const passenger = products.map((p, i) => passengerFromInitial(i, p));
+
+    return { freight, passenger, tab: "0" };
+  }
+
+  const seeded = seedAll(products, initialInputs);
 
   const [freightForm, setFreightForm] = useState<ProfitInput[]>(
-    products.map((p, i) => freightFromInitial(i, p))
+    () => seeded.freight
   );
   const [passForm, setPassForm] = useState<PassengerInput[]>(
-    products.map((p, i) => passengerFromInitial(i, p))
+    () => seeded.passenger
   );
-  const [tab, setTab] = useState("0");
+  const [tab, setTab] = useState(() => seeded.tab);
 
   // keep forms in sync with products / initialInputs
   useEffect(() => {
-    setFreightForm(products.map((p, i) => freightFromInitial(i, p)));
-    setPassForm(products.map((p, i) => passengerFromInitial(i, p)));
-    setTab("0");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const seeded = seedAll(products, initialInputs);
+    setFreightForm(seeded.freight);
+    setPassForm(seeded.passenger);
+    setTab(seeded.tab);
+
+    saveProfitToLS({
+      freight: seeded.freight,
+      passenger: seeded.passenger,
+      productIds: products.map((p) => p._id),
+      tab: seeded.tab,
+    });
   }, [
     JSON.stringify(products.map((p) => p._id)),
     JSON.stringify(initialInputs || []),
@@ -195,9 +252,18 @@ export default function ProfitCalculator({
     value: string
   ) => {
     const v = value === "" ? NaN : Number(value);
+
     setFreightForm((prev) => {
       const copy = [...prev];
       copy[i] = { ...(copy[i] ?? seedFreight(products[i])), [key]: v };
+
+      saveProfitToLS({
+        freight: copy,
+        passenger: passForm,
+        productIds: products.map((p) => p._id),
+        tab,
+      });
+
       return copy;
     });
   };
@@ -208,13 +274,31 @@ export default function ProfitCalculator({
     value: string
   ) => {
     const v = value === "" ? NaN : Number(value);
+
     setPassForm((prev) => {
       const copy = [...prev];
       copy[i] = { ...(copy[i] ?? seedPassenger(products[i])), [key]: v as any };
+
+      saveProfitToLS({
+        freight: freightForm,
+        passenger: copy,
+        productIds: products.map((p) => p._id),
+        tab,
+      });
+
       return copy;
     });
   };
 
+  const handleTab = (v: string) => {
+    setTab(v);
+    saveProfitToLS({
+      freight: freightForm,
+      passenger: passForm,
+      productIds: products.map((p) => p._id),
+      tab: v,
+    });
+  };
   /** ------------ calculators ------------ */
   // existing freight calculator (unchanged)
   const calcFreight = (fIn?: ProfitInput) => {
@@ -455,48 +539,48 @@ export default function ProfitCalculator({
     );
   }
 
-function Field({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: string) => void; // parent already expects string
-}) {
-  const [local, setLocal] = useState<string>(
-    Number.isFinite(value) ? String(value) : ""
-  );
+  function Field({
+    label,
+    value,
+    onChange,
+  }: {
+    label: string;
+    value: number;
+    onChange: (v: string) => void; // parent already expects string
+  }) {
+    const [local, setLocal] = useState<string>(
+      Number.isFinite(value) ? String(value) : ""
+    );
 
-  // keep in sync if parent value changes (e.g., switching tabs/products)
-  useEffect(() => {
-    setLocal(Number.isFinite(value) ? String(value) : "");
-  }, [value]);
+    // keep in sync if parent value changes (e.g., switching tabs/products)
+    useEffect(() => {
+      setLocal(Number.isFinite(value) ? String(value) : "");
+    }, [value]);
 
-  const commit = () => {
-    // send raw string up; parent will parse (your set*Field already handles "")
-    onChange(local);
-  };
+    const commit = () => {
+      // send raw string up; parent will parse (your set*Field already handles "")
+      onChange(local);
+    };
 
-  return (
-    <div>
-      <label className="text-sm text-gray-300 font-medium mb-2 block">
-        {label}
-      </label>
-      <Input
-        type="text"               // allow partial entries like "-", "1.", etc.
-        inputMode="decimal"       // mobile shows numeric keypad
-        value={local}
-        onChange={(e) => setLocal(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") commit();
-        }}
-        className="bg-gray-900 border-gray-700 text-white placeholder-gray-500"
-      />
-    </div>
-  );
-}
+    return (
+      <div>
+        <label className="text-sm text-gray-300 font-medium mb-2 block">
+          {label}
+        </label>
+        <Input
+          type="text" // allow partial entries like "-", "1.", etc.
+          inputMode="decimal" // mobile shows numeric keypad
+          value={local}
+          onChange={(e) => setLocal(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+          }}
+          className="bg-gray-900 border-gray-700 text-white placeholder-gray-500"
+        />
+      </div>
+    );
+  }
 
   /** ------------ render ------------ */
   return (
@@ -509,7 +593,7 @@ function Field({
             </DialogTitle>
           </DialogHeader>
 
-          <Tabs value={tab} onValueChange={setTab} className="w-full">
+          <Tabs value={tab} onValueChange={handleTab} className="w-full">
             <TabsList className="bg-gray-900 border border-gray-800">
               {products.map((p, i) => (
                 <TabsTrigger

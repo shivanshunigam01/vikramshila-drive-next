@@ -42,6 +42,9 @@ interface Product {
   clutchDia?: string;
   tyre?: string;
   drivercomfort?: string;
+  mileage?: string; // <-- ADD THIS
+  tyreLife?: string; // <-- ALSO ADD THIS IF YOU USE IT
+  tyresCost?: string;
   monitoringFeatures?: string[];
 
   specifications?: {
@@ -394,6 +397,98 @@ export default function ProductComparision() {
                 ))}
               </tbody>
             </table>
+          </CardContent>
+        </Card>
+
+        {/* ================= EXPERT RECOMMENDATION SECTION ================= */}
+        <Card className="border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl mt-10">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">
+              Expert Recommendation
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="p-6">
+            {products.length === 2 ? (
+              (() => {
+                const [p1, p2] = products;
+
+                // Numeric extraction helper
+                const num = (v?: string) =>
+                  Number(String(v).replace(/[^\d.]/g, "")) || 0;
+
+                // Extract key parameters
+                const payload1 = num(p1.payload);
+                const payload2 = num(p2.payload);
+
+                const torque1 = num(p1.torque);
+                const torque2 = num(p2.torque);
+
+                const price1 = num(p1.price);
+                const price2 = num(p2.price);
+
+                const mileage1 = num(p1.mileage);
+                const mileage2 = num(p2.mileage);
+
+                const verdict =
+                  payload2 > payload1 && torque2 > torque1
+                    ? `${p2.title} offers higher payload and torque, making it the better choice for heavy-duty applications.`
+                    : payload1 > payload2 && mileage1 > mileage2
+                    ? `${p1.title} is more economical with better mileage, ideal for rural or moderate load operations.`
+                    : `Both models have unique strengths — choose based on your daily load and route conditions.`;
+
+                return (
+                  <div className="space-y-5">
+                    {/* Summary Row */}
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                        <h3 className="text-white font-semibold mb-2">
+                          {p1.title}
+                        </h3>
+                        <ul className="text-gray-300 text-sm space-y-2">
+                          <li>• Payload: {p1.payload || "—"}</li>
+                          <li>• Torque: {p1.torque || "—"}</li>
+                          <li>• Mileage: {p1.mileage || "—"}</li>
+                          <li>
+                            • Best for: Rural roads, moderate load,
+                            cost-efficient running
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                        <h3 className="text-white font-semibold mb-2">
+                          {p2.title}
+                        </h3>
+                        <ul className="text-gray-300 text-sm space-y-2">
+                          <li>• Payload: {p2.payload || "—"}</li>
+                          <li>• Torque: {p2.torque || "—"}</li>
+                          <li>• Mileage: {p2.mileage || "—"}</li>
+                          <li>
+                            • Best for: Heavy construction, sand/aggregate
+                            movement
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Final Verdict */}
+                    <div className="mt-6 p-5 bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-blue-700/40 rounded-xl shadow-lg">
+                      <h3 className="text-lg font-bold text-blue-300 mb-2">
+                        Final Expert Verdict
+                      </h3>
+                      <p className="text-gray-200 text-sm leading-relaxed">
+                        {verdict}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <p className="text-gray-400 text-sm">
+                Add two products to generate expert comparison.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

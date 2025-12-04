@@ -51,6 +51,27 @@ export type TcoResult = {
   inputs: TcoInput;
 };
 
+const LS_KEY = "tco_form_v1";
+
+function saveToLS(data: any) {
+  try {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+    }
+  } catch {}
+}
+
+function loadFromLS() {
+  try {
+    if (typeof window !== "undefined") {
+      const v = localStorage.getItem(LS_KEY);
+      return v ? JSON.parse(v) : null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 export default function TcoCalculator({
   open,
   onOpenChange,
@@ -100,24 +121,44 @@ export default function TcoCalculator({
   };
 
   const seed = () => {
+    // Try restore for same product set
+    const saved = loadFromLS();
+
+    if (
+      saved &&
+      Array.isArray(saved.form) &&
+      saved.products &&
+      JSON.stringify(saved.products) ===
+        JSON.stringify(products.map((p) => p._id))
+    ) {
+      return saved.form;
+    }
+
+    // Else fresh defaults
     if (initialInputs && initialInputs.length === products.length) {
       return initialInputs;
     }
+
     return products.map(defaultFor);
   };
 
   const [tab, setTab] = useState<string>("0");
-  const [form, setForm] = useState<TcoInput[]>(seed());
+  const [form, setForm] = useState<TcoInput[]>(() => seed());
   const [errors, setErrors] = useState<
     Record<number, Partial<Record<keyof TcoInput, string>>>
   >({});
 
   // Keep form length in sync after products/initialInputs change
   useEffect(() => {
-    setForm(seed());
+    const seeded = seed();
+    setForm(seeded);
     setErrors({});
     setTab("0");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    saveToLS({
+      form: seeded,
+      products: products.map((p) => p._id),
+    });
   }, [
     JSON.stringify(products.map((p) => p._id)),
     JSON.stringify(initialInputs || []),
@@ -125,9 +166,17 @@ export default function TcoCalculator({
 
   const setField = (i: number, key: keyof TcoInput, value: string) => {
     const v = value === "" ? NaN : Number(value);
+
     setForm((prev) => {
       const copy = [...prev];
       copy[i] = { ...(copy[i] ?? defaultFor(products[i])), [key]: v };
+
+      // Save persistently
+      saveToLS({
+        form: copy,
+        products: products.map((p) => p._id),
+      });
+
       return copy;
     });
   };
