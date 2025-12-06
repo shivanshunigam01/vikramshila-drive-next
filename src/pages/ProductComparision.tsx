@@ -153,6 +153,14 @@ export default function ProductComparision() {
           .filter((r) => r.status === "fulfilled" && (r as any).value?._id)
           .map((r) => (r as PromiseFulfilledResult<any>).value);
 
+        const custom = JSON.parse(localStorage.getItem("customPrices") || "{}");
+
+        valid.forEach((p: any) => {
+          if (custom[p._id]) {
+            p.price = custom[p._id]; // override API price
+          }
+        });
+
         setProducts(valid);
       } catch (err) {
         console.error("❌ Fetch error:", err);

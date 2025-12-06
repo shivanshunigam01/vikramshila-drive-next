@@ -1042,6 +1042,13 @@ export default function ReviewQuote() {
   const pinValid = useMemo(() => /^\d{6}$/.test(onlyDigits(pin)), [pin]);
 
   const state = location.state as LocationState;
+  if (state?.product?._id) {
+    const custom = JSON.parse(localStorage.getItem("customPrices") || "{}");
+
+    if (custom[state.product._id]) {
+      state.product.price = String(custom[state.product._id]); // override product price
+    }
+  }
 
   useEffect(() => {
     const found = DSE_OPTIONS.find((d) => d.id === dseId);
@@ -1132,7 +1139,7 @@ export default function ReviewQuote() {
       return false;
     }
     if (pin && !/^\d{6}$/.test(onlyDigits(pin))) {
-      toast.error("PIN must be 6 digits.");
+      toast.error("Pincode must be 6 digits.");
       return false;
     }
     return true;
@@ -1179,7 +1186,7 @@ export default function ReviewQuote() {
         return;
       }
       if (!/^\d{6}$/.test(onlyDigits(pin))) {
-        toast.error("PIN must be 6 digits.");
+        toast.error("Pincode must be 6 digits.");
         return;
       }
     }
@@ -1923,14 +1930,14 @@ export default function ReviewQuote() {
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-400 mb-2">PIN</p>
+                  <p className="text-sm text-gray-400 mb-2">Pincode</p>
                   <input
                     type="text"
                     value={pin}
                     onChange={(e) =>
                       setPin(onlyDigits(e.target.value).slice(0, 6))
                     }
-                    placeholder="6-digit PIN"
+                    placeholder="6-digit Pincode"
                     inputMode="numeric"
                     maxLength={6}
                     className={`w-full px-3 py-2 rounded bg-gray-900 border text-white text-sm ${
@@ -1943,7 +1950,7 @@ export default function ReviewQuote() {
                   />
                   {!pinValid && pin.length > 0 && (
                     <p className="text-xs text-red-400 mt-1">
-                      PIN must be 6 digits.
+                      Pincode must be 6 digits.
                     </p>
                   )}
                 </div>

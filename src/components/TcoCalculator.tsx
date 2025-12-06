@@ -171,6 +171,13 @@ export default function TcoCalculator({
       const copy = [...prev];
       copy[i] = { ...(copy[i] ?? defaultFor(products[i])), [key]: v };
 
+      if (key === "vehiclePrice") {
+        const customPrices = JSON.parse(
+          localStorage.getItem("customPrices") || "{}"
+        );
+        customPrices[products[i]._id] = v; // store the edited price
+        localStorage.setItem("customPrices", JSON.stringify(customPrices));
+      }
       // Save persistently
       saveToLS({
         form: copy,
@@ -181,52 +188,8 @@ export default function TcoCalculator({
     });
   };
 
-  const validateOne = (i: number): boolean => {
-    const f = form[i] ?? defaultFor(products[i]);
-    const err: Partial<Record<keyof TcoInput, string>> = {};
-    const req: (keyof TcoInput)[] = [
-      "vehiclePrice",
-      "loanAmount",
-      "interestRate",
-      "tenureYears",
-      "downPayment",
-      "monthlyRunning",
-      "mileage",
-      "fuelPrice",
-      "monthlyMaintenance",
-      "insuranceYear",
-      "tyresCost",
-      "tyreLife",
-      "resalePct5yr",
-    ];
-
-    req.forEach((k) => {
-      const v = f[k];
-      if (typeof v !== "number" || isNaN(v)) err[k] = "Required";
-      else if (v < 0) err[k] = "Must be ≥ 0";
-    });
-
-    if ((f.loanAmount || 0) + (f.downPayment || 0) > (f.vehiclePrice || 0)) {
-      err.loanAmount = "Loan + Down Payment must ≤ Vehicle Price";
-      err.downPayment = "Loan + Down Payment must ≤ Vehicle Price";
-    }
-    if ((f.mileage || 0) <= 0) err.mileage = "Mileage must be > 0";
-    if ((f.tenureYears || 0) <= 0) err.tenureYears = "Tenure must be > 0";
-    if ((f.tyreLife || 0) <= 0) err.tyreLife = "Tyre life must be > 0";
-    if ((f.monthlyRunning || 0) <= 0)
-      err.monthlyRunning = "Monthly running must be > 0";
-
-    setErrors((prev) => ({ ...prev, [i]: err }));
-    return Object.keys(err).length === 0;
-  };
-
-  const validateAll = (): boolean => {
-    const ok1 = validateOne(0);
-    const ok2 = products.length > 1 ? validateOne(1) : true;
-    if (!ok1) setTab("0");
-    else if (!ok2) setTab("1");
-    return ok1 && ok2;
-  };
+  const validateOne = () => true;
+  const validateAll = () => true;
 
   const calc = (i: number) => {
     const f = form[i] ?? defaultFor(products[i]);
@@ -532,31 +495,19 @@ export default function TcoCalculator({
   );
 }
 
-function Field({
-  label,
-  value,
-  onChange,
-  error,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: string) => void;
-  error?: string;
-}) {
+function Field({ label, value, onChange }: any) {
   return (
     <div>
       <label className="text-sm text-gray-300 font-medium mb-2 block">
         {label}
       </label>
+
       <Input
         type="number"
         value={Number.isFinite(value) ? value : ""}
         onChange={(e) => onChange(e.target.value)}
-        className={`bg-gray-900 border-gray-700 text-white placeholder-gray-500 ${
-          error ? "border-red-500" : ""
-        }`}
+        className="bg-gray-900 border-gray-700 text-white placeholder-gray-500"
       />
-      {error && <div className="text-red-400 text-xs mt-1">{error}</div>}
     </div>
   );
 }
