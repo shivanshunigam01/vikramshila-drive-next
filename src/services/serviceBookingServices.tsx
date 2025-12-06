@@ -1,9 +1,11 @@
 import axios from "axios";
 
 const API = import.meta.env.VITE_API_URL;
-export const createServiceBooking = (data: FormData | Record<string, any>) => {
+
+export const createServiceBooking = (data: FormData) => {
   return axios.post(`${API}/service-booking`, data, {
-    headers:
-      data instanceof FormData ? {} : { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
 };

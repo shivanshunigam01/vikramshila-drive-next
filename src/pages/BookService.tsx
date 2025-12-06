@@ -10,63 +10,58 @@ export default function BookService() {
   const [selectedService, setSelectedService] = useState("");
   const [pickupRequired, setPickupRequired] = useState(false);
   const [formErrors, setFormErrors] = useState<any>({});
+  const [loading, setLoading] = useState(false); // 🔥 LOADER STATE
   const { toast } = useToast();
 
+  /* Load service if passed in URL */
   useEffect(() => {
     const serviceFromUrl = searchParams.get("service");
-    if (serviceFromUrl) {
-      setSelectedService(serviceFromUrl);
-    }
+    if (serviceFromUrl) setSelectedService(serviceFromUrl);
   }, [searchParams]);
 
+  /* Disable Sundays */
   const disableSundays = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedDate = new Date(e.target.value);
-    if (selectedDate.getDay() === 0) {
+    const selected = new Date(e.target.value);
+    if (selected.getDay() === 0) {
       alert("Workshop is closed on Sundays. Please select another date.");
       e.target.value = "";
     }
   };
 
+  /* Validate phone / email */
   const validateForm = (form: HTMLFormElement) => {
     const errors: any = {};
-    const phone = form["phone"]?.value.trim();
-    const email = form["email"]?.value.trim();
+    const phone = form.querySelector<HTMLInputElement>(
+      "input[name='phone']"
+    )?.value;
+    const email = form.querySelector<HTMLInputElement>(
+      "input[name='email']"
+    )?.value;
 
-    if (phone && !/^[0-9]{10}$/.test(phone)) {
+    if (phone && !/^[0-9]{10}$/.test(phone))
       errors.phone = "Enter a valid 10-digit mobile number";
-    }
-    if (email && !/\S+@\S+\.\S+/.test(email)) {
+
+    if (email && !/\S+@\S+\.\S+/.test(email))
       errors.email = "Enter a valid email address";
-    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  /* ----------- SUBMIT BOOKING ----------- */
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const form = e.currentTarget;
+    console.log("Submitting...");
 
+    const form = e.currentTarget;
     if (!validateForm(form)) return;
 
     try {
-      const formData = new FormData(form);
-      let payload: any;
+      const formData = new FormData(form); // THIS ALREADY HAS THE FILE — DO NOT COPY AGAIN
 
-      if (
-        formData.get("attachment") &&
-        (formData.get("attachment") as File).size > 0
-      ) {
-        payload = formData;
-      } else {
-        const jsonData: Record<string, any> = {};
-        formData.forEach((val, key) => {
-          jsonData[key] = val;
-        });
-        payload = jsonData;
-      }
+      console.log("Uploading…");
 
-      const res = await createServiceBooking(payload);
+      const res = await createServiceBooking(formData);
 
       if (res.status === 200 || res.status === 201) {
         toast({
@@ -74,24 +69,36 @@ export default function BookService() {
           description:
             "Your service has been booked successfully. Our executive will contact you shortly.",
         });
+
         form.reset();
         setPickupRequired(false);
         setFormErrors({});
       }
-    } catch (err: any) {
+    } catch (err) {
+      console.error("Booking error:", err);
       toast({
         title: "❌ Error",
         description: err.response?.data?.message || err.message,
         variant: "destructive",
       });
-      console.error("Booking error:", err);
     }
   };
 
   return (
     <div className="bg-black text-white font-sans min-h-screen flex flex-col">
+      {/* 🔥 FULL PAGE LOADER */}
+      {loading && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-gray-300 text-sm">Submitting your request...</p>
+          </div>
+        </div>
+      )}
+
       <Header />
 
+      {/* FORM CENTER */}
       <div className="flex-grow flex justify-center items-center">
         <div className="w-full max-w-5xl px-6">
           <form
@@ -106,55 +113,75 @@ export default function BookService() {
               Motors.
             </p>
 
-            {/* 1. Customer Information */}
+            {/* ----------------- 1. CUSTOMER INFO ------------------- */}
             <h3 className="text-lg md:text-sm font-semibold mb-2">
               1. Customer Information
             </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
                 type="text"
-                placeholder="Full Name *"
                 name="name"
                 required
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                placeholder="Full Name *"
+                className="p-2 text-xs rounded-md bg-transparent border border-gray-500"
               />
-              <input
-                type="tel"
-                placeholder="Mobile Number *"
-                name="phone"
-                required
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="email"
-                placeholder="Email Address (Optional)"
-                name="email"
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500"
-              />
+
+              <div>
+                <input
+                  type="tel"
+                  name="phone"
+                  required
+                  placeholder="Mobile Number *"
+                  className="p-2 text-xs rounded-md bg-transparent border border-gray-500 w-full"
+                />
+                {formErrors.phone && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {formErrors.phone}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address (Optional)"
+                  className="p-2 text-xs rounded-md bg-transparent border border-gray-500 w-full"
+                />
+                {formErrors.email && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {formErrors.email}
+                  </p>
+                )}
+              </div>
             </div>
 
-            {/* 2. Vehicle Information */}
+            {/* ----------------- 2. VEHICLE INFO ------------------- */}
             <h3 className="text-lg md:text-sm font-semibold mb-2">
               2. Vehicle Information
             </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
                 type="text"
-                placeholder="Vehicle Registration Number *"
                 name="registrationNumber"
                 required
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                placeholder="Vehicle Registration Number *"
+                className="p-2 text-xs rounded-md bg-transparent border border-gray-500"
               />
+
               <input
                 type="text"
-                placeholder="Chassis No / Last 5 Digits of VIN (Optional)"
                 name="chassis"
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                placeholder="Chassis No / Last 5 Digits of VIN"
+                className="p-2 text-xs rounded-md bg-transparent border border-gray-500"
               />
+
               <select
                 name="modelVariant"
                 required
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-black border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                className="p-2 text-xs rounded-md bg-black border border-gray-500"
               >
                 <option value="">Select Model / Variant *</option>
                 <option>Ace Gold</option>
@@ -167,23 +194,25 @@ export default function BookService() {
                 <option>Winger</option>
                 <option>Magic</option>
               </select>
+
               <input
                 type="number"
-                placeholder="Odometer Reading (km)"
                 name="odo"
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                placeholder="Odometer Reading (km)"
+                className="p-2 text-xs rounded-md bg-transparent border border-gray-500"
               />
             </div>
 
-            {/* 3. Service Requirements */}
+            {/* ----------------- 3. SERVICE REQUIREMENTS ------------------- */}
             <h3 className="text-lg md:text-sm font-semibold mb-2">
               3. Service Requirements
             </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <select
                 name="serviceType"
                 required
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-black border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                className="p-2 text-xs rounded-md bg-black border border-gray-500"
               >
                 <option value="">Select Service Type *</option>
                 <option>Periodic Service</option>
@@ -193,10 +222,11 @@ export default function BookService() {
                 <option>Accidental</option>
                 <option>Other</option>
               </select>
+
               <select
                 name="servicePackage"
                 required
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-black border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                className="p-2 text-xs rounded-md bg-black border border-gray-500"
               >
                 <option value="">Preferred Service Package *</option>
                 <option>Preventive Maintenance</option>
@@ -205,29 +235,32 @@ export default function BookService() {
                 <option>General</option>
               </select>
             </div>
+
             <textarea
               name="notes"
               placeholder="Problem Description / Complaints"
-              className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500 w-full"
               rows={3}
+              className="w-full p-2 text-xs rounded-md bg-transparent border border-gray-500"
             />
 
-            {/* 4. Appointment Preferences */}
+            {/* ----------------- 4. APPOINTMENT ------------------- */}
             <h3 className="text-lg md:text-sm font-semibold mt-4 mb-2">
               4. Appointment Preferences
             </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
                 type="date"
                 name="appointmentDate"
                 required
                 onChange={disableSundays}
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                className="p-2 text-xs rounded-md bg-transparent border border-gray-500"
               />
+
               <select
                 name="timeSlot"
                 required
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-black border border-gray-500 focus:ring-2 focus:ring-blue-500"
+                className="p-2 text-xs rounded-md bg-black border border-gray-500"
               >
                 <option value="">Preferred Time Slot *</option>
                 <option>Morning (9–12)</option>
@@ -236,9 +269,10 @@ export default function BookService() {
               </select>
             </div>
 
-            {/* Pickup & Drop */}
+            {/* Pickup */}
             <div className="mb-4 text-xs md:text-sm">
               <label className="mr-2">Pickup & Drop Required?</label>
+
               <label className="mr-2">
                 <input
                   type="radio"
@@ -248,6 +282,7 @@ export default function BookService() {
                 />{" "}
                 Yes
               </label>
+
               <label>
                 <input
                   type="radio"
@@ -263,22 +298,24 @@ export default function BookService() {
               <input
                 type="text"
                 name="address"
-                placeholder="Pickup/Drop Location *"
                 required
-                className="mb-4 p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-transparent border border-gray-500 focus:ring-2 focus:ring-blue-500 w-full"
+                placeholder="Pickup/Drop Location *"
+                className="mb-4 p-2 text-xs rounded-md bg-transparent border border-gray-500 w-full"
               />
             )}
 
-            {/* Additional Features */}
+            {/* ----------------- 5. EXTRA ------------------- */}
             <h3 className="text-lg md:text-sm font-semibold mb-2">
               5. Additional Features
             </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
                 type="file"
                 name="attachment"
-                className="p-2 text-xs placeholder:text-xs md:text-sm md:placeholder:text-sm rounded-md bg-black border border-gray-500"
+                className="p-2 text-xs rounded-md bg-black border border-gray-500"
               />
+
               <label className="flex items-center gap-2 text-xs md:text-sm">
                 <input type="checkbox" name="estimate" /> Request Estimate in
                 Advance?
@@ -300,13 +337,14 @@ export default function BookService() {
               </label>
             </div>
 
-            {/* CTA */}
+            {/* ----------------- CTA BUTTON ------------------- */}
             <div className="flex justify-center mt-6">
               <button
                 type="submit"
-                className="px-6 py-2 md:px-8 md:py-3 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-semibold text-xs md:text-sm"
+                disabled={loading}
+                className="px-6 py-2 md:px-8 md:py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-md text-white font-semibold text-xs md:text-sm"
               >
-                Book Service Now →
+                {loading ? "Processing..." : "Book Service Now →"}
               </button>
             </div>
           </form>
