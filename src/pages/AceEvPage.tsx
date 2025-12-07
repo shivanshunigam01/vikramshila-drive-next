@@ -137,27 +137,42 @@ export default function AceEvPage() {
   );
 }
 
-function FeatureCard({ img, title, desc }: { img: string; title: string; desc: string }) {
+function FeatureCard({
+  img,
+  title,
+  desc,
+}: {
+  img: string;
+  title: string;
+  desc: string;
+}) {
   // Determine dimensions based on image source
   const getDimensions = (imageSrc: string) => {
-    if (imageSrc.includes('ace-2.webp') || imageSrc.includes('ace-2.png')) {
+    if (imageSrc.includes("ace-2.webp") || imageSrc.includes("ace-2.png")) {
       return { width: 640, height: 400 };
     }
-    if (imageSrc.includes('ace-3.webp')) {
+    if (imageSrc.includes("ace-3.webp")) {
       return { width: 640, height: 400 };
     }
-    if (imageSrc.includes('ace-4.webp')) {
+    if (imageSrc.includes("ace-4.webp")) {
       return { width: 640, height: 400 };
     }
     // Default for ace-1.png (not converted, but add dimensions anyway)
     return { width: 640, height: 400 };
   };
-  
+
   const { width, height } = getDimensions(img);
-  
+
   return (
     <div>
-      <img src={img} alt={title} className="rounded-lg mb-4 w-full" width={width} height={height} loading="lazy" />
+      <img
+        src={img}
+        alt={title}
+        className="rounded-lg mb-4 w-full"
+        width={width}
+        height={height}
+        loading="lazy"
+      />
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
       <p className="text-gray-300">{desc}</p>
     </div>

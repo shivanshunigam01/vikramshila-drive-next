@@ -3,12 +3,14 @@
 ## File 1: src/pages/ServicesPage.tsx
 
 ### Change 1 - Line 164 (tataOk image)
+
 ```diff
 -          <img src={tataOk} alt="Tata OK" className="rounded-lg" />
 +          <img src={tataOk} alt="Tata OK" className="rounded-lg" width={640} height={440} loading="lazy" />
 ```
 
 ### Change 2 - Line 214 (fleetCareBanner image)
+
 ```diff
 -          <img src={fleetCareBanner} alt="Fleet Care" className="rounded-lg" />
 +          <img src={fleetCareBanner} alt="Fleet Care" className="rounded-lg" width={1200} height={320} loading="lazy" />
@@ -19,6 +21,7 @@
 ## File 2: src/components/home/LaunchSection.tsx
 
 ### Change 1 - Line 151 (aceProImg)
+
 ```diff
                 <img
                   src={aceProImg}
@@ -31,6 +34,7 @@
 ```
 
 ### Change 2 - Line 159 (aceLogo)
+
 ```diff
                   <img
                     src={aceLogo}
@@ -43,6 +47,7 @@
 ```
 
 ### Change 3 - Line 189 (dynamic product images)
+
 ```diff
                         {img ? (
                           <img
@@ -60,6 +65,7 @@
 ## File 3: src/components/home/ProductGrid.tsx
 
 ### Change 1 - Line 36 (category images)
+
 ```diff
                 <img
                   src={c.image}
@@ -76,6 +82,7 @@
 ## File 4: src/components/home/VideoCarousel.tsx
 
 ### Change 1 - Line 153 (YouTube thumbnail - mobile)
+
 ```diff
                       <img
                         src={`https://img.youtube.com/vi/${v.id}/hqdefault.jpg`}
@@ -88,6 +95,7 @@
 ```
 
 ### Change 2 - Line 211 (YouTube thumbnail - desktop)
+
 ```diff
                     <img
                       src={`https://img.youtube.com/vi/${v.id}/hqdefault.jpg`}
@@ -104,6 +112,7 @@
 ## File 5: src/pages/VehicleDetails.tsx
 
 ### Change 1 - Line 417 (dynamic video)
+
 ```diff
                         {t.type === "video" ? (
                           <video
@@ -116,6 +125,7 @@
 ```
 
 ### Change 2 - Line 423 (dynamic image)
+
 ```diff
                           <img
                             src={t.file}
@@ -131,6 +141,7 @@
 ## File 6: src/pages/NewLaunches.tsx
 
 ### Change 1 - Line 446 (dynamic product image)
+
 ```diff
               {selectedProduct.images?.[0] ? (
                 <img
@@ -148,6 +159,7 @@
 ## File 7: src/components/home/Services.tsx
 
 ### Change 1 - Line 187 (Unsplash image)
+
 ```diff
               <img
                 src="https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop&crop=center"
@@ -160,6 +172,7 @@
 ```
 
 ### Change 2 - Line 194 (Unsplash logo)
+
 ```diff
                   <img
                     src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=60&h=60&fit=crop&crop=center"
@@ -176,6 +189,7 @@
 ## File 8: src/pages/ProductComparision.tsx
 
 ### Change 1 - Line 288 (product image)
+
 ```diff
                   <img
                     src={p.images?.[0] || "/placeholder.png"}
@@ -187,6 +201,7 @@
 ```
 
 ### Change 2 - Line 521 (competitor image)
+
 ```diff
                   <img
                     src={selectedCompetitor.images?.[0] || "/placeholder.png"}
@@ -202,6 +217,7 @@
 ## File 9: src/components/home/Hero.tsx
 
 ### Change 1 - Line 78 (dynamic banner images)
+
 ```diff
                 <img
                   src={img}
@@ -222,8 +238,8 @@
 - **Total changes:** 20 modifications
 
 All changes preserve existing layout and responsive behavior by:
+
 1. Using explicit width/height for known dimensions
 2. Using CSS aspect-ratio for dynamic content
 3. Maintaining all existing CSS classes
 4. Keeping responsive behavior intact
-

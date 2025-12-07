@@ -33,7 +33,7 @@ export default function LoadingFallback() {
 -import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 +import { BrowserRouter, Routes, Route } from "react-router-dom";
  import { HelmetProvider } from "react-helmet-async";
- 
+
 -import Index from "./pages/Index";
 -import NotFound from "./pages/NotFound";
 -import Products from "./pages/Products";
@@ -333,7 +333,7 @@ export default function LoadingFallback() {
          {/* ... Helmet content unchanged ... */}
        </Helmet>
        <Header />
- 
+
        {/* Floating Banner */}
        <FloatingVehicleBanner
          imageUrl={scrollImage}
@@ -348,7 +348,7 @@ export default function LoadingFallback() {
 -        </div>
 +          </div>
 +        </Suspense>
- 
+
 -        <div className="sr-fade">
 +        <Suspense fallback={<LoadingFallback />}>
 +          <div className="sr-fade">
@@ -356,7 +356,7 @@ export default function LoadingFallback() {
 -        </div>
 +          </div>
 +        </Suspense>
- 
+
 -        <div className="sr-fade">
 +        <Suspense fallback={<LoadingFallback />}>
 +          <div className="sr-fade">
@@ -364,7 +364,7 @@ export default function LoadingFallback() {
 -        </div>
 +          </div>
 +        </Suspense>
- 
+
 -        <div className="sr-fade">
 +        <Suspense fallback={<LoadingFallback />}>
 +          <div className="sr-fade">
@@ -386,7 +386,7 @@ export default function LoadingFallback() {
 -        </div>
 +          </div>
 +        </Suspense>
- 
+
 -        <div className="sr-fade">
 +        <Suspense fallback={<LoadingFallback />}>
 +          <div className="sr-fade">
@@ -434,16 +434,19 @@ export default function LoadingFallback() {
 ## Summary
 
 ### Files Modified:
+
 1. **src/components/common/LoadingFallback.tsx** - NEW FILE
 2. **src/App.tsx** - Convert all route pages to lazy loading
 3. **src/pages/Index.tsx** - Convert below-the-fold components to lazy loading
 
 ### Components Lazy Loaded:
+
 - **Route Pages**: 20+ pages (Products, VehicleDetails, About, etc.)
 - **Below-the-Fold Components**: 12 components in Index.tsx
 - **Total**: ~200+ KB of code split into chunks
 
 ### Components Remaining Static:
+
 - **Header** - Critical, always visible
 - **Hero** - Above the fold
 - **Index page** - Entry point
@@ -451,6 +454,7 @@ export default function LoadingFallback() {
 - **AuthModal** - May be needed immediately
 
 ### Expected Impact:
+
 - **Initial bundle reduction**: ~200+ KB
 - **Faster Time to Interactive**: 20-30% improvement
 - **Better Core Web Vitals**: Improved LCP and FCP scores
@@ -465,4 +469,3 @@ export default function LoadingFallback() {
 3. **Footer/CTAs/ScrollRevealer**: Use `null` fallback (no visual loading needed)
 4. **Critical components**: Header and Hero remain static for instant rendering
 5. **Route-based splitting**: Each route page becomes its own chunk
-

@@ -1,18 +1,18 @@
-import sharp from 'sharp';
-import fs from 'fs';
+import sharp from "sharp";
+import fs from "fs";
 
 const images = [
-  'src/assets/image(3).png',
-  'src/assets/fleet-care_new_banner.jpg',
-  'src/assets/vehicle.png',
-  'src/assets/acepro.png',
-  'src/assets/cat-scv.jpg',
-  'src/assets/cat-pickup.jpg',
-  'src/assets/cat-lcv.jpg',
-  'src/assets/cat-icv.jpg',
-  'src/assets/cat-mcv.jpg',
-  'src/assets/cat-winger.jpg',
-  'src/assets/cat-bus.jpg'
+  "src/assets/image(3).png",
+  "src/assets/fleet-care_new_banner.jpg",
+  "src/assets/vehicle.png",
+  "src/assets/acepro.png",
+  "src/assets/cat-scv.jpg",
+  "src/assets/cat-pickup.jpg",
+  "src/assets/cat-lcv.jpg",
+  "src/assets/cat-icv.jpg",
+  "src/assets/cat-mcv.jpg",
+  "src/assets/cat-winger.jpg",
+  "src/assets/cat-bus.jpg",
 ];
 
 async function main() {
@@ -31,4 +31,3 @@ async function main() {
 }
 
 main();
-

@@ -57,7 +57,14 @@ export default function ServicesPage() {
 
         {/* Fleet Edge */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <img src={fleetEdge} alt="Fleet Edge" className="rounded-lg" width={640} height={446} loading="lazy" />
+          <img
+            src={fleetEdge}
+            alt="Fleet Edge"
+            className="rounded-lg"
+            width={640}
+            height={446}
+            loading="lazy"
+          />
           <div>
             <h3 className="text-xl font-semibold mb-4">Fleet Edge</h3>
             <p className="text-gray-300 mb-4">
@@ -111,12 +118,26 @@ export default function ServicesPage() {
               </Link>
             </div>
           </div>
-          <img src={amc} alt="AMC" className="rounded-lg" width={640} height={440} loading="lazy" />
+          <img
+            src={amc}
+            alt="AMC"
+            className="rounded-lg"
+            width={640}
+            height={440}
+            loading="lazy"
+          />
         </div>
 
         {/* Sampoorna Seva */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          <img src={sampoorna} alt="Sampoorna Seva" className="rounded-lg" width={640} height={440} loading="lazy" />
+          <img
+            src={sampoorna}
+            alt="Sampoorna Seva"
+            className="rounded-lg"
+            width={640}
+            height={440}
+            loading="lazy"
+          />
           <div>
             <h3 className="text-xl font-semibold mb-4">Sampoorna Seva 2.0</h3>
             <p className="text-gray-300 mb-6">
@@ -166,7 +187,14 @@ export default function ServicesPage() {
 
         {/* Tata Guru */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          <img src={guru} alt="Tata Guru" className="rounded-lg" width={640} height={440} loading="lazy" />
+          <img
+            src={guru}
+            alt="Tata Guru"
+            className="rounded-lg"
+            width={640}
+            height={440}
+            loading="lazy"
+          />
           <div>
             <h3 className="text-xl font-semibold mb-4">TATA Guru</h3>
             <p className="text-gray-300 mb-6">
