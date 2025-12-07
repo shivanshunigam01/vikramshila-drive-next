@@ -11,6 +11,8 @@ export default function ProductDisplay() {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sectionTopRef = useRef<HTMLDivElement | null>(null);
+  const headerRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     getProducts()
@@ -31,7 +33,31 @@ export default function ProductDisplay() {
   }, []);
 
   const toggle = (cat: string) => {
-    setExpandedCategory((prev) => (prev === cat ? null : cat));
+    const isSame = expandedCategory === cat;
+
+    // If user clicks the same category -> just close it
+    if (isSame) {
+      setExpandedCategory(null);
+      return;
+    }
+
+    // If another category is clicked:
+    // 1) Scroll to "Our Products"
+    if (sectionTopRef.current) {
+      const rect = sectionTopRef.current.getBoundingClientRect();
+      const offset = 20; // adjust if you have sticky header
+      const targetY = window.scrollY + rect.top - offset;
+
+      window.scrollTo({
+        top: targetY,
+        behavior: "smooth",
+      });
+    }
+
+    // 2) After scroll starts, open the new category
+    setTimeout(() => {
+      setExpandedCategory(cat);
+    }, 300); // 300ms = scroll + nice feel
   };
 
   const handleDownload = async (p: any) => {
@@ -70,7 +96,7 @@ export default function ProductDisplay() {
 
   return (
     <section className="w-full bg-black py-12 md:py-16">
-      <div className="container mx-auto px-4 max-w-7xl">
+      <div ref={sectionTopRef} className="container mx-auto px-4 max-w-7xl">
         <header className="mb-10 md:mb-14 text-center">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-wide uppercase">
             Our Products
@@ -88,8 +114,9 @@ export default function ProductDisplay() {
               >
                 {/* CATEGORY HEADER */}
                 <div
+                  ref={(el) => (headerRefs.current[category] = el)}
                   onClick={() => toggle(category)}
-                  className="cursor-pointer p-5 md:p-6 bg-gradient-to-r from-gray-800/50 to-gray-900/50 hover:from-gray-700/50 hover:to-gray-800/50 backdrop-blur-sm border-b border-gray-700/50"
+                  className="cursor-pointer p-5 ..."
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
