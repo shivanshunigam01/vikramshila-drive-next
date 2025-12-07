@@ -1167,6 +1167,7 @@ export default function Products() {
                             src={v.images?.[0]}
                             alt={v.title || v.model || "Vehicle"}
                             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
                           />
                         </div>
                       </CardHeader>

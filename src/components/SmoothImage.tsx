@@ -4,10 +4,14 @@ export default function SmoothImage({
   src,
   alt,
   className = "",
+  width,
+  height,
 }: {
   src: string;
   alt: string;
   className?: string;
+  width?: number;
+  height?: number;
 }) {
   const [loaded, setLoaded] = useState(false);
 
@@ -16,6 +20,8 @@ export default function SmoothImage({
       <img
         src={src}
         alt={alt}
+        width={width}
+        height={height}
         loading="lazy"
         onLoad={() => setLoaded(true)}
         className={`

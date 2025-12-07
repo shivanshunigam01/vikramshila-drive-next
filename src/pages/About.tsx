@@ -3,8 +3,8 @@ import Footer from "@/components/layout/Footer";
 import { Helmet } from "react-helmet-async";
 import { TrendingUp, Award, Users, Wrench, Clock, Shield } from "lucide-react";
 
-import hero1 from "@/assets/hero-2.jpg";
-import hero2 from "@/assets/hero-3.jpg";
+import hero1 from "@/assets/hero-2.webp";
+import hero2 from "@/assets/hero-3.webp";
 import SmoothImage from "@/components/SmoothImage";
 import { Link } from "react-router-dom";
 
@@ -108,6 +108,8 @@ export default function About() {
                 src={hero1}
                 alt="Vikramshila Automobiles Showroom"
                 className="rounded-2xl shadow-2xl"
+                width={1920}
+                height={680}
               />
             </div>
 
@@ -242,6 +244,8 @@ export default function About() {
               src={hero2}
               alt="Workshop Facilities"
               className="rounded-2xl shadow-xl"
+              width={1921}
+              height={801}
             />
           </section>
 

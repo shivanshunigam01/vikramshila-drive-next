@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
-import aceEvBanner from "@/assets/ace-pro-ev-inner-banner.jpg";
+import aceEvBanner from "@/assets/ace-pro-ev-inner-banner.webp";
 import ace1 from "@/assets/ace-1.png";
-import ace2 from "@/assets/ace-2.png";
-import ace3 from "@/assets/ace-3.png";
-import ace4 from "@/assets/ace-4.png";
+import ace2 from "@/assets/ace-2.webp";
+import ace3 from "@/assets/ace-3.webp";
+import ace4 from "@/assets/ace-4.webp";
 import ace5 from "@/assets/ace-1.png";
-import ace6 from "@/assets/ace-2.png";
+import ace6 from "@/assets/ace-2.webp";
 
 export default function AceEvPage() {
   return (
@@ -137,10 +137,27 @@ export default function AceEvPage() {
   );
 }
 
-function FeatureCard({ img, title, desc }) {
+function FeatureCard({ img, title, desc }: { img: string; title: string; desc: string }) {
+  // Determine dimensions based on image source
+  const getDimensions = (imageSrc: string) => {
+    if (imageSrc.includes('ace-2.webp') || imageSrc.includes('ace-2.png')) {
+      return { width: 640, height: 400 };
+    }
+    if (imageSrc.includes('ace-3.webp')) {
+      return { width: 640, height: 400 };
+    }
+    if (imageSrc.includes('ace-4.webp')) {
+      return { width: 640, height: 400 };
+    }
+    // Default for ace-1.png (not converted, but add dimensions anyway)
+    return { width: 640, height: 400 };
+  };
+  
+  const { width, height } = getDimensions(img);
+  
   return (
     <div>
-      <img src={img} alt={title} className="rounded-lg mb-4 w-full" />
+      <img src={img} alt={title} className="rounded-lg mb-4 w-full" width={width} height={height} loading="lazy" />
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
       <p className="text-gray-300">{desc}</p>
     </div>

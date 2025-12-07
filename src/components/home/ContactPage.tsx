@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ModalWrapper from "@/components/ui/ModalWrapper";
-import contactBanner from "../../assets/contact_page.png";
+import contactBanner from "../../assets/contact_page.webp";
 import GrievanceForm from "../common/GrievanceForm";
 
 export default function ContactPage() {

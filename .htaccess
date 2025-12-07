@@ -1,0 +1,134 @@
+# Apache Caching Configuration for Vite React App
+# Place this in your public/dist directory or root
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Handle React Router - redirect all requests to index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>
+
+# ============================================
+# ENABLE COMPRESSION
+# ============================================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript application/json
+    AddOutputFilterByType DEFLATE application/xml application/xhtml+xml application/rss+xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ============================================
+# IMMUTABLE ASSETS (Hashed JS/CSS from Vite)
+# ============================================
+# Vite generates hashed filenames: assets/index-abc123.js
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # JavaScript and CSS (hashed by Vite - immutable)
+    <FilesMatch "\.(js|css|mjs)$">
+        ExpiresDefault "access plus 1 year"
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    
+    # Fonts (long-term cache)
+    <FilesMatch "\.(woff|woff2|eot|ttf|otf)$">
+        ExpiresDefault "access plus 1 year"
+        Header set Cache-Control "public, max-age=31536000, immutable"
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+    
+    # Images (medium-term cache with revalidation)
+    <FilesMatch "\.(webp|jpg|jpeg|png|gif|svg|ico)$">
+        ExpiresDefault "access plus 30 days"
+        Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
+    </FilesMatch>
+    
+    # Data files (short-term cache)
+    <FilesMatch "\.(json|xml|txt)$">
+        ExpiresDefault "access plus 7 days"
+        Header set Cache-Control "public, max-age=604800, stale-while-revalidate=3600"
+    </FilesMatch>
+    
+    # Favicon
+    <FilesMatch "favicon\.ico$">
+        ExpiresDefault "access plus 7 days"
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+    
+    # SEO files
+    <FilesMatch "(robots\.txt|sitemap\.xml)$">
+        ExpiresDefault "access plus 1 day"
+        Header set Cache-Control "public, max-age=86400"
+    </FilesMatch>
+    
+    # HTML files (no cache - always fresh)
+    <FilesMatch "\.html$">
+        ExpiresDefault "access plus 0 seconds"
+        Header set Cache-Control "public, max-age=0, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+# ============================================
+# CACHE CONTROL HEADERS (Fallback if mod_expires not available)
+# ============================================
+<IfModule mod_headers.c>
+    # Assets directory (hashed files from Vite)
+    <FilesMatch "^assets/.*\.(js|css|mjs)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    
+    # Fonts
+    <FilesMatch "\.(woff|woff2|eot|ttf|otf)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+    
+    # Images
+    <FilesMatch "\.(webp|jpg|jpeg|png|gif|svg|ico)$">
+        Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
+    </FilesMatch>
+    
+    # Data files
+    <FilesMatch "\.(json|xml|txt)$">
+        Header set Cache-Control "public, max-age=604800, stale-while-revalidate=3600"
+    </FilesMatch>
+    
+    # HTML
+    <FilesMatch "\.html$">
+        Header set Cache-Control "public, max-age=0, must-revalidate"
+    </FilesMatch>
+    
+    # Security headers
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ============================================
+# MIME TYPES
+# ============================================
+<IfModule mod_mime.c>
+    # JavaScript
+    AddType application/javascript js mjs
+    AddType application/json json
+    
+    # Fonts
+    AddType font/woff woff
+    AddType font/woff2 woff2
+    AddType application/vnd.ms-fontobject eot
+    AddType font/ttf ttf
+    AddType font/otf otf
+    
+    # Images
+    AddType image/webp webp
+    AddType image/svg+xml svg
+    
+    # Text
+    AddType text/xml xml
+</IfModule>
+
