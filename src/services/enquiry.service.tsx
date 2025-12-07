@@ -7,9 +7,9 @@ export interface EnquiryPayload {
   fullName: string;
   mobileNumber: string;
   state: string;
+  city: string;
   pincode: string;
-  //   product: string;
-  briefDescription?: string;
+  briefDescription: string;
   whatsappConsent: boolean;
 }
 
