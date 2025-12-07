@@ -333,7 +333,7 @@ export default function Header() {
               {/* ✅ UPDATED MOBILE MENU */}
               <SheetContent
                 side="right"
-                className="w-[300px] bg-black text-white p-0"
+                className="w-[90vw] max-w-[300px] bg-black text-white p-0"
               >
                 <div className="mt-2 h-[calc(100vh-1rem)] overflow-y-auto px-4 py-6 space-y-4">
                   {/* Nav items */}

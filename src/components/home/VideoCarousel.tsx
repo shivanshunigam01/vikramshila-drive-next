@@ -99,7 +99,7 @@ export default function VideoCarousel() {
             <h2 className="text-2xl md:text-4xl font-bold text-white">
               Videos
             </h2>
-            <p className="text-gray-400 mt-2">
+            <p className="text-sm md:text-base text-gray-400 mt-2">
               Walkthroughs, testimonials, and dealer insights
             </p>
           </div>
@@ -134,7 +134,7 @@ export default function VideoCarousel() {
               if (e.key === "ArrowLeft") prev();
               if (e.key === "ArrowRight") next();
             }}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {videos.map((v: VideoItem, i) => (
               <Dialog key={v.id}>
@@ -142,7 +142,7 @@ export default function VideoCarousel() {
                   <button
                     ref={(el) => (cardRefs.current[i] = el)}
                     className={[
-                      "shrink-0 w-[85%] snap-start rounded-xl overflow-hidden bg-[#1e2125] border transition duration-300 text-left",
+                      "shrink-0 w-[280px] snap-start rounded-xl overflow-hidden bg-[#1e2125] border transition duration-300 text-left",
                       i === active
                         ? "border-blue-600 ring-2 ring-blue-500/40 shadow-lg shadow-blue-900/30"
                         : "border-gray-800 hover:shadow-xl",
@@ -202,7 +202,7 @@ export default function VideoCarousel() {
         </div>
 
         {/* DESKTOP/TABLET: grid layout */}
-        <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {videos.map((v) => (
             <Dialog key={v.id}>
               <DialogTrigger asChild>

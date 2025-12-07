@@ -67,13 +67,13 @@ export default function About() {
           <div className="container mx-auto max-w-5xl relative z-10 text-center md:text-left">
             {/* REMOVED Dealer Badge */}
 
-            <h1 className="text-5xl md:text-6xl font-extrabold leading-tight text-white">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight text-white">
               Empowering Businesses,
               <br />
               <span className="text-blue-400">One Fleet at a Time</span>
             </h1>
 
-            <p className="text-lg text-gray-300 mt-6 max-w-3xl">
+            <p className="text-base md:text-lg lg:text-xl text-gray-300 mt-6 max-w-3xl">
               Serving Bhagalpur, Banka & Khagaria with the complete Tata Motors
               Commercial Vehicle range — backed by finance, service, and
               reliable fleet support.
@@ -88,10 +88,12 @@ export default function About() {
                 { n: "15+", l: "Years Trust" },
               ].map((item) => (
                 <div key={item.n} className="text-center">
-                  <div className="text-4xl font-bold text-blue-400">
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-400">
                     {item.n}
                   </div>
-                  <div className="text-sm text-gray-300 mt-1">{item.l}</div>
+                  <div className="text-xs md:text-sm text-gray-300 mt-1">
+                    {item.l}
+                  </div>
                 </div>
               ))}
             </div>

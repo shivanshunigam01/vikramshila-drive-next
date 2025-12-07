@@ -29,13 +29,15 @@ export default function ContactPage() {
       </nav>
 
       <div
-        className="relative h-[400px] bg-cover bg-center flex items-center justify-center"
+        className="relative h-[300px] md:h-[400px] bg-cover bg-center flex items-center justify-center"
         style={{ backgroundImage: `url(${contactBanner})` }}
       >
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 max-w-3xl text-center px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
-          <p className="text-lg md:text-xl text-gray-300">
+          <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4">
+            Contact Us
+          </h1>
+          <p className="text-base md:text-lg lg:text-xl text-gray-300">
             We’re here to help. Reach out to us anytime for sales, service, or
             support.
           </p>

@@ -32,7 +32,7 @@ export default function ServicesPage() {
 
       {/* Hero Section */}
       <div
-        className="relative h-[500px] bg-cover bg-center flex items-center justify-center"
+        className="relative h-[40vh] md:h-[500px] bg-cover bg-center flex items-center justify-center"
         style={{ backgroundImage: `url(${serviceBanner})` }}
       >
         <div className="absolute inset-0 bg-black/60" />

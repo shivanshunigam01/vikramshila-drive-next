@@ -75,7 +75,7 @@ Phone: ${user?.phone || "N/A"}`
           </p>
         </header>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8">
           {/* Controls */}
           <div className="space-y-6">
             <div>

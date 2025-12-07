@@ -76,7 +76,7 @@ export default function TruckFinder() {
         {/* Dropdowns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-x-20 gap-y-6 mb-8 justify-center">
           {/* Application Dropdown (from API) */}
-          <div className="relative min-w-[220px]">
+          <div className="relative w-full min-w-[200px] md:min-w-[220px]">
             <select
               value={application}
               onChange={(e) => setApplication(e.target.value)}
@@ -97,7 +97,7 @@ export default function TruckFinder() {
           </div>
 
           {/*  Vehicle Type Dropdown */}
-          <div className="relative min-w-[220px]">
+          <div className="relative w-full min-w-[200px] md:min-w-[220px]">
             <select
               value={vehicleType}
               onChange={(e) => setVehicleType(e.target.value)}
@@ -118,7 +118,7 @@ export default function TruckFinder() {
             </span>
           </div>
           {/* Fuel Type Dropdown */}
-          <div className="relative min-w-[220px]">
+          <div className="relative w-full min-w-[200px] md:min-w-[220px]">
             <select
               value={fuelType}
               onChange={(e) => setFuelType(e.target.value)}
@@ -149,7 +149,7 @@ export default function TruckFinder() {
           </div>
 
           {/* Payload Dropdown (same options as Products page) */}
-          <div className="relative min-w-[220px]">
+          <div className="relative w-full min-w-[200px] md:min-w-[220px]">
             <select
               value={payload}
               onChange={(e) => setPayload(e.target.value)}
@@ -180,7 +180,7 @@ export default function TruckFinder() {
           </div>
 
           {/* Price Range Dropdown */}
-          <div className="relative min-w-[220px]">
+          <div className="relative w-full min-w-[200px] md:min-w-[220px]">
             <select
               value={priceRange}
               onChange={(e) => setPriceRange(e.target.value)}

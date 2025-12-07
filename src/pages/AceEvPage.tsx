@@ -20,7 +20,7 @@ export default function AceEvPage() {
       {/* Hero Section */}
       <section>
         <div
-          className="relative h-[500px] bg-cover bg-center"
+          className="relative h-[40vh] md:h-[500px] bg-cover bg-center"
           style={{ backgroundImage: `url(${aceEvBanner})` }}
         >
           <div className="absolute inset-0 bg-black/40" />
