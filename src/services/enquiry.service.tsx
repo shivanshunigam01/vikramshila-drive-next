@@ -15,4 +15,4 @@ export interface EnquiryPayload {
 
 // 🔹 Submit enquiry
 export const sendEnquiryService = (data: EnquiryPayload) =>
-  axios.post(`${API}/enquiries`, data);
+  axios.post(`${API}/quick-enquiries/create`, data);
