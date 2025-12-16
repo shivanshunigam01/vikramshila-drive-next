@@ -97,9 +97,20 @@ export default function TcoCalculator({
   const kmNumber = (s?: string) => num(s?.replace(/[^\d.]/g, ""));
   const priceNumber = (s?: string | number) => num(s);
 
-  const defaultFor = (p: Product): TcoInput => {
+  const defaultFor = (p: Product, index: number): TcoInput => {
+    // If parent sent finance data → use it
+    if (initialInputs && initialInputs[index]) {
+      return {
+        ...initialInputs[index],
+        mileage: kmNumber(p.mileage) || 1,
+        tyresCost: priceNumber(p.tyresCost) || 0,
+        tyreLife: kmNumber(p.tyreLife) || 10000,
+      };
+    }
+
+    // otherwise fallback to backend logic
     const vehiclePrice = priceNumber(p.price) || 0;
-    const mileage = kmNumber(p.mileage) || 1; // avoid 0 -> div/0
+    const mileage = kmNumber(p.mileage) || 1;
     const tyreLife = kmNumber(p.tyreLife) || 10000;
     const tyresCost = priceNumber(p.tyresCost) || 0;
 
@@ -121,9 +132,12 @@ export default function TcoCalculator({
   };
 
   const seed = () => {
-    // Try restore for same product set
-    const saved = loadFromLS();
+    // Finance calculator provided initial values
+    if (initialInputs && initialInputs.length === products.length) {
+      return initialInputs;
+    }
 
+    const saved = loadFromLS();
     if (
       saved &&
       Array.isArray(saved.form) &&
@@ -134,12 +148,8 @@ export default function TcoCalculator({
       return saved.form;
     }
 
-    // Else fresh defaults
-    if (initialInputs && initialInputs.length === products.length) {
-      return initialInputs;
-    }
-
-    return products.map(defaultFor);
+    // Standard fallback
+    return products.map((p, i) => defaultFor(p, i));
   };
 
   const [tab, setTab] = useState<string>("0");

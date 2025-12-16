@@ -1,3 +1,5 @@
+"use client";
+
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,24 +20,23 @@ interface Product {
   price: string;
   category: string;
   images?: string[];
-  brochureFile?: string;
 }
 
 interface MyCalculatorProps {
   initialPrice?: number;
   selectedProduct?: Product;
-  selectedProducts?: Product[]; // when 2 products (or 1)
+  selectedProducts?: Product[];
   onApplyFinance?: (args: {
     financeData: {
-      vehiclePrice: number; // price used when single product
+      vehiclePrice: number;
       downPaymentPercentage: number;
       downPaymentAmount: number;
-      tenure: number; // months
+      tenure: number;
       interestRate: number;
       loanAmount: number;
       estimatedEMI: number;
     };
-    financedProductId: string; // for single flow (kept for backward compatibility)
+    financedProductId: string;
   }) => void;
   onBack?: () => void;
 }
@@ -49,123 +50,168 @@ export default function MyCalculator({
 }: MyCalculatorProps) {
   const twoMode = !!(selectedProducts && selectedProducts.length === 2);
 
-  // Controls (shared settings; applied to both products in two-mode)
+  /** -------------------------------
+   * PRICE STATES (fully editable)
+   --------------------------------*/
+  const backendPriceA = selectedProduct
+    ? parseInt(selectedProduct.price)
+    : selectedProducts
+    ? parseInt(selectedProducts[0].price)
+    : initialPrice;
+
+  const backendPriceB =
+    twoMode && selectedProducts ? parseInt(selectedProducts[1].price) : null;
+
+  const [priceA, setPriceA] = useState<string>(String(backendPriceA));
+  const [priceB, setPriceB] = useState<string>(
+    backendPriceB ? String(backendPriceB) : ""
+  );
+
+  /** Refresh price input when product changes */
+  useEffect(() => {
+    setPriceA(String(backendPriceA));
+    if (twoMode && backendPriceB != null) setPriceB(String(backendPriceB));
+  }, [backendPriceA, backendPriceB, twoMode]);
+
+  /** Finance Controls */
   const [downPct, setDownPct] = useState(10);
   const [tenure, setTenure] = useState(36);
   const [roi, setRoi] = useState(9.5);
 
-  // Determine prices (single vs two)
-  const priceA = useMemo(() => {
-    if (twoMode) {
-      const p = parseInt(selectedProducts![0].price as unknown as string, 10);
-      return Number.isFinite(p) ? p : initialPrice;
-    }
-    if (selectedProduct?.price) {
-      const p = parseInt(selectedProduct.price as unknown as string, 10);
-      return Number.isFinite(p) ? p : initialPrice;
-    }
-    return initialPrice;
-  }, [twoMode, selectedProducts, selectedProduct, initialPrice]);
+  /** -------------------------------
+   * CALC LOGIC
+   --------------------------------*/
+  const compute = (raw: string) => {
+    const price = Number(raw);
 
-  const priceB = useMemo(() => {
-    if (!twoMode) return null;
-    const p = parseInt(selectedProducts![1].price as unknown as string, 10);
-    return Number.isFinite(p) ? p : initialPrice;
-  }, [twoMode, selectedProducts, initialPrice]);
+    if (!raw || isNaN(price) || price <= 0)
+      return { valid: false, price: 0, down: 0, principal: 0, emi: 0 };
 
-  // In single mode, allow editing the price field directly
-  const [singlePrice, setSinglePrice] = useState<number>(priceA);
-
-  useEffect(() => setSinglePrice(priceA), [priceA]);
-
-  // Computation helpers
-  const compute = (price: number) => {
     const down = Math.round((downPct / 100) * price);
     const principal = Math.max(price - down, 0);
+
     const r = roi / 12 / 100;
     const n = tenure;
+
     const emi =
       r === 0
         ? Math.round(principal / n)
         : Math.round(
             (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
           );
-    return { price, down, principal, emi };
+
+    return { valid: true, price, down, principal, emi };
   };
 
-  const A = compute(twoMode ? priceA : singlePrice);
-  const B = twoMode && priceB != null ? compute(priceB) : null;
+  const A = compute(priceA);
+  const B = twoMode ? compute(priceB) : null;
 
+  /** -------------------------------
+   * VALIDATION
+   --------------------------------*/
+  const validate = () => {
+    if (!A.valid) return "Enter valid Price for Vehicle A";
+
+    if (twoMode && B && !B.valid) return "Enter valid Price for Vehicle B";
+
+    return null;
+  };
+
+  /** -------------------------------
+   * Continue Click
+   --------------------------------*/
   const handleContinue = () => {
-    // Preserve existing callback contract.
-    if (onApplyFinance) {
-      // We pass financeData for the primary product (A). Parent uses shared settings to seed TCO for both.
-      onApplyFinance({
-        financeData: {
+    if (!onApplyFinance) return;
+
+    const payload: any = {
+      financedProductId: twoMode
+        ? selectedProducts![0]._id
+        : selectedProduct?._id || "",
+      financeData: {
+        A: {
           vehiclePrice: A.price,
-          downPaymentPercentage: downPct,
-          downPaymentAmount: A.down,
-          tenure,
-          interestRate: roi,
           loanAmount: A.principal,
-          estimatedEMI: A.emi,
+          downPayment: A.down,
+          interestRate: roi,
+          tenureYears: Math.round(tenure / 12),
+          emi: A.emi,
         },
-        financedProductId: twoMode
-          ? selectedProducts![0]._id
-          : selectedProduct?._id || "",
-      });
-    }
+        B: twoMode
+          ? {
+              vehiclePrice: B!.price,
+              loanAmount: B!.principal,
+              downPayment: B!.down,
+              interestRate: roi,
+              tenureYears: Math.round(tenure / 12),
+              emi: B!.emi,
+            }
+          : null,
+      },
+    };
+
+    onApplyFinance(payload);
   };
 
   return (
     <section className="w-full bg-black py-6">
       <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <header className="mb-6 text-left">
-          <h2 className="text-2xl md:text-3xl font-bold text-white">
-            Finance Calculator {twoMode ? "(Compare EMI for both)" : ""}
-          </h2>
-          <p className="text-gray-400 mt-1">
-            Set finance terms.{" "}
-            {twoMode
-              ? "We apply them to both vehicles so you can compare EMI side-by-side."
-              : "See your estimated EMI instantly."}
-          </p>
-        </header>
+        <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+          Finance Calculator {twoMode ? "(Compare EMI for both)" : ""}
+        </h2>
 
-        {/* Controls (shared) */}
         <div
           className={`grid ${
             twoMode ? "lg:grid-cols-3" : "lg:grid-cols-2"
           } gap-6`}
         >
-          {/* Finance controls */}
-          <div className="space-y-5 lg:col-span-1">
-            {/* Price (single only) */}
+          {/* Left Controls */}
+          <div className="space-y-5">
+            {/* Editable Price (Single or Dual) */}
             {!twoMode && (
               <div>
-                <label className="text-sm font-medium text-gray-300">
-                  Vehicle Price
-                </label>
+                <label className="text-sm text-gray-300">Vehicle Price</label>
                 <Input
-                  type="number"
-                  value={singlePrice}
-                  onChange={(e) => setSinglePrice(Number(e.target.value))}
-                  className="mt-2 bg-gray-900 border-gray-700 text-white placeholder-gray-500"
+                  value={priceA}
+                  onChange={(e) => setPriceA(e.target.value)}
+                  placeholder="Enter Price"
+                  className="mt-2 bg-gray-900 text-white"
                 />
               </div>
             )}
 
+            {twoMode && (
+              <>
+                <div>
+                  <label className="text-sm text-gray-300">
+                    {selectedProducts![0].title} Price
+                  </label>
+                  <Input
+                    value={priceA}
+                    onChange={(e) => setPriceA(e.target.value)}
+                    placeholder="Enter Price"
+                    className="mt-2 bg-gray-900 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-300">
+                    {selectedProducts![1].title} Price
+                  </label>
+                  <Input
+                    value={priceB}
+                    onChange={(e) => setPriceB(e.target.value)}
+                    placeholder="Enter Price"
+                    className="mt-2 bg-gray-900 text-white"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* DP */}
             <div>
               <div className="flex justify-between text-sm text-gray-300">
                 <span>Down Payment ({downPct}%)</span>
-                <span>
-                  {formatINR(
-                    Math.round(
-                      (downPct / 100) * (twoMode ? priceA : singlePrice)
-                    )
-                  )}
-                </span>
+                <span>{A.valid ? formatINR(A.down) : "-"}</span>
               </div>
               <Slider
                 value={[downPct]}
@@ -173,10 +219,10 @@ export default function MyCalculator({
                 max={50}
                 step={1}
                 onValueChange={([v]) => setDownPct(v)}
-                className="mt-3"
               />
             </div>
 
+            {/* Tenure */}
             <div>
               <div className="flex justify-between text-sm text-gray-300">
                 <span>Tenure</span>
@@ -188,14 +234,14 @@ export default function MyCalculator({
                 max={84}
                 step={6}
                 onValueChange={([v]) => setTenure(v)}
-                className="mt-3"
               />
             </div>
 
+            {/* ROI */}
             <div>
               <div className="flex justify-between text-sm text-gray-300">
                 <span>Interest Rate</span>
-                <span>{roi}% p.a.</span>
+                <span>{roi}%</span>
               </div>
               <Slider
                 value={[roi]}
@@ -203,60 +249,30 @@ export default function MyCalculator({
                 max={16}
                 step={0.5}
                 onValueChange={([v]) => setRoi(v)}
-                className="mt-3"
               />
             </div>
 
-            <div className="mt-6 flex justify-between items-center">
-              {onBack && (
-                <Button
-                  variant="outline"
-                  onClick={onBack}
-                  className="border-gray-700 text-black hover:text-white"
-                >
-                  Back
-                </Button>
-              )}
-
-              <Button
-                onClick={handleContinue}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
-              >
-                {twoMode
-                  ? "Apply Finance & Continue to TCO"
-                  : "Apply Finance & Continue to TCO"}
-              </Button>
-            </div>
+            <Button className="bg-blue-600 w-full" onClick={handleContinue}>
+              Continue to TCO
+            </Button>
           </div>
 
-          {/* EMI Card(s) */}
+          {/* EMI Cards */}
           <div
-            className={`${twoMode ? "lg:col-span-2" : "lg:col-span-1"} grid ${
-              twoMode ? "md:grid-cols-2" : "md:grid-cols-1"
-            } gap-6`}
+            className={`${
+              twoMode ? "lg:col-span-2" : ""
+            } grid md:grid-cols-2 gap-6`}
           >
-            {/* Product A */}
             <EmiCard
               title={
                 twoMode
                   ? selectedProducts![0].title
-                  : selectedProduct?.title || "Selected Vehicle"
+                  : selectedProduct?.title || "Selected"
               }
-              price={A.price}
-              down={A.down}
-              principal={A.principal}
-              emi={A.emi}
+              data={A}
             />
-
-            {/* Product B (only in two-mode) */}
-            {twoMode && B && (
-              <EmiCard
-                title={selectedProducts![1].title}
-                price={B.price}
-                down={B.down}
-                principal={B.principal}
-                emi={B.emi}
-              />
+            {twoMode && (
+              <EmiCard title={selectedProducts![1].title} data={B!} />
             )}
           </div>
         </div>
@@ -265,42 +281,41 @@ export default function MyCalculator({
   );
 }
 
-function EmiCard({
-  title,
-  price,
-  down,
-  principal,
-  emi,
-}: {
-  title: string;
-  price: number;
-  down: number;
-  principal: number;
-  emi: number;
-}) {
+function EmiCard({ title, data }: { title: string; data: any }) {
   return (
-    <div className="rounded-xl border border-gray-800 p-6 bg-[#1e2125] shadow-lg">
-      <div className="text-white font-semibold mb-4">{title}</div>
+    <div className="rounded-xl bg-[#1e2125] p-6 border border-gray-800">
+      <h3 className="text-white font-semibold mb-4">{title}</h3>
+
       <div className="space-y-3">
-        <div className="flex justify-between">
-          <span className="text-gray-400">Vehicle Price</span>
-          <span className="font-medium text-white">{formatINR(price)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-400">Down Payment</span>
-          <span className="font-medium text-white">{formatINR(down)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-400">Loan Amount</span>
-          <span className="font-medium text-white">{formatINR(principal)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-400">Estimated EMI</span>
-          <span className="text-2xl font-semibold text-blue-400">
-            {formatINR(emi)}
-          </span>
-        </div>
+        <Row
+          label="Vehicle Price"
+          value={data.valid ? formatINR(data.price) : "-"}
+        />
+        <Row
+          label="Down Payment"
+          value={data.valid ? formatINR(data.down) : "-"}
+        />
+        <Row
+          label="Loan Amount"
+          value={data.valid ? formatINR(data.principal) : "-"}
+        />
+        <Row
+          label="Estimated EMI"
+          value={data.valid ? formatINR(data.emi) : "-"}
+          big
+        />
       </div>
+    </div>
+  );
+}
+
+function Row({ label, value, big }: any) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-gray-400">{label}</span>
+      <span className={big ? "text-2xl font-bold text-blue-400" : "text-white"}>
+        {value}
+      </span>
     </div>
   );
 }

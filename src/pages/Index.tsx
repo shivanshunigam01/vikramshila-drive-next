@@ -18,8 +18,23 @@ import EnquireNow from "@/components/home/EnquireNow";
 import scrollImage from "@/assets/new-launch.png";
 import FloatingVehicleBanner from "@/components/home/FloatingVehicleBanner";
 import CibilCheckWidget from "@/components/home/CibilCheckWidget";
+import { useEffect, useRef } from "react";
+import { trackVisit } from "@/services/visitor.service";
 
 export default function Index() {
+  const trackedRef = useRef(false);
+
+  useEffect(() => {
+    if (trackedRef.current) return;
+
+    const hasTracked = sessionStorage.getItem("vikramshila_visit");
+
+    if (!hasTracked) {
+      trackVisit("/");
+      sessionStorage.setItem("vikramshila_visit", "true");
+      trackedRef.current = true;
+    }
+  }, []);
   return (
     <div>
       <Helmet>
